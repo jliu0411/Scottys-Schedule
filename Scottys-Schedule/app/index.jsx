@@ -1,10 +1,13 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, View, Image } from 'react-native'
+import Scotty from '../assets/scottys/scottyA.png'
+import Room from '../assets/scottys/Room.png'
 import { Link } from 'expo-router'
 
 const Landing = () => {
   return (
     <View style={styles.container}>
+      <Image source={Room} />
+      <Image source={Scotty} style={{position: "absolute", right: 50, marginVertical: 20}} />
       <Link href='/alarms'>Alarms</Link>
       <Link href='/newAlarm'>New Alarm</Link>
       <Link href='/tasks'>Tasks</Link>

@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native'
 const Layout = () => {
   return (
     <View style={{ flex: 1}}>
-        <Stack/>
+        <Stack screenOptions={{ headerShown: false }} />
     </View>
   )
 }
