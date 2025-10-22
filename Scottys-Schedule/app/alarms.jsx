@@ -4,7 +4,7 @@ import React from 'react'
 const Alarms = () => {
   return (
     <View>
-      <Text>Alarms</Text>
+      <Text style={{fontFamily:'Jersey10'}}>Alarms</Text>
     </View>
   )
 }

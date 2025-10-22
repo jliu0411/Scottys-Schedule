@@ -7,13 +7,13 @@ const Landing = () => {
   return (
     <View style={styles.container}>
       <Image source={Room} />
-      <Image source={Scotty} style={{position: "absolute", right: 50, marginVertical: 20}} />
-      <Link href='/alarms'>Alarms</Link>
-      <Link href='/newAlarm'>New Alarm</Link>
-      <Link href='/tasks'>Tasks</Link>
-      <Link href='/newTask'>New Task</Link>
-      <Link href='/logIn'>Log In</Link>
-      <Link href='/signUp'>Sign Up</Link>
+      <Image source={Scotty} style={{position: "absolute", right: 50, top: 170}} />
+      <Link href='/alarms' style= {{fontFamily: 'Jersey10', fontSize: 30}}>Alarms</Link>
+      <Link href='/newAlarm' style= {{fontFamily: 'Jersey10', fontSize: 30}}>New Alarm</Link>
+      <Link href='/tasks' style= {{fontFamily: 'Jersey10', fontSize: 30}}>Tasks</Link>
+      <Link href='/newTask' style= {{fontFamily: 'Jersey10', fontSize: 30}}>New Task</Link>
+      <Link href='/logIn' style= {{fontFamily: 'Jersey10', fontSize: 30}}>Log In</Link>
+      <Link href='/signUp' style= {{fontFamily: 'Jersey10', fontSize: 30}}>Sign Up</Link>
     </View>
   )
 }
