@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, Image } from 'react-native'
-import Scotty from '../assets/scottys/scottyA.png'
+import Scotty from '../assets/scottys/ScottyCMAU.png'
 import Room from '../assets/scottys/Room.png'
 import { Link } from 'expo-router'
 
@@ -7,13 +7,13 @@ const Landing = () => {
   return (
     <View style={styles.container}>
       <Image source={Room} />
-      <Image source={Scotty} style={{position: "absolute", right: 50, top: 170}} />
-      <Link href='/alarms' style= {{fontFamily: 'Jersey10', fontSize: 30}}>Alarms</Link>
-      <Link href='/newAlarm' style= {{fontFamily: 'Jersey10', fontSize: 30}}>New Alarm</Link>
-      <Link href='/tasks' style= {{fontFamily: 'Jersey10', fontSize: 30}}>Tasks</Link>
-      <Link href='/newTask' style= {{fontFamily: 'Jersey10', fontSize: 30}}>New Task</Link>
-      <Link href='/logIn' style= {{fontFamily: 'Jersey10', fontSize: 30}}>Log In</Link>
-      <Link href='/signUp' style= {{fontFamily: 'Jersey10', fontSize: 30}}>Sign Up</Link>
+      <Image source={Scotty} style={styles.image} />
+      <Link href='/alarms' style= {styles.link}>Alarms</Link>
+      <Link href='/newAlarm' style= {styles.link}>New Alarm</Link>
+      <Link href='/tasks' style= {styles.link}>Tasks</Link>
+      <Link href='/newTask' style= {styles.link}>New Task</Link>
+      <Link href='/logIn' style= {styles.link}>Log In</Link>
+      <Link href='/signUp' style= {styles.link}>Sign Up</Link>
     </View>
   )
 }
@@ -28,4 +28,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#00537A',
     gap: 2,
   },
+  image: {
+    position: "absolute", 
+    right: 50, 
+    top: 170
+  },
+  link: {
+    fontFamily: 'Jersey10', 
+    fontSize: 30
+  }
 })
