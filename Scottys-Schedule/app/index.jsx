@@ -1,11 +1,16 @@
 import { StyleSheet, Text, View, Image } from 'react-native'
 import Scotty from '../assets/scottys/ScottyCMAU.png'
 import Room from '../assets/scottys/Room.png'
-import { Link } from 'expo-router'
+import { Link, Stack } from 'expo-router'
+import { AlarmScreenButton } from '../components/alarms/alarmScreenButton'
 
 const Landing = () => {
   return (
     <View style={styles.container}>
+      <Stack.Screen 
+        options={{
+          headerTitle: props => <AlarmScreenButton {...props}/>}} 
+      />
       <Image source={Room} />
       <Image source={Scotty} style={styles.image} />
       <Link href='/alarms' style= {styles.link}>Alarms</Link>
