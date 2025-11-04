@@ -1,17 +1,19 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
-import { Client, Account, ID, Models, Avatars } from 'react-native-appwrite';
+import { Client, Account, ID, Models, Avatars, Databases} from 'react-native-appwrite';
 import React, { useState } from 'react';
 
-const client = new Client();
-client
+
+export const client = new Client()
   .setEndpoint('https://us-west.cloud.appwrite.io/v1')
   .setProject('68f80da00030dc769415')   // Your Project ID
   .setPlatform("com.CS180.Scotty'sSchedule");   // Your package name / bundle identifier
 
-const account = new Account(client);
+export const account = new Account(client);
 
 export const avatars = new Avatars(client);
+
+export const databases = new Databases(client);
 
 export default function App() {
   // const [loggedInUser, setLoggedInUser] = useState(null);
