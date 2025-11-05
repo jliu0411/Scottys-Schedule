@@ -4,8 +4,20 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import {useEffect} from 'react';
 import "@/assets/font/Jersey10-Regular.ttf"
+import * as Notifications from "expo-notifications"
+import 'expo-router/entry'
 
 SplashScreen.preventAutoHideAsync();
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
 
 
 const RootLayout = () => {

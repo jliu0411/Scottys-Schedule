@@ -1,14 +1,26 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, View } from "react-native";
+import TopBar from "../components/topBar.jsx";
+import React from "react";
+import { useRouter } from "expo-router";
 
-const Alarms = () => {
+export default function Alarms() {
+  const router = useRouter();
+
   return (
-    <View>
-      <Text style={{fontFamily:'Jersey10'}}>Alarms</Text>
+    <View style={styles.container}>
+      <TopBar
+        title="Alarms"
+        onBack={() => router.back()}
+        onRightPress={() => router.push("/newAlarm")}
+        rightIcon="add"
+      />
     </View>
-  )
+  );
 }
 
-export default Alarms
-
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#0A5875",
+  },
+});
