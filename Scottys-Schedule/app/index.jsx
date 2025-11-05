@@ -3,7 +3,7 @@ import Scotty from '../assets/scottys/ScottyCMAU.png'
 import Room from '../assets/scottys/Room.png'
 import { Link, Stack } from 'expo-router'
 import { AlarmScreenButton } from '../components/alarms/alarmScreenButton'
-import { LandingCurrentTaskCard } from '../components/landing/landingCurrentTaskCard'
+ import LandingTaskList from '../components/landing/landingTaskList'
 
 const Landing = () => {
   return (
@@ -14,6 +14,7 @@ const Landing = () => {
       />
       <Image source={Room} />
       <Image source={Scotty} style={styles.image} />
+      <LandingTaskList/>
       <Link href='/alarms' style= {styles.link}>Alarms</Link>
       <Link href='/newAlarm' style= {styles.link}>New Alarm</Link>
       <Link href='/tasks' style= {styles.link}>Tasks</Link>

@@ -1,38 +1,44 @@
 import { StyleSheet, Text, View } from 'react-native'
+import { Link } from 'expo-router'
 import React from 'react'
-import LandingCurrentTaskCard  from '../landing/landingCurrentTaskCard'
+import LandingCurrentTask from './landingCurrTaskCard'
+import LandingUpcomingTask from './landingNextTaskCard'
 
-const LandingTaskList = () => {
+const LandingTaskList = () => { 
   return (
     <View style={styles.container}>
-      <View style={styles.currentTask}>
-        <Text style={styles.currentHeader}>Current Task</Text>
-        <LandingCurrentTaskCard name={'Wash dishes'} description={'Load dishwasher'} timeStarts={new Date()} timeEnds={new Date()} isCompleted={false}/>
-      </View>
-
-      {/* <View style={styles.upcomingTask}>
-
-      </View> */}
+      <Link href='/tasks' style={styles.arrow}>
+        <Text>Up Arrow</Text>
+      </Link>
+      
+      <Text style={[styles.header,{backgroundColor: '#F5A201'}]}>Current Task</Text>
+      <LandingCurrentTask name='Task Name also very long' description='very very long description' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} />
+    
+      <Text style={[styles.header,{backgroundColor: '#013C58'}]}>Upcoming Tasks</Text>
+      <LandingUpcomingTask name='Task Name also very long' description='very very long description' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} />
     </View>
   )
 }
 
-export default LandingTaskList
+export default LandingTaskList;
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1
-    },
-    currentHeader: {
-        fontFamily: 'Jersey10',
-        backgroundColor: '#F5A201',
-        color: '#FFFF',
-        fontSize: 16
-    },
-    currentTask: {
-        borderColor: '#000'
-    },
-    upcomingTask: {
-        borderColor: '#0000'
-    }
+  container: {
+    width: '100%',
+    height: '100%'
+  },
+  header: {
+    fontFamily: 'Jersey10',
+    color: '#FFFF',
+    fontSize: 24,
+    padding: 7,
+    width: '100%'
+  },
+  arrow: {
+    backgroundColor: '#F5A201',
+    alignSelf: 'flex-end',
+    alignItems: 'center',
+    paddingLeft: 10,
+    color: '#FFFF'
+  }
 })
