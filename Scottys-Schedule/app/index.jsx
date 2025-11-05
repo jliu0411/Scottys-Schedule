@@ -1,8 +1,9 @@
-import { StyleSheet, Text, View, Image } from 'react-native'
+import { StyleSheet, View, Image } from 'react-native'
 import Scotty from '../assets/scottys/ScottyCMAU.png'
 import Room from '../assets/scottys/Room.png'
 import { Link, Stack } from 'expo-router'
 import { AlarmScreenButton } from '../components/alarms/alarmScreenButton'
+import { LandingCurrentTaskCard } from '../components/landing/landingCurrentTaskCard'
 
 const Landing = () => {
   return (
