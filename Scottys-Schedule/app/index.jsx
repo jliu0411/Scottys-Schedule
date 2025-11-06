@@ -1,4 +1,4 @@
-import { StyleSheet, Image } from 'react-native'
+import { StyleSheet, Image, View } from 'react-native'
 import Scotty from '../assets/scottys/ScottyCMAU.png'
 import Room from '../assets/scottys/Room.png'
 import { Link, Stack } from 'expo-router'
@@ -15,10 +15,13 @@ const Landing = () => {
       />
       <Image source={Room} />
       <Image source={Scotty} style={styles.image} />
-      {/* <Link href='/newAlarm' style= {styles.link}>New Alarm</Link>
-      <Link href='/newTask' style= {styles.link}>New Task</Link>
-      <Link href='/logIn' style= {styles.link}>Log In</Link>
-      <Link href='/signUp' style= {styles.link}>Sign Up</Link> */}
+      <View style={{position: 'absolute', top:0}}>
+        <Link href='/newAlarm' style= {styles.link}>New Alarm</Link>
+        <Link href='/newTask' style= {styles.link}>New Task</Link>
+        <Link href='/logIn' style= {styles.link}>Log In</Link>
+        <Link href='/signUp' style= {styles.link}>Sign Up</Link>
+      </View>
+        
       <LandingTaskList/>
     </SafeAreaView>
   )
