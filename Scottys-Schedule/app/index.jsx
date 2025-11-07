@@ -1,17 +1,18 @@
-import { StyleSheet, Image, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { StyleSheet, Image, View, Text } from 'react-native'
+import { Link, Stack } from 'expo-router'
+
 import Scotty from '../assets/scottys/ScottyCMAU.png'
 import Room from '../assets/scottys/Room.png'
-import { Link, Stack } from 'expo-router'
-import { AlarmScreenButton } from '../components/alarms/alarmScreenButton'
 import LandingTaskList from '../components/landing/landingTaskList'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import LandingHeader from '../components/landing/landingHeader'
 
 const Landing = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen 
         options={{
-          // headerTitle: () => <HeaderComponents/>
+          header: () => <LandingHeader/>
         }} 
       />
       <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
@@ -19,7 +20,6 @@ const Landing = () => {
       <Image source={Scotty} style={styles.image} />
       <View style={{position: 'absolute', top:0}}>
         <Link href='/newAlarm' style= {styles.link}>New Alarm</Link>
-        <Link href='/newTask' style= {styles.link}>New Task</Link>
         <Link href='/logIn' style= {styles.link}>Log In</Link>
         <Link href='/signUp' style= {styles.link}>Sign Up</Link>
       </View>

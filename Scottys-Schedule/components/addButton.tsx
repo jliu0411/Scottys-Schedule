@@ -1,16 +1,12 @@
-import { StyleSheet, Image, View } from 'react-native'
 import React from 'react'
-import { Link, RelativePathString } from 'expo-router'
+import { Image, View } from 'react-native'
+import { Link, Href } from 'expo-router'
 import AddButtonIcon from '../assets/buttons/addButton.png'
 
-interface buttonProps {
-    href: RelativePathString
-}
-
-const AddButton = ({href} : buttonProps) => {
+const AddButton = (pathname : Href) => {  
   return (
     <View>
-      <Link href={href}>
+      <Link href={pathname}>
         <Image source={AddButtonIcon}/>
       </Link>
     </View>
@@ -18,5 +14,3 @@ const AddButton = ({href} : buttonProps) => {
 }
 
 export default AddButton
-
-const styles = StyleSheet.create({})
