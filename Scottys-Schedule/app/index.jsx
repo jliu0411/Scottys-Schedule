@@ -1,26 +1,33 @@
-import { StyleSheet, Image, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { StyleSheet, Image, View, Text } from 'react-native'
+import { Link, Stack } from 'expo-router'
+
 import Scotty from '../assets/scottys/ScottyCMAU.png'
 import Room from '../assets/scottys/Room.png'
-import { Link, Stack } from 'expo-router'
-import { AlarmScreenButton } from '../components/alarms/alarmScreenButton'
 import LandingTaskList from '../components/landing/landingTaskList'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import LandingHeader from '../components/landing/landingHeader'
 
 const Landing = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen 
         options={{
-          headerTitle: props => <AlarmScreenButton {...props}/>}} 
+          header: () => <LandingHeader/>
+        }} 
       />
-      <Image source={Room} />
-      <Image source={Scotty} style={styles.image} />
-      <View style={{position: 'absolute', top:0}}>
+
+      <View style={{position: 'absolute'}}>
+        <Image source={Room} style={styles.room} />
+        <Image source={Scotty} style={styles.scotty} />
+      </View>
+      
+      <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
+
+      {/* <View style={{position: 'absolute', top:0}}>
         <Link href='/newAlarm' style= {styles.link}>New Alarm</Link>
-        <Link href='/newTask' style= {styles.link}>New Task</Link>
         <Link href='/logIn' style= {styles.link}>Log In</Link>
         <Link href='/signUp' style= {styles.link}>Sign Up</Link>
-      </View>
+      </View> */}
         
       <LandingTaskList/>
     </SafeAreaView>
@@ -37,10 +44,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#00537A',
     gap: 2,
   },
-  image: {
-    position: "absolute", 
-    right: 50, 
-    top: 170
+  date: {
+    fontFamily: 'Jersey10',
+    fontSize: 30,
+    color: '#FFF',
+    position: 'absolute',
+    top: 15,
+  },
+  room: {
+    position: 'relative',
+    top: -110
+  },
+  scotty: {
+    position: 'absolute', 
+    right: 60, 
+    top: -50
   },
   link: {
     fontFamily: 'Jersey10', 
