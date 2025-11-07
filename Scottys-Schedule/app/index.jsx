@@ -15,14 +15,19 @@ const Landing = () => {
           header: () => <LandingHeader/>
         }} 
       />
+
+      <View style={{position: 'absolute'}}>
+        <Image source={Room} style={styles.room} />
+        <Image source={Scotty} style={styles.scotty} />
+      </View>
+      
       <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
-      <Image source={Room} />
-      <Image source={Scotty} style={styles.image} />
-      <View style={{position: 'absolute', top:0}}>
+
+      {/* <View style={{position: 'absolute', top:0}}>
         <Link href='/newAlarm' style= {styles.link}>New Alarm</Link>
         <Link href='/logIn' style= {styles.link}>Log In</Link>
         <Link href='/signUp' style= {styles.link}>Sign Up</Link>
-      </View>
+      </View> */}
         
       <LandingTaskList/>
     </SafeAreaView>
@@ -43,11 +48,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Jersey10',
     fontSize: 30,
     color: '#FFF',
+    position: 'absolute',
+    top: 15,
   },
-  image: {
-    position: "absolute", 
-    right: 50, 
-    top: 170
+  room: {
+    position: 'relative',
+    top: -110
+  },
+  scotty: {
+    position: 'absolute', 
+    right: 60, 
+    top: -50
   },
   link: {
     fontFamily: 'Jersey10', 
