@@ -9,8 +9,10 @@ const Landing = () => {
     <View style={styles.container}>
       <Stack.Screen 
         options={{
-          headerTitle: props => <AlarmScreenButton {...props}/>}} 
+          // headerTitle: () => <HeaderComponents/>
+        }} 
       />
+      <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
       <Image source={Room} />
       <Image source={Scotty} style={styles.image} />
       <Link href='/alarms' style= {styles.link}>Alarms</Link>
@@ -32,6 +34,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#00537A',
     gap: 2,
+  },
+  date: {
+    fontFamily: 'Jersey10',
+    fontSize: 30,
+    color: '#FFF',
   },
   image: {
     position: "absolute", 
