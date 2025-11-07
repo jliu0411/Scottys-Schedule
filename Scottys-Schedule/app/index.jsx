@@ -1,25 +1,29 @@
-import { StyleSheet, Text, View, Image } from 'react-native'
+import { StyleSheet, Image, View } from 'react-native'
 import Scotty from '../assets/scottys/ScottyCMAU.png'
 import Room from '../assets/scottys/Room.png'
 import { Link, Stack } from 'expo-router'
 import { AlarmScreenButton } from '../components/alarms/alarmScreenButton'
+import LandingTaskList from '../components/landing/landingTaskList'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 const Landing = () => {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Stack.Screen 
         options={{
           headerTitle: props => <AlarmScreenButton {...props}/>}} 
       />
       <Image source={Room} />
       <Image source={Scotty} style={styles.image} />
-      <Link href='/alarms' style= {styles.link}>Alarms</Link>
-      <Link href='/newAlarm' style= {styles.link}>New Alarm</Link>
-      <Link href='/tasks' style= {styles.link}>Tasks</Link>
-      <Link href='/newTask' style= {styles.link}>New Task</Link>
-      <Link href='/logIn' style= {styles.link}>Log In</Link>
-      <Link href='/signUp' style= {styles.link}>Sign Up</Link>
-    </View>
+      <View style={{position: 'absolute', top:0}}>
+        <Link href='/newAlarm' style= {styles.link}>New Alarm</Link>
+        <Link href='/newTask' style= {styles.link}>New Task</Link>
+        <Link href='/logIn' style= {styles.link}>Log In</Link>
+        <Link href='/signUp' style= {styles.link}>Sign Up</Link>
+      </View>
+        
+      <LandingTaskList/>
+    </SafeAreaView>
   )
 }
 

@@ -41,6 +41,7 @@ const RootLayout = () => {
             <Stack.Screen name="newAlarm" options={{title: 'New Alarm'}}/>
             <Stack.Screen name="newTask" options={{title: 'New Task'}}/>
             <Stack.Screen name="tasks" options={{title: 'Tasks'}}/>
+            <Stack.Screen name="editTask" options={{title: 'Edit Task'}}/>
           </Stack>
         </BooksProvider>
     </View>
