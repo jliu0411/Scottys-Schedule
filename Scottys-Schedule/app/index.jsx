@@ -1,29 +1,36 @@
-import { StyleSheet, Text, View, Image } from 'react-native'
-import Scotty from '../assets/scottys/ScottyCMAU.png'
-import Room from '../assets/scottys/Room.png'
-import { Link, Stack } from 'expo-router'
-import { AlarmScreenButton } from '../components/alarms/alarmScreenButton'
+import {StyleSheet, Image} from 'react-native'
+import {Link} from 'expo-router'
 
-const Landing = () => {
+import Spacer from "../components/themes/Spacer"
+import ThemedView from "../components/themes/ThemedView"
+import ThemedText from "../components/themes/ThemedText"
+import Logo from '../assets/scottys/scottyHead.png'
+
+const Home = () => {
   return (
-    <View style={styles.container}>
-      <Stack.Screen 
-        options={{
-          headerTitle: props => <AlarmScreenButton {...props}/>}} 
-      />
-      <Image source={Room} />
-      <Image source={Scotty} style={styles.image} />
-      <Link href='/alarms' style= {styles.link}>Alarms</Link>
-      <Link href='/newAlarm' style= {styles.link}>New Alarm</Link>
-      <Link href='/tasks' style= {styles.link}>Tasks</Link>
-      <Link href='/newTask' style= {styles.link}>New Task</Link>
-      <Link href='/logIn' style= {styles.link}>Log In</Link>
-      <Link href='/signUp' style= {styles.link}>Sign Up</Link>
-    </View>
+    <ThemedView style={styles.container}>
+      <Image source={Logo}/>
+
+      <ThemedText style={styles.title} title={"Scotty's Schedule"}></ThemedText>
+      
+      <Spacer height={100}/>
+
+      <Link href='/login' style= {styles.link}>
+        <ThemedText>Log In</ThemedText>
+      </Link>
+
+      <Link href='/register' style= {styles.link}>
+        <ThemedText>Register</ThemedText>
+      </Link>
+
+      <Link href='/landing' style= {styles.link}>
+        <ThemedText>View Landing</ThemedText>
+      </Link>
+    </ThemedView>
   )
 }
 
-export default Landing
+export default Home
 
 const styles = StyleSheet.create({
   container: {
@@ -32,6 +39,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#00537A',
     gap: 2,
+  },
+  title: {
+    fontFamily: 'Jersey10',
+    fontSize: 40,
   },
   image: {
     position: "absolute", 

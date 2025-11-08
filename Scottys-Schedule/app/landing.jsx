@@ -1,0 +1,81 @@
+import { Link, Stack, router } from 'expo-router';
+import { View, Image, Text, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useUser } from '../hooks/useUser';
+import Scotty from '../assets/scottys/ScottyCMAU.png';
+import Room from '../assets/scottys/Room.png';
+import ThemedButton from "../components/themes/ThemedButton";
+import UserOnly from '../components/auth/UserOnly';
+import LandingTaskList from '../components/landing/landingTaskList'
+import LandingHeader from '../components/landing/landingHeader'
+
+const Landing = () => {
+  const {logout, user, authChecked, setIsLoggingOut } = useUser()
+
+  const handleLogout = async () => {
+        try {
+            await logout()
+            router.dismissAll()
+            router.replace('/') 
+            setTimeout(() => {
+              setIsLoggingOut(false)
+            }, 50);
+        } catch (error) {
+            console.error("Logout failed:", error)
+        }
+    }
+
+  return (
+    <UserOnly>
+      <SafeAreaView style={styles.container}>
+      <Stack.Screen 
+        options={{
+          header: () => <LandingHeader/>
+        }} 
+      />
+
+      <View style={{position: 'absolute'}}>
+        <Image source={Room} style={styles.room} />
+        <Image source={Scotty} style={styles.scotty} />
+      </View>
+      
+      <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
+        
+      <LandingTaskList/>
+    </SafeAreaView>
+
+    </UserOnly>
+  )
+}
+
+export default Landing
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#00537A',
+    gap: 2,
+  },
+   date: {
+    fontFamily: 'Jersey10',
+    fontSize: 30,
+    color: '#FFF',
+    position: 'absolute',
+    top: 15,
+  },
+  room: {
+    position: 'relative',
+    top: -110
+  },
+  scotty: {
+    position: 'absolute', 
+    right: 60, 
+    top: -50
+  },
+  link: {
+    fontFamily: 'Jersey10', 
+    fontSize: 30
+  }
+})
