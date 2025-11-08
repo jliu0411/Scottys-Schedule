@@ -1,11 +1,13 @@
 import { Link, Stack, router } from 'expo-router';
 import { View, Image, Text, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { useUser } from '../hooks/useUser';
 import Scotty from '../assets/scottys/ScottyCMAU.png';
 import Room from '../assets/scottys/Room.png';
-import { AlarmScreenButton } from '../components/alarms/alarmScreenButton';
 import ThemedButton from "../components/themes/ThemedButton";
 import UserOnly from '../components/auth/UserOnly';
+import LandingTaskList from '../components/landing/landingTaskList'
+import LandingHeader from '../components/landing/landingHeader'
 
 const Landing = () => {
   const {logout, user, authChecked, setIsLoggingOut } = useUser()
@@ -25,22 +27,23 @@ const Landing = () => {
 
   return (
     <UserOnly>
-      <View style={styles.container}>
-        <Stack.Screen 
-          options={{
-            headerTitle: props => <AlarmScreenButton {...props}/>}} 
-        />
-        <Image source={Room} />
-        <Image source={Scotty} style={styles.image} />
-        <Link href='/alarms' style= {styles.link}>Alarms</Link>
-        <Link href='/newAlarm' style= {styles.link}>New Alarm</Link>
-        <Link href='/tasks' style= {styles.link}>Tasks</Link>
-        <Link href='/newTask' style= {styles.link}>New Task</Link>
+      <SafeAreaView style={styles.container}>
+      <Stack.Screen 
+        options={{
+          header: () => <LandingHeader/>
+        }} 
+      />
 
-        <ThemedButton onPress={handleLogout} style={styles.button}>
-            <Text style={{color: "#f2f2f2"}}>Log Out</Text>
-        </ThemedButton>
+      <View style={{position: 'absolute'}}>
+        <Image source={Room} style={styles.room} />
+        <Image source={Scotty} style={styles.scotty} />
       </View>
+      
+      <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
+        
+      <LandingTaskList/>
+    </SafeAreaView>
+
     </UserOnly>
   )
 }
@@ -55,10 +58,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#00537A',
     gap: 2,
   },
-  image: {
-    position: "absolute", 
-    right: 50, 
-    top: 170
+   date: {
+    fontFamily: 'Jersey10',
+    fontSize: 30,
+    color: '#FFF',
+    position: 'absolute',
+    top: 15,
+  },
+  room: {
+    position: 'relative',
+    top: -110
+  },
+  scotty: {
+    position: 'absolute', 
+    right: 60, 
+    top: -50
   },
   link: {
     fontFamily: 'Jersey10', 

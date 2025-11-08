@@ -36,11 +36,18 @@ export default function RootLayout() {
         <StatusBar value="auto" />
         <Stack screenOptions={{
           headerStyle: { backgroundColor: theme.navBackground },
+          headerTitleStyle: { fontFamily: 'Jersey10', fontSize: 48 },
+          headerTitleAlign: 'center',
           headerTintColor: theme.title,
         }}>
           <Stack.Screen name="index" options={{ title: "Home" }} />
+          <Stack.Screen name="alarms" options={{ title: "Alarms" }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(dashboard)" options={{ headerShown: false }} />
+          <Stack.Screen name="newAlarm" options={{ title: 'New Alarm' }} />
+          <Stack.Screen name="newTask" options={{ title: 'New Task' }} />
+          <Stack.Screen name="editTask" options={{ title: 'Edit Task' }} />
+          <Stack.Screen name="tasks" options={{ title: 'Tasks' }} />
         </Stack>
       </BooksProvider>
     </UserProvider>
