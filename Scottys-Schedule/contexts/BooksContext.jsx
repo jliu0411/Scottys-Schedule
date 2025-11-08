@@ -53,7 +53,10 @@ export function BooksProvider({ children }) {
                     Permission.update(Role.any()),
                     Permission.delete(Role.any()),
                 ]
-            )
+            );
+            setBooks(prev => [...prev, newBook]);
+
+            return newBook;
         } catch (error) {
             console.error(error.message)
         }
