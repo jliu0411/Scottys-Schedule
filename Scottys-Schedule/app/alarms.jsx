@@ -54,7 +54,7 @@ export default function Alarms(onRightPress, showBack = true) {
         {onRightPress ? (
           <TouchableOpacity onPress={() => router.push("/newAlarm")} style={styles.iconBox}>
             <Image 
-              source = {require("../assets/buttons/addbButton.png")}
+              source = {require("../assets/buttons/addButton.png")}
               style = {{width: 50, height: 50}}
               resizeMode = "contain"
             />
