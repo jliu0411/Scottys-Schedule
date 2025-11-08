@@ -11,7 +11,7 @@ const Home = () => {
     <ThemedView style={styles.container}>
       <Image source={Logo}/>
 
-      <ThemedText style={styles.title} title={true}>Scotty's Schedule</ThemedText>
+      <ThemedText style={styles.title} title={"Scotty's Schedule"}></ThemedText>
       
       <Spacer height={100}/>
 

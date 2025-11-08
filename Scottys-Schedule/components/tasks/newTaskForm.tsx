@@ -2,6 +2,10 @@ import { StyleSheet, TextInput, Text, View, TouchableOpacity } from 'react-nativ
 import React, { useState } from 'react'
 import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import RepeatsDropdown from '../repeatsDropdown';
+import { useRouter } from 'expo-router'
+import { useBooks } from "../../hooks/useBooks"
+
+
 
 const NewTaskForm = () => {
   const [name, setName] = useState('');
@@ -10,6 +14,10 @@ const NewTaskForm = () => {
   const [timeStarts, setTimeStarts] = useState(new Date());
   const [timeEnds, setTimeEnds] = useState(new Date());
   const [repeats, setRepeats] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const { createBook } = useBooks();
+  const router = useRouter();
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimeStartsPicker, setShowTimeStartsPicker] = useState(false);
@@ -26,18 +34,37 @@ const NewTaskForm = () => {
   }
 
   //TASK CREATION
-  const handleCreateTask = () => {
+  const handleCreateTask = async () => {
     if (!name.trim()) {
       alert('Please enter a task name!');
       return;
-    }
+    } 
+
+    setLoading(true);
+
+    await createBook({name, description, date, timeStarts, timeEnds, repeats})
+
+    //reset fields
+    setName('');
+    setDescription('');
+    setDate(new Date());
+    setTimeStarts(new Date());
+    setTimeEnds(new Date());
+    setRepeats([]);
+
+    // redirect
+    router.replace('/');
+
+    //reset loading state
+    setLoading(false);
+
     alert('Creating task...');
     
-    const Task = {
-      name, description, date, timeStarts, timeEnds, repeats, isCompleted : false
-    };
+    // const Task = {
+    //   name, description, date, timeStarts, timeEnds, repeats, isCompleted : false
+    // };
 
-    //ACTUAL FUNCTIONALITY NEEDED HERE
+    // //ACTUAL FUNCTIONALITY NEEDED HERE
   }
   return (
     <View style={styles.container}>
@@ -45,11 +72,11 @@ const NewTaskForm = () => {
         <Text style={styles.subheader}> Task Name</Text>
         <TextInput 
           placeholder='ex. Wash Dishes'
-          defaultValue={name} 
+          value={name} 
           multiline
           numberOfLines={2}
           maxLength={50}
-          onChangeText={input => setName(input)} 
+          onChangeText={setName} 
           style={styles.input} >
         </TextInput>
       </View>
@@ -57,11 +84,11 @@ const NewTaskForm = () => {
         <Text style={styles.subheader}> Description</Text>
         <TextInput 
           placeholder='ex. Rinse pots and load dishwasher' 
-          defaultValue={description} 
+          value={description} 
           multiline
           numberOfLines={5}
           maxLength={140}
-          onChangeText={input => setDescription(input)} 
+          onChangeText={setDescription} 
           style={styles.input}>
         </TextInput>
 
@@ -114,8 +141,10 @@ const NewTaskForm = () => {
         <Text style={styles.subheader}> Repeats</Text>
         <RepeatsDropdown repeats={repeats}/>
 
-        <TouchableOpacity style={styles.createButton} onPress={handleCreateTask}>
-          <Text style={styles.createButtonText}>Create Task</Text>
+        <TouchableOpacity style={styles.createButton} onPress={handleCreateTask} disabled={loading}>
+          <Text style={styles.createButtonText}>
+            {loading ? "Saving..." : "Create Task"}
+            </Text>
         </TouchableOpacity>
     </View>
   )
