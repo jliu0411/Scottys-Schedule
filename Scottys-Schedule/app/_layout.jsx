@@ -1,16 +1,34 @@
+import { Stack } from 'expo-router'
 import { useFonts } from 'expo-font';
-import Jersey10Regular from "@/assets/font/Jersey10-Regular.ttf" 
-
-import { Stack } from "expo-router"
+import * as SplashScreen from 'expo-splash-screen';
+import {useEffect} from 'react';
+import "@/assets/font/Jersey10-Regular.ttf"
+import { BooksProvider } from '../contexts/BooksContext';
 import { Colors } from "../constants/Colors"
 import { useColorScheme } from "react-native"
 import { StatusBar } from "expo-status-bar"
 import { UserProvider } from "../contexts/UserContext"
-import { BooksProvider } from "../contexts/BooksContext"
+
+SplashScreen.preventAutoHideAsync();
+
 
 export default function RootLayout() {
   const colorScheme = useColorScheme()
   const theme = Colors[colorScheme] ?? Colors.light
+  //Custom Font
+  const [loaded, error] = useFonts({
+    'Jersey10': require('@/assets/font/Jersey10-Regular.ttf'),
+  });
+
+  useEffect(() => {
+    if (loaded || error) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, error]);
+
+  if (!loaded && !error) {
+    return null;
+  }
 
   return (
     <UserProvider>

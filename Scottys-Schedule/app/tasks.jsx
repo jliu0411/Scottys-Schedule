@@ -1,12 +1,16 @@
+import { StyleSheet, Text, View, FlatList, Pressable } from 'react-native'
 import React from 'react'
 import { Stack, Link } from 'expo-router'
-import { StyleSheet, Text, View, ScrollView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import TaskCard from '../components/tasks/taskCard'
 import AddButton from '../components/addButton'
 import Entypo from '@expo/vector-icons/Entypo'
+import { useBooks } from '../hooks/useBooks'
+
 
 const Tasks = () => {
+  const { books } = useBooks()
+
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <Stack.Screen
@@ -15,20 +19,21 @@ const Tasks = () => {
         }}
       />
 
-      <ScrollView style={styles.tasks}>
-        <Text style={[styles.subheader,{backgroundColor: '#F5A201'}]}>Current Task</Text>
-        <TaskCard name='Task 1 With a Very Long Name That Needs to be Cut ' description='A very very long description that also needs to get cut off' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#F5A201'}/>
-        <Text style={[styles.subheader,{backgroundColor: '#013C58'}]}>Upcoming Tasks</Text>
-        <TaskCard name='Short Task Name' description='A short task description' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'}/>
-        <TaskCard name='Task w/o Description' description='' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'}/>
-        <TaskCard name='Another Task Name' description='A very very long description that also needs to get cut off' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'}/>
-        <TaskCard name='Another Task Name' description='A very very long description that also needs to get cut off' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'}/>
-        
-        <View style={styles.alarmContainer}>
+      <FlatList 
+        data={books}
+        keyExtractor={(item => item.$id)}
+        contentContainerStyle={styles.list}
+        renderItem={({ item }) => (
+          <Pressable>
+            <TaskCard name={item.name} description={item.description} timeStarts={item.timeStarts ? new Date(item.timeStarts) : new Date()}
+            timeEnds={item.timeEnds ? new Date(item.timeEnds) : new Date()} isCompleted={false} color={'#013C58'}/>
+          </Pressable>
+        )}
+      />
+      <View style={styles.alarmContainer}>
           <Text style={styles.nextAlarm}>Next Alarm:</Text>
           <Text style={styles.alarmTime}>6:00 AM</Text>
-        </View>
-      </ScrollView>
+      </View>
       
       <SafeAreaView style={styles.bottom} edges={[ 'left', 'right', 'bottom']} >
         <Link href=''> <Entypo name='arrow-left' color={'#FFF'} size={80} /> </Link>
