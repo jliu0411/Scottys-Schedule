@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 
 
 export const client = new Client()
-  .setEndpoint('https://us-west.cloud.appwrite.io/v1')
+  .setEndpoint('https://sfo.cloud.appwrite.io/v1')
   .setProject('68f80da00030dc769415')   // Your Project ID
   .setPlatform("com.CS180.Scotty'sSchedule");   // Your package name / bundle identifier
 
@@ -16,9 +16,9 @@ export const avatars = new Avatars(client);
 export const databases = new Databases(client);
 
 export default function App() {
+  // const [password, setPassword] = useState('');
   // const [loggedInUser, setLoggedInUser] = useState(null);
   // const [email, setEmail] = useState('');
-  // const [password, setPassword] = useState('');
   // const [name, setName] = useState('');
 
   // async function login(email, password) {

@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import {useEffect} from 'react';
 import "@/assets/font/Jersey10-Regular.ttf"
 import { BooksProvider } from '../contexts/BooksContext';
+import { UserProvider  } from '../contexts/UserContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -26,25 +27,27 @@ const RootLayout = () => {
   }
 
   return (
-    <View style={styles.container}>
-        <BooksProvider>
-          <Stack screenOptions={{
-            headerStyle: {backgroundColor: '#0B1E33'},
-            headerTintColor: '#ffff',
-            headerTitleAlign: 'center',
-            headerTitleStyle: {fontFamily: 'Jersey10'}
-          }}>
-            <Stack.Screen name="index" options={{title: '' }}/>
-            <Stack.Screen name="alarms" options={{title: 'Alarms'}}/>
-            <Stack.Screen name="logIn" options={{headerShown: false}}/>
-            <Stack.Screen name="signUp" options={{headerShown: false}}/>
-            <Stack.Screen name="newAlarm" options={{title: 'New Alarm'}}/>
-            <Stack.Screen name="newTask" options={{title: 'New Task'}}/>
-            <Stack.Screen name="tasks" options={{title: 'Tasks'}}/>
-            <Stack.Screen name="editTask" options={{title: 'Edit Task'}}/>
-          </Stack>
-        </BooksProvider>
-    </View>
+    <UserProvider>
+        <View style={styles.container}>
+            <BooksProvider>
+              <Stack screenOptions={{
+                headerStyle: {backgroundColor: '#0B1E33'},
+                headerTintColor: '#ffff',
+                headerTitleAlign: 'center',
+                headerTitleStyle: {fontFamily: 'Jersey10'}
+              }}>
+                <Stack.Screen name="index" options={{title: '' }}/>
+                <Stack.Screen name="alarms" options={{title: 'Alarms'}}/>
+                <Stack.Screen name="logIn" options={{headerShown: false}}/>
+                <Stack.Screen name="signUp" options={{headerShown: false}}/>
+                <Stack.Screen name="newAlarm" options={{title: 'New Alarm'}}/>
+                <Stack.Screen name="newTask" options={{title: 'New Task'}}/>
+                <Stack.Screen name="tasks" options={{title: 'Tasks'}}/>
+                <Stack.Screen name="editTask" options={{title: 'Edit Task'}}/>
+              </Stack>
+            </BooksProvider>
+        </View>
+    </UserProvider>
   )
 }
 
