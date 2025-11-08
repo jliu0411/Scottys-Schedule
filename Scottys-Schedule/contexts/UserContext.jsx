@@ -9,6 +9,7 @@ export function UserProvider({ children }) {
   const [authChecked, setAuthChecked] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
+
   async function login(email, password) {
     try {
       await account.createEmailPasswordSession(email, password)
