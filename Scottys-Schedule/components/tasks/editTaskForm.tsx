@@ -3,15 +3,7 @@ import { StyleSheet, Text, View, TextInput, Pressable } from 'react-native'
 import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker'
 import RepeatsDropdown from '../repeatsDropdown'
 
-type taskData = {
-    name: string,
-    description: string,
-    date: Date,
-    timeStarts: Date,
-    timeEnds: Date,
-    isCompleted: boolean,
-    repeats: string[]
-}
+
 
 const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isCompleted, repeats} : taskData) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -39,7 +31,7 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
       
       <Text style={styles.subheader}> Task Name</Text>
       <TextInput
-        placeholder={name} 
+        placeholder={'Current Task Name'} 
         defaultValue={name} 
         multiline
         numberOfLines={2}
@@ -50,7 +42,7 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
 
       <Text style={styles.subheader}> Description</Text>
       <TextInput 
-        placeholder={description} 
+        placeholder={'Current Description'} 
         defaultValue={description} 
         multiline
         numberOfLines={5}
@@ -62,8 +54,7 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
       <Text style={styles.subheader}> Date</Text>
       <Pressable onPress={() => setShowDatePicker(!showDatePicker)}>
         <Text style={styles.input}>
-          {/* {date.toLocaleDateString()} */}
-          date
+          11/10/25
         </Text>
       </Pressable>
       {showDatePicker && (
@@ -77,8 +68,7 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
       <Text style={styles.subheader}> Time Task Starts</Text>
       <Pressable onPress={() => setShowTimeStartsPicker(!showTimeStartsPicker)}>
         <Text style={styles.input}>
-          {/* {timeStarts.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} */}
-          time starts
+          10:00 AM
         </Text>
         {showTimeStartsPicker && 
           (<RNDateTimePicker 
@@ -91,8 +81,7 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
       <Text style={styles.subheader}>Time Task Ends</Text>
         <Pressable onPress={() => setShowTimeEndsPicker(!showTimeEndsPicker)}>
           <Text style={styles.input}>
-            {/* {timeEnds.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} */}
-            time ends
+            10:30 AM
           </Text>
           {showTimeEndsPicker && 
             (<RNDateTimePicker 

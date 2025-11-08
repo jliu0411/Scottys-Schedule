@@ -4,7 +4,7 @@ import EditTaskForm from '../components/tasks/editTaskForm'
 
 const EditTask = () => {
   return (
-    <View>
+    <View style={{backgroundColor: '#00537A', flex: 1}}>
       <EditTaskForm/>
     </View>
   )
