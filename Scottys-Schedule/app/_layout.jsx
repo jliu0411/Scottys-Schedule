@@ -32,7 +32,7 @@ const RootLayout = () => {
             headerStyle: {backgroundColor: '#0B1E33'},
             headerTintColor: '#ffff',
             headerTitleAlign: 'center',
-            headerTitleStyle: {fontFamily: 'Jersey10'}
+            headerTitleStyle: {fontFamily: 'Jersey10', fontSize: 48}
           }}>
             <Stack.Screen name="index" options={{title: '' }}/>
             <Stack.Screen name="alarms" options={{title: 'Alarms'}}/>
