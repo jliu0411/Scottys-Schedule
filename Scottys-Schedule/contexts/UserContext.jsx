@@ -7,6 +7,8 @@ export const UserContext = createContext()
 export function UserProvider({ children }) {
   const [user, setUser] = useState(null)
   const [authChecked, setAuthChecked] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
 
   async function login(email, password) {
     try {
@@ -29,6 +31,7 @@ export function UserProvider({ children }) {
   }
 
   async function logout() {
+    setIsLoggingOut(true)
     await account.deleteSession("current")
     setUser(null)
   }
@@ -50,7 +53,7 @@ export function UserProvider({ children }) {
 
   return (
     <UserContext.Provider value={{ 
-      user, login, logout, register, authChecked
+      user, login, logout, register, authChecked, isLoggingOut, setIsLoggingOut
     }}>
       {children}
     </UserContext.Provider>

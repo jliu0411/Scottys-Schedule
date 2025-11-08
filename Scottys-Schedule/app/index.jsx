@@ -1,40 +1,36 @@
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { StyleSheet, Image, View, Text } from 'react-native'
-import { Link, Stack } from 'expo-router'
+import {StyleSheet, Image} from 'react-native'
+import {Link} from 'expo-router'
 
-import Scotty from '../assets/scottys/ScottyCMAU.png'
-import Room from '../assets/scottys/Room.png'
-import LandingTaskList from '../components/landing/landingTaskList'
-import LandingHeader from '../components/landing/landingHeader'
+import Spacer from "../components/themes/Spacer"
+import ThemedView from "../components/themes/ThemedView"
+import ThemedText from "../components/themes/ThemedText"
+import Logo from '../assets/scottys/scottyHead.png'
 
-const Landing = () => {
+const Home = () => {
   return (
-    <SafeAreaView style={styles.container}>
-      <Stack.Screen 
-        options={{
-          header: () => <LandingHeader/>
-        }} 
-      />
+    <ThemedView style={styles.container}>
+      <Image source={Logo}/>
 
-      <View style={{position: 'absolute'}}>
-        <Image source={Room} style={styles.room} />
-        <Image source={Scotty} style={styles.scotty} />
-      </View>
+      <ThemedText style={styles.title} title={"Scotty's Schedule"}></ThemedText>
       
-      <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
+      <Spacer height={100}/>
 
-      {/* <View style={{position: 'absolute', top:0}}>
-        <Link href='/newAlarm' style= {styles.link}>New Alarm</Link>
-        <Link href='/logIn' style= {styles.link}>Log In</Link>
-        <Link href='/signUp' style= {styles.link}>Sign Up</Link>
-      </View> */}
-        
-      <LandingTaskList/>
-    </SafeAreaView>
+      <Link href='/login' style= {styles.link}>
+        <ThemedText>Log In</ThemedText>
+      </Link>
+
+      <Link href='/register' style= {styles.link}>
+        <ThemedText>Register</ThemedText>
+      </Link>
+
+      <Link href='/landing' style= {styles.link}>
+        <ThemedText>View Landing</ThemedText>
+      </Link>
+    </ThemedView>
   )
 }
 
-export default Landing
+export default Home
 
 const styles = StyleSheet.create({
   container: {
@@ -44,21 +40,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#00537A',
     gap: 2,
   },
-  date: {
+  title: {
     fontFamily: 'Jersey10',
-    fontSize: 30,
-    color: '#FFF',
-    position: 'absolute',
-    top: 15,
+    fontSize: 40,
   },
-  room: {
-    position: 'relative',
-    top: -110
-  },
-  scotty: {
-    position: 'absolute', 
-    right: 60, 
-    top: -50
+  image: {
+    position: "absolute", 
+    right: 50, 
+    top: 170
   },
   link: {
     fontFamily: 'Jersey10', 
