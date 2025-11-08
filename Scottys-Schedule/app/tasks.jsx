@@ -53,6 +53,7 @@ export default Tasks
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#00537A'
   },
   subheader: {
     fontFamily: 'Jersey10',
