@@ -11,20 +11,22 @@ const Home = () => {
     <ThemedView style={styles.container}>
       <Image source={Logo}/>
 
-      <ThemedText style={styles.title} title={"Scotty's Schedule"}></ThemedText>
+      <Spacer height={10}/>
+
+      <ThemedText style={styles.title}>Scotty's Schedule</ThemedText>
       
-      <Spacer height={100}/>
+      <Spacer height={80}/>
 
       <Link href='/login' style= {styles.link}>
-        <ThemedText>Log In</ThemedText>
+        <ThemedText style= {styles.link}>Log In</ThemedText>
       </Link>
 
       <Link href='/register' style= {styles.link}>
-        <ThemedText>Register</ThemedText>
+        <ThemedText style= {styles.link}>Register</ThemedText>
       </Link>
 
-      <Link href='/landing' style= {styles.link}>
-        <ThemedText>View Landing</ThemedText>
+      <Link href='/landing'>
+        <ThemedText style= {styles.link}>View Landing</ThemedText>
       </Link>
     </ThemedView>
   )
@@ -42,7 +44,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'Jersey10',
-    fontSize: 40,
+    color: '#f5a201',
+    fontSize: 60,
   },
   image: {
     position: "absolute", 
@@ -50,7 +53,8 @@ const styles = StyleSheet.create({
     top: 170
   },
   link: {
-    fontFamily: 'Jersey10', 
+    fontFamily: 'Jersey10',
+    color: '#ffffff',
     fontSize: 30
   }
 })

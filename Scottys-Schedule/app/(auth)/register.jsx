@@ -36,6 +36,9 @@ const register = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ThemedView style={styles.container}>
+        <ThemedText style={{fontFamily: 'Jersey10', color: '#F5A201', fontSize: 60,}}>Scotty's Schedule</ThemedText>
+        <Spacer/>
+
         <ThemedText style={styles.title}>Register for An Account</ThemedText>
         <Spacer/>
 
@@ -54,7 +57,7 @@ const register = () => {
           secureTextEntry
         />
 
-        <ThemedButton onPress={handleSubmit}>
+        <ThemedButton onPress={handleSubmit}  style={styles.button}>
           <Text style={{ color: '#f2f2f2', fontFamily: 'Jersey10', fontSize: 20 }}>Create Account</Text>
         </ThemedButton>
 
@@ -92,11 +95,17 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'Jersey10',
+    color: '#fff',
     fontSize: 40,
+  },
+  button: {
+    backgroundColor: '#F5A201',
+    fontFamily: 'Jersey10',
   },
   link: {
     fontFamily: 'Jersey10', 
     fontSize: 30,
-    textAlign: 'center'
+    textAlign: 'center',
+    color: '#fff'
   }
 })

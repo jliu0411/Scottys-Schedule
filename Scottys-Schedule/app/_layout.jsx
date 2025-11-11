@@ -54,7 +54,7 @@ export default function RootLayout() {
             headerTitleAlign: 'center',
             headerTintColor: theme.title,
           }}>
-            <Stack.Screen name="index" options={{ title: "Home" }} />
+            <Stack.Screen name="index" options={{ title: "Welcome!" }} />
             <Stack.Screen name="alarms" options={{ title: "Alarms" }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="(dashboard)" options={{ headerShown: false }} />
