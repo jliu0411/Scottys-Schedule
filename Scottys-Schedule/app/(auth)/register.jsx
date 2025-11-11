@@ -16,12 +16,6 @@ const register = () => {
 
   const { user, register } = useUser()
 
-  useEffect(() => {
-      if (user) {
-        router.replace('/landing') 
-      }
-    }, [user])
-
   const handleSubmit = async () => {
     setError(null)
 
@@ -36,8 +30,10 @@ const register = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ThemedView style={styles.container}>
-        <ThemedText style={{fontFamily: 'Jersey10', color: '#F5A201', fontSize: 60,}}>Scotty's Schedule</ThemedText>
-        <Spacer/>
+        <ThemedText style={{fontFamily: 'Jersey10', color: '#F5A201', fontSize: 80, textAlign: 'center',
+          textShadow: '#000', textShadowOffset: { width: 4, height: 4 }, textShadowRadius: 8 }}>
+            Scotty's{'\n'}Schedule
+        </ThemedText>
 
         <ThemedText style={styles.title}>Register for An Account</ThemedText>
         <Spacer/>
@@ -45,14 +41,22 @@ const register = () => {
         <ThemedTextInput 
           style={{ marginBottom: 20, width: "80%" }}
           placeholder="Email"
+          fontFamily='Jersey10'
           value={email}
+          fontSize={20}
+          placeholderTextColor="#000"
+          backgroundColor="#fff"
           onChangeText={setEmail}
           keyboardType="email-address"
         />
         <ThemedTextInput
           style={{ marginBottom: 20, width: "80%" }}
           placeholder="Password"
+          fontFamily='Jersey10'
+          fontSize={20}
+          placeholderTextColor="#000"
           value={password}
+          backgroundColor="#fff"
           onChangeText={setPassword}
           secureTextEntry
         />

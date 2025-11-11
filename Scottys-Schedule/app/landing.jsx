@@ -17,9 +17,7 @@ const Landing = () => {
         try {
             setIsLoggingOut(true)
             await logout()
-            router.dismissAll()
-            router.replace('/')
-            await new Promise(resolve => setTimeout(resolve, 50));
+            router.replace('/(auth)/login')
         } catch (error) {
             console.error("Logout failed:", error)
         } finally {
@@ -92,8 +90,8 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     left: 10,
-    top: 400,
-    backgroundColor: '#ff0f0f',
+    top: 390,
+    backgroundColor: '#201e2b',
   },
   link: {
     fontFamily: 'Jersey10', 
