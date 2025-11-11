@@ -1,10 +1,11 @@
-import { StyleSheet, Text, View, FlatList, Pressable } from 'react-native'
+import { StyleSheet, Text, View, FlatList, Pressable, Image } from 'react-native'
 import React from 'react'
 import { Stack, Link } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import TaskCard from '../components/tasks/taskCard'
 import AddButton from '../components/addButton'
-import Entypo from '@expo/vector-icons/Entypo'
+import LeftArrow from '../assets/arrows/leftArrow.png'
+import RightArrow from '../assets/arrows/rightArrow.png'
 import { useBooks } from '../hooks/useBooks'
 
 
@@ -36,12 +37,12 @@ const Tasks = () => {
       </View>
       
       <SafeAreaView style={styles.bottom} edges={[ 'left', 'right', 'bottom']} >
-        <Link href=''> <Entypo name='arrow-left' color={'#FFF'} size={80} /> </Link>
+        <Link href='\alarms' style={styles.link}> <Image source={LeftArrow} style={styles.arrow}/> </Link>
         <View style={{alignItems: 'center'}}>
           <Text style={styles.dateText}>{new Date().toLocaleDateString([], {weekday:'long'})}</Text>
           <Text style={styles.dateText}>{new Date().toLocaleDateString([], {month: 'long', day: 'numeric', year: 'numeric'})}</Text>
         </View>
-        <Link href=''> <Entypo name='arrow-right' color={'#FFF'} size={80}/> </Link>
+        <Link href='' style={styles.link}> <Image source={RightArrow} style={styles.arrow}/> </Link>
       </SafeAreaView>
 
     </SafeAreaView>
@@ -94,5 +95,12 @@ const styles = StyleSheet.create({
   alarmTime: {
     fontFamily: 'Jersey10',
     fontSize: 64
+  },
+  link: {
+    paddingHorizontal: 11
+  },
+  arrow: {
+    width: 55, 
+    height: 35
   }
 })

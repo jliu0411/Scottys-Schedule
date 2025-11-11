@@ -1,8 +1,8 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View, Image } from 'react-native'
 import { Link } from 'expo-router'
 import React from 'react'
+import UpArrow from "../../assets/arrows/upArrow.png"
 import TaskCard from '../tasks/taskCard';
-import Entypo from '@expo/vector-icons/Entypo';
 
 const LandingTaskList = () => { 
   return (
@@ -10,7 +10,8 @@ const LandingTaskList = () => {
       <View style={{flexDirection: 'row'}}>
         <Text style={[styles.header,{backgroundColor: '#F5A201'}]}>Current Task</Text>
         <Link href='/tasks' style={styles.arrowContainer}>
-          <Entypo name="arrow-up" size={48} color="white"/>
+          {/* <Entypo name="arrow-up" size={48} color="white"/> */}
+          <Image source={UpArrow}/>
         </Link>
       </View>
       <TaskCard name='Task 1 With a Very Long Name That Needs to be Cut ' description='A very very long description that also needs to get cut off' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#F5A201'}/>
@@ -50,6 +51,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     marginBottom: 5,
-    padding: 8
+    padding: 10,
+    width: 50,
+    height: 65
   },
 })
