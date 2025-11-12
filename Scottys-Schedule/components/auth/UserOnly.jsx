@@ -13,16 +13,14 @@ const UserOnly = ({ children }) => {
     }
   }, [user, authChecked, isLoggingOut])
 
-  if (!authChecked) {
+  if (!authChecked || isLoggingOut) {
     return (
-      <ThemedLoader />
+      <ThemedLoader/>
     )
   }
 
   if (user === null) {
-    return (
-      <ThemedLoader />
-    )
+    return null
   }
   
   return children

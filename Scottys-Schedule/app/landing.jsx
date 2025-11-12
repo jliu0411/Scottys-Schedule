@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useUser } from '../hooks/useUser';
 import Scotty from '../assets/scottys/ScottyOMAU.png';
 import Room from '../assets/scottys/Room.png';
+import Logout from '../assets/scottys/Logout.png';
 import ThemedButton from "../components/themes/ThemedButton";
 import UserOnly from '../components/auth/UserOnly';
 import LandingTaskList from '../components/landing/landingTaskList'
@@ -14,14 +15,13 @@ const Landing = () => {
 
   const handleLogout = async () => {
         try {
+            setIsLoggingOut(true)
             await logout()
-            router.dismissAll()
-            router.replace('/') 
-            setTimeout(() => {
-              setIsLoggingOut(false)
-            }, 50);
+            router.replace('/(auth)/login')
         } catch (error) {
             console.error("Logout failed:", error)
+        } finally {
+          setIsLoggingOut(false)
         }
     }
 
@@ -41,6 +41,10 @@ const Landing = () => {
       
       <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
         
+      <ThemedButton onPress={handleLogout} style={styles.logoutButton}>
+          <Image source={Logout} style={styles.logout} resizeMode="contain"/>
+        </ThemedButton>
+
       <LandingTaskList/>
     </SafeAreaView>
 
@@ -75,6 +79,21 @@ const styles = StyleSheet.create({
     top: -50,
     width: 400,
     height: 400
+  },
+  logout: {
+    position: 'absolute',
+    left: 10,
+    top: 10,
+    width: 15,
+    height: 15
+  },
+  logoutButton: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    left: 10,
+    top: 405,
+    backgroundColor: '#201e2b',
   },
   link: {
     fontFamily: 'Jersey10', 

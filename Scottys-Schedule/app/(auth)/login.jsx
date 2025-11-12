@@ -9,18 +9,12 @@ import ThemedText from '../../components/themes/ThemedText'
 import ThemedButton from '../../components/themes/ThemedButton'
 import ThemedTextInput from "../../components/themes/ThemedTextInput"
 
-const login = () => {
+const Login = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState(null)
 
   const { user, login } = useUser()
-
-  useEffect(() => {
-    if (user) {
-      router.replace('/landing') 
-    }
-  }, [user])
 
   const handleSubmit = async () => {
     setError(null)
@@ -36,44 +30,58 @@ const login = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ThemedView style={styles.container}>
+        <ThemedText style={{fontFamily: 'Jersey10', color: '#F5A201', fontSize: 80, textAlign: 'center',
+          textShadow: '#000', textShadowOffset: { width: 4, height: 4 }, textShadowRadius: 8 }}>
+            Scotty's{'\n'}Schedule
+        </ThemedText>
+
         <ThemedText style={styles.title}>Log In to Your Account</ThemedText>
         <Spacer/>
 
         <ThemedTextInput 
           style={{ marginBottom: 20, width: "80%" }}
           placeholder="Email"
+          fontFamily='Jersey10'
           value={email}
+          fontSize={20}
+          placeholderTextColor="#000"
+          backgroundColor="#fff"
           onChangeText={setEmail}
           keyboardType="email-address"
         />
         <ThemedTextInput
           style={{ marginBottom: 20, width: "80%" }}
           placeholder="Password"
+          fontFamily='Jersey10'
+          fontSize={20}
+          placeholderTextColor="#000"
           value={password}
+          backgroundColor="#fff"
           onChangeText={setPassword}
           secureTextEntry
         />
 
-        <ThemedButton onPress={handleSubmit}>
-          <Text style={{ color: '#f2f2f2', fontFamily: 'Jersey10', fontSize: 20 }}>Log In</Text>
-        </ThemedButton>
+        <ThemedView style={styles.press}>
+          <Link href="/register" replace style={{width: 100, paddingVertical: 10, justifyContent: 'center'}}>
+            <ThemedText style={styles.link}>
+              Register
+            </ThemedText>
+          </Link>
+          
+          <ThemedButton onPress={handleSubmit} style={[styles.button, { marginLeft: 20, }]}>
+            <Text style={{ color: '#f2f2f2', fontFamily: 'Jersey10', fontSize: 25 }}>Log In</Text>
+          </ThemedButton>
+        </ThemedView>
 
         <Spacer/>
         {error && <Text style={styles.error}>{error}</Text>}
-
-        <Spacer/>
-        <Link href="/register" replace>
-          <ThemedText style={styles.link}>
-            Register Instead
-          </ThemedText>
-        </Link>
 
       </ThemedView>
     </TouchableWithoutFeedback>
   )
 }
 
-export default login
+export default Login
 
 const styles = StyleSheet.create({
   container: {
@@ -92,11 +100,29 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'Jersey10',
+    color: '#fff',
     fontSize: 40,
+  },
+  button: {
+    backgroundColor: '#F5A201',
+    fontFamily: 'Jersey10',
+    width: 110,
+    paddingVertical: 10,
+    justifyContent: 'center', 
+    alignItems: 'center',
   },
   link: {
     fontFamily: 'Jersey10', 
-    fontSize: 30,
-    textAlign: 'center'
+    fontSize: 25,
+    textAlign: 'center',
+    color: '#fff',
+    textDecorationLine: 'underline',
+    width: 100,
+  },
+  press: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '80%',
   }
 })
