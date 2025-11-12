@@ -12,12 +12,18 @@ import ThemedTextInput from "../../components/themes/ThemedTextInput"
 const Register = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState(null)
 
   const { user, register } = useUser()
 
   const handleSubmit = async () => {
     setError(null)
+
+    if (password != confirmPassword) {
+      setError("Passwords do not match")
+      return
+    }
 
     try {
       await register(email, password)
@@ -60,20 +66,32 @@ const Register = () => {
           onChangeText={setPassword}
           secureTextEntry
         />
+        <ThemedTextInput
+          style={{ marginBottom: 20, width: "80%" }}
+          placeholder="Confirm Password"
+          fontFamily='Jersey10'
+          fontSize={20}
+          placeholderTextColor="#000"
+          value={confirmPassword}
+          backgroundColor="#fff"
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+        />
 
-        <ThemedButton onPress={handleSubmit}  style={styles.button}>
-          <Text style={{ color: '#f2f2f2', fontFamily: 'Jersey10', fontSize: 20 }}>Create Account</Text>
-        </ThemedButton>
+        <ThemedView style={styles.press}>
+          <Link href="/login" replace style={{width: 100, paddingVertical: 10, justifyContent: 'center'}}>
+            <ThemedText style={styles.link}>
+              Log In
+            </ThemedText>
+          </Link>
+          
+          <ThemedButton onPress={handleSubmit} style={[styles.button, { marginLeft: 20 }]}>
+            <Text style={{ color: '#f2f2f2', fontFamily: 'Jersey10', fontSize: 25 }}>Register</Text>
+          </ThemedButton>
+        </ThemedView>
 
         <Spacer/>
         {error && <Text style={styles.error}>{error}</Text>}
-
-        <Spacer/>
-        <Link href="/login" replace>
-          <ThemedText style={styles.link}>
-            Log In Instead
-          </ThemedText>
-        </Link>
 
       </ThemedView>
     </TouchableWithoutFeedback>
@@ -105,11 +123,23 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#F5A201',
     fontFamily: 'Jersey10',
+    width: 110,
+    paddingVertical: 10,
+    justifyContent: 'center', 
+    alignItems: 'center',
   },
   link: {
     fontFamily: 'Jersey10', 
-    fontSize: 30,
+    fontSize: 25,
     textAlign: 'center',
-    color: '#fff'
+    color: '#fff',
+    textDecorationLine: 'underline',
+    width: 100,
+  },
+  press: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '80%',
   }
 })

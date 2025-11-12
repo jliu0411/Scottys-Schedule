@@ -61,19 +61,20 @@ const Login = () => {
           secureTextEntry
         />
 
-        <ThemedButton onPress={handleSubmit} style={styles.button}>
-          <Text style={{ color: '#f2f2f2', fontFamily: 'Jersey10', fontSize: 20 }}>Log In</Text>
-        </ThemedButton>
+        <ThemedView style={styles.press}>
+          <Link href="/register" replace style={{width: 100, paddingVertical: 10, justifyContent: 'center'}}>
+            <ThemedText style={styles.link}>
+              Register
+            </ThemedText>
+          </Link>
+          
+          <ThemedButton onPress={handleSubmit} style={[styles.button, { marginLeft: 20, }]}>
+            <Text style={{ color: '#f2f2f2', fontFamily: 'Jersey10', fontSize: 25 }}>Log In</Text>
+          </ThemedButton>
+        </ThemedView>
 
         <Spacer/>
         {error && <Text style={styles.error}>{error}</Text>}
-
-        <Spacer/>
-        <Link href="/register" replace>
-          <ThemedText style={styles.link}>
-            Register Instead
-          </ThemedText>
-        </Link>
 
       </ThemedView>
     </TouchableWithoutFeedback>
@@ -105,11 +106,23 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#F5A201',
     fontFamily: 'Jersey10',
+    width: 110,
+    paddingVertical: 10,
+    justifyContent: 'center', 
+    alignItems: 'center',
   },
   link: {
     fontFamily: 'Jersey10', 
-    fontSize: 30,
+    fontSize: 25,
     textAlign: 'center',
-    color: '#fff'
+    color: '#fff',
+    textDecorationLine: 'underline',
+    width: 100,
+  },
+  press: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '80%',
   }
 })
