@@ -2,7 +2,7 @@ import { Link, Stack, router } from 'expo-router';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useUser } from '../hooks/useUser';
-import Scotty from '../assets/scottys/ScottyCMAU.png';
+import Scotty from '../assets/scottys/ScottyOMAU.png';
 import Room from '../assets/scottys/Room.png';
 import ThemedButton from "../components/themes/ThemedButton";
 import UserOnly from '../components/auth/UserOnly';
@@ -72,7 +72,9 @@ const styles = StyleSheet.create({
   scotty: {
     position: 'absolute', 
     right: 60, 
-    top: -50
+    top: -50,
+    width: 400,
+    height: 400
   },
   link: {
     fontFamily: 'Jersey10', 
