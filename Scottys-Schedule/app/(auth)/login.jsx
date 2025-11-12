@@ -9,7 +9,7 @@ import ThemedText from '../../components/themes/ThemedText'
 import ThemedButton from '../../components/themes/ThemedButton'
 import ThemedTextInput from "../../components/themes/ThemedTextInput"
 
-const login = () => {
+const Login = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState(null)
@@ -80,7 +80,7 @@ const login = () => {
   )
 }
 
-export default login
+export default Login
 
 const styles = StyleSheet.create({
   container: {

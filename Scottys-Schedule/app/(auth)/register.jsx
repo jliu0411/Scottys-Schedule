@@ -9,7 +9,7 @@ import ThemedText from '../../components/themes/ThemedText'
 import ThemedButton from '../../components/themes/ThemedButton'
 import ThemedTextInput from "../../components/themes/ThemedTextInput"
 
-const register = () => {
+const Register = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState(null)
@@ -80,7 +80,7 @@ const register = () => {
   )
 }
 
-export default register
+export default Register
 
 const styles = StyleSheet.create({
   container: {
