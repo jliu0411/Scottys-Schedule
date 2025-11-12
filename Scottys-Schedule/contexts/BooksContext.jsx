@@ -37,12 +37,53 @@ export function BooksProvider({ children }) {
         }
     }
 
+    async function fetchCurrentTasks(date) {
+        try {
+            const response = await databases.getDocument(
+                DATABASE_ID,
+                COLLECTION_ID,
+                date,
+                [
+                    Query.equal('date', date),
+                    Query.and([
+                        Query.greaterThanEqual('timeStarts', date),
+                        Query.lessThanEqual('timeEnds', date)
+                    ])
+                ]
+            )
+
+            return response
+        } catch (error) {
+            console.error(error.message)
+        }
+    }
+
+    async function fetchUpcomingTasks(date) {
+        try {
+            const response = await databases.getDocument(
+                DATABASE_ID,
+                COLLECTION_ID,
+                date,
+                // [
+                //     Query.equal('date', date),
+                //     Query.and([
+                //         Query.greaterThan('timeEnds', date)
+                //     ])
+                // ]
+            )
+
+            return response
+        } catch (error) {
+            console.error(error.message)
+        }
+    }
+
     async function createBook(data) {
         try {
             //dummy user
             const userID = "690e99ac0010ac3ed009"
 
-            const newBook = await databases.createDocument(
+            const newBook = await databases.getDocument(
                 DATABASE_ID,
                 COLLECTION_ID,
                 ID.unique(),
@@ -71,13 +112,12 @@ export function BooksProvider({ children }) {
     }
 
     useEffect(() => {
-
         fetchBooks()
 
     }, [])
 
     return (
-        <BooksContext.Provider value={{ books, fetchBooks, fetchBookByID, createBook, deleteBook }}>
+        <BooksContext.Provider value={{ books, fetchBooks, fetchCurrentTasks, fetchUpcomingTasks, fetchBookByID, createBook, deleteBook }}>
             {children}
         </BooksContext.Provider>
     )

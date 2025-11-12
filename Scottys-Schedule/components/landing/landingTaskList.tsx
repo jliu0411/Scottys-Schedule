@@ -1,10 +1,34 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View, FlatList, Pressable } from 'react-native'
 import { Link } from 'expo-router'
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import TaskCard from '../tasks/taskCard';
 import Entypo from '@expo/vector-icons/Entypo';
+import { useBooks } from '../../hooks/useBooks';
 
 const LandingTaskList = () => { 
+  const date = new Date();
+  const [ currentTasks, setCurrentTasks ] = useState(null);
+  const [ upcomingTasks, setUpcomingTasks ] = useState(null);
+  const { fetchCurrentTasks } = useBooks();
+  const { fetchUpcomingTasks }= useBooks();
+
+  useEffect(() => {
+    async function loadCurrentTasks() {
+      const tasksData = await fetchCurrentTasks(date)
+      setCurrentTasks(tasksData)
+    }
+    loadCurrentTasks()
+  }, [])
+
+  useEffect(() => {
+    async function loadUpcomingTasks() {
+      const tasksData = await fetchUpcomingTasks(date)
+      setUpcomingTasks(tasksData)
+    }
+    loadUpcomingTasks()
+  }, [])
+
+
   return (
     <View style={styles.container}>
       <View style={{flexDirection: 'row'}}>
@@ -13,12 +37,36 @@ const LandingTaskList = () => {
           <Entypo name="arrow-up" size={48} color="white"/>
         </Link>
       </View>
-      <TaskCard name='Task 1 With a Very Long Name That Needs to be Cut ' description='A very very long description that also needs to get cut off' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#F5A201'}/>
+
+    
+      <FlatList 
+        data={currentTasks}
+        keyExtractor={(item => item.$id)}
+        renderItem={({ item }) => (
+          <Pressable>
+            <TaskCard name={item.name} description={item.description} timeStarts={item.timeStarts ? new Date(item.timeStarts) : new Date()}
+            timeEnds={item.timeEnds ? new Date(item.timeEnds) : new Date()} isCompleted={false} color={'#F5A201'}/>
+          </Pressable>
+        )}
+      />
     
       <Text style={[styles.header,{backgroundColor: '#013C58'}]}>Upcoming Tasks</Text>
+
+      <FlatList 
+        data={upcomingTasks}
+        keyExtractor={(item => item.$id)}
+        renderItem={({ item }) => (
+          <Pressable>
+            <TaskCard name={item.name} description={item.description} timeStarts={item.timeStarts ? new Date(item.timeStarts) : new Date()}
+            timeEnds={item.timeEnds ? new Date(item.timeEnds) : new Date()} isCompleted={false} color={'#013C58'}/>
+          </Pressable>
+        )}
+      />
+
+      {/* <Text style={[styles.header,{backgroundColor: '#013C58'}]}>Upcoming Tasks</Text>
       <TaskCard name='Short Task Name' description='A short task description' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'}/>
       <TaskCard name='Task w/o Description' description='' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'}/>
-      <TaskCard name='Another Task Name' description='A very very long description that also needs to get cut off' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'}/>
+      <TaskCard name='Another Task Name' description='A very very long description that also needs to get cut off' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'}/> */}
     </View>
   )
 }
