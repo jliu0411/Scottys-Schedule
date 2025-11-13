@@ -1,14 +1,14 @@
-import { Link, Stack, router } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useUser } from '../hooks/useUser';
 import Scotty from '../assets/scottys/ScottyOMAU.png';
-import Room from '../assets/scottys/Room.png';
 import Logout from '../assets/scottys/Logout.png';
 import ThemedButton from "../components/themes/ThemedButton";
 import UserOnly from '../components/auth/UserOnly';
 import LandingTaskList from '../components/landing/landingTaskList'
 import LandingHeader from '../components/landing/landingHeader'
+import Background from '../components/landing/background'
 
 const Landing = () => {
   const {logout, user, authChecked, setIsLoggingOut } = useUser()
@@ -28,26 +28,25 @@ const Landing = () => {
   return (
     <UserOnly>
       <SafeAreaView style={styles.container}>
-      <Stack.Screen 
-        options={{
-          header: () => <LandingHeader/>
-        }} 
-      />
+        <Stack.Screen 
+          options={{
+            header: () => <LandingHeader/>
+          }} 
+        />
 
-      <View style={{position: 'absolute'}}>
-        <Image source={Room} style={styles.room} />
-        <Image source={Scotty} style={styles.scotty} />
-      </View>
+        <View style={{position: 'absolute'}}>
+          <Image source={Scotty} style={styles.scotty} />
+          <Background/>
+        </View>
       
-      <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
+        <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
         
-      <ThemedButton onPress={handleLogout} style={styles.logoutButton}>
-          <Image source={Logout} style={styles.logout} resizeMode="contain"/>
-        </ThemedButton>
+        <ThemedButton onPress={handleLogout} style={styles.logoutButton}>
+            <Image source={Logout} style={styles.logout} resizeMode="contain"/>
+          </ThemedButton>
 
-      <LandingTaskList/>
-    </SafeAreaView>
-
+        <LandingTaskList/>
+      </SafeAreaView>
     </UserOnly>
   )
 }
