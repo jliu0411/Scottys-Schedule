@@ -17,9 +17,7 @@ export function BooksProvider({ children }) {
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
-                // [
-                //     Query.equal('userId', user.$id)
-                // ]
+                Query.equal('userId', user.$id)
             )
 
             setBooks(response.documents)
@@ -39,19 +37,16 @@ export function BooksProvider({ children }) {
 
     async function createBook(data) {
         try {
-            //dummy user
-            const userID = "690e99ac0010ac3ed009"
-
             const newBook = await databases.createDocument(
                 DATABASE_ID,
                 COLLECTION_ID,
                 ID.unique(),
-                {...data, userID: userID /*user.$id*/},
+                {...data, userID: user.$id},
                 
                 [
-                    Permission.read(Role.any()),
-                    Permission.update(Role.any()),
-                    Permission.delete(Role.any()),
+                    Permission.read(Role.user(user.$id)),
+                    Permission.update(Role.user(user.$id)),
+                    Permission.delete(Role.user(user.$id)),
                 ]
             );
             setBooks(prev => [...prev, newBook]);
@@ -71,10 +66,11 @@ export function BooksProvider({ children }) {
     }
 
     useEffect(() => {
+        if (user) {
+            fetchBooks()
+        }
 
-        fetchBooks()
-
-    }, [])
+    }, [user])
 
     return (
         <BooksContext.Provider value={{ books, fetchBooks, fetchBookByID, createBook, deleteBook }}>
