@@ -33,12 +33,10 @@ const Landing = () => {
             header: () => <LandingHeader/>
           }} 
         />
+        
+        <Background/>
+        <Image source={Scotty} style={styles.scotty} />
 
-        <View style={{position: 'absolute'}}>
-          <Image source={Scotty} style={styles.scotty} />
-          <Background/>
-        </View>
-      
         <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
         
         <ThemedButton onPress={handleLogout} style={styles.logoutButton}>
@@ -75,7 +73,7 @@ const styles = StyleSheet.create({
   scotty: {
     position: 'absolute', 
     right: 60, 
-    top: -50,
+    top: 50,
     width: 400,
     height: 400
   },

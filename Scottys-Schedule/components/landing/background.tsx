@@ -1,4 +1,4 @@
-import { Dimensions, View, Image } from 'react-native'
+import { StyleSheet, View, Image } from 'react-native'
 import DayWindow from '../../assets/scottys/dayWindow.png'
 import NightWindow from '../../assets/scottys/nightWindow.png'
 import SunsetWindow from '../../assets/scottys/sunsetWindow.png'
@@ -6,17 +6,26 @@ import SunriseWindow from '../../assets/scottys/sunriseWindow.png'
 
 const Background = () => {
     const currentHour = new Date().getHours();
-    const screenWidth = Dimensions.get('window').width;
-    const screenHeight = Dimensions.get('window').height;
 
     return (
-    <View style={{width: screenWidth, height: screenHeight}}>
-      {currentHour >= 7 && currentHour < 17 && <Image source={DayWindow} width={screenWidth} height={screenHeight}/>}
-      {currentHour >= 17 && currentHour < 19 && <Image source={SunsetWindow}/>}
-      {currentHour >= 19 && currentHour < 5 && <Image source={NightWindow}/>}
-      {currentHour >= 5 && currentHour < 7 && <Image source={SunriseWindow}/>}
+    <View style={styles.container}>
+      {currentHour >= 7 && currentHour < 17 && <Image source={DayWindow} style={styles.image}/>}
+      {currentHour >= 17 && currentHour < 19 && <Image source={SunsetWindow} style={styles.image}/>}
+      {(currentHour >= 19 && currentHour <= 23) || (currentHour >= 0 && currentHour < 5)  && <Image source={NightWindow} style={styles.image}/>}
+      {currentHour >= 5 && currentHour < 7 && <Image source={SunriseWindow} style={styles.image}/>}
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    width: '100%',
+    height: '100%',
+  },
+  image: {
+    width: '100%',
+    height: '60%',
+  }
+})
 
 export default Background
