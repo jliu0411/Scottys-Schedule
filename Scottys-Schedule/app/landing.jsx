@@ -2,13 +2,13 @@ import { Link, Stack, router } from 'expo-router';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useUser } from '../hooks/useUser';
-import Scotty from '../assets/scottys/ScottyOMAU.png';
 import Room from '../assets/scottys/Room.png';
 import Logout from '../assets/scottys/Logout.png';
 import ThemedButton from "../components/themes/ThemedButton";
 import UserOnly from '../components/auth/UserOnly';
 import LandingTaskList from '../components/landing/landingTaskList'
 import LandingHeader from '../components/landing/landingHeader'
+import Scotty from '../components/tasks/scotty';
 
 const Landing = () => {
   const {logout, user, authChecked, setIsLoggingOut } = useUser()
@@ -36,8 +36,9 @@ const Landing = () => {
 
       <View style={{position: 'absolute'}}>
         <Image source={Room} style={styles.room} />
-        <Image source={Scotty} style={styles.scotty} />
       </View>
+
+      <Scotty/>
       
       <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
         
@@ -72,13 +73,6 @@ const styles = StyleSheet.create({
   room: {
     position: 'relative',
     top: -110
-  },
-  scotty: {
-    position: 'absolute', 
-    right: 60, 
-    top: -50,
-    width: 400,
-    height: 400
   },
   logout: {
     position: 'absolute',

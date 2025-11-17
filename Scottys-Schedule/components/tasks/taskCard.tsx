@@ -16,7 +16,9 @@ const TaskCard = ({name, description, timeStarts, timeEnds, isCompleted, color} 
   return (
     <View style={[styles.container, {borderColor: color}]}>
       <BouncyCheckbox 
-        onPress={(isCompleted: boolean) => {}}
+        onPress={(isCompleted: boolean) => {
+          console.log('checked')
+        }}
         fillColor={color}
         iconStyle={{borderRadius: 0}}
         innerIconStyle={[styles.checkbox, {borderColor: color}]}
