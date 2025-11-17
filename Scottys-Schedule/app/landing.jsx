@@ -69,6 +69,7 @@ const styles = StyleSheet.create({
     color: '#FFF',
     position: 'absolute',
     top: 15,
+    left: 70,
   },
   room: {
     position: 'relative',
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     left: 10,
-    top: 405,
+    top: 0,
     backgroundColor: '#201e2b',
   },
   link: {
