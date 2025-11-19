@@ -1,8 +1,8 @@
-import { StyleSheet, Text, View, FlatList, Pressable } from 'react-native'
+import { StyleSheet, Text, View, FlatList, Pressable, Image } from 'react-native'
 import { Link } from 'expo-router'
 import React, { useState, useEffect } from 'react'
+import UpArrow from "../../assets/arrows/upArrow.png"
 import TaskCard from '../tasks/taskCard';
-import Entypo from '@expo/vector-icons/Entypo';
 import { useBooks } from '../../hooks/useBooks';
 
 const LandingTaskList = () => { 
@@ -34,7 +34,8 @@ const LandingTaskList = () => {
       <View style={{flexDirection: 'row'}}>
         <Text style={[styles.header,{backgroundColor: '#F5A201'}]}>Current Task</Text>
         <Link href='/tasks' style={styles.arrowContainer}>
-          <Entypo name="arrow-up" size={48} color="white"/>
+          {/* <Entypo name="arrow-up" size={48} color="white"/> */}
+          <Image source={UpArrow}/>
         </Link>
       </View>
 
@@ -98,6 +99,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     marginBottom: 5,
-    padding: 8
+    padding: 10,
+    width: 50,
+    height: 65
   },
 })

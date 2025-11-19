@@ -1,7 +1,7 @@
 import React from 'react'
 import { StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { AlarmScreenButton } from '../alarms/alarmScreenButton'
+import { AlarmScreenButton } from './alarmScreenButton'
 import  AddButton from '../addButton'
 import * as Progress from 'react-native-progress'
 
