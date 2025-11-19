@@ -3,20 +3,20 @@ import { Link } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native'
 import BouncyCheckbox from 'react-native-bouncy-checkbox'
 
-type taskData = {
+export interface TaskProps {
     name: string,
-    description: string,
-    timeStarts: Date,
-    timeEnds: Date,
+    description?: string,
+    timeStarts?: Date,
+    timeEnds?: Date,
     isCompleted: boolean,
     color: string
 }
 
-const TaskCard = ({name, description, timeStarts, timeEnds, isCompleted, color} : taskData) => {
+const TaskCard = ({name, description, timeStarts, timeEnds, isCompleted, color} : TaskProps) => {
   return (
     <View style={[styles.container, {borderColor: color}]}>
       <BouncyCheckbox 
-        onPress={(isCompleted: boolean) => {}}
+        onPress={(isCompleted) => {}}
         fillColor={color}
         iconStyle={{borderRadius: 0}}
         innerIconStyle={[styles.checkbox, {borderColor: color}]}

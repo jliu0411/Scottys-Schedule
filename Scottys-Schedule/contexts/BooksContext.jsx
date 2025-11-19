@@ -37,11 +37,12 @@ export function BooksProvider({ children }) {
 
     async function fetchCurrentTasks(date) {
         try {
-            const response = await databases.getDocument(
+            const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
                 date,
                 [
+                    Query.equal('userId', user.$id),
                     Query.equal('date', date),
                     Query.and([
                         Query.greaterThanEqual('timeStarts', date),
@@ -58,16 +59,17 @@ export function BooksProvider({ children }) {
 
     async function fetchUpcomingTasks(date) {
         try {
-            const response = await databases.getDocument(
+            const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
                 date,
-                // [
-                //     Query.equal('date', date),
-                //     Query.and([
-                //         Query.greaterThan('timeEnds', date)
-                //     ])
-                // ]
+                [
+                    Query.equal('userId', user.$id),
+                    Query.equal('date', date),
+                    Query.and([
+                        Query.greaterThan('timeEnds', date)
+                    ])
+                ]
             )
 
             return response

@@ -34,7 +34,6 @@ const LandingTaskList = () => {
       <View style={{flexDirection: 'row'}}>
         <Text style={[styles.header,{backgroundColor: '#F5A201'}]}>Current Task</Text>
         <Link href='/tasks' style={styles.arrowContainer}>
-          {/* <Entypo name="arrow-up" size={48} color="white"/> */}
           <Image source={UpArrow}/>
         </Link>
       </View>
@@ -44,10 +43,19 @@ const LandingTaskList = () => {
         data={currentTasks}
         keyExtractor={(item => item.$id)}
         renderItem={({ item }) => (
-          <Pressable>
-            <TaskCard name={item.name} description={item.description} timeStarts={item.timeStarts ? new Date(item.timeStarts) : new Date()}
-            timeEnds={item.timeEnds ? new Date(item.timeEnds) : new Date()} isCompleted={false} color={'#F5A201'}/>
-          </Pressable>
+          <View>
+            {item == null && <TaskCard name='No Current Task' isCompleted={false} color={'#F5A201'}/>}
+            {item != null && 
+              <Pressable>
+                <TaskCard 
+                  name={item.name} 
+                  description={item.description} 
+                  timeStarts={item.timeStarts ? new Date(item.timeStarts) : new Date()} 
+                  timeEnds={item.timeEnds ? new Date(item.timeEnds) : new Date()} 
+                  isCompleted={false} 
+                  color={'#F5A201'}/>
+              </Pressable>}
+          </View>
         )}
       />
     
@@ -57,17 +65,21 @@ const LandingTaskList = () => {
         data={upcomingTasks}
         keyExtractor={(item => item.$id)}
         renderItem={({ item }) => (
-          <Pressable>
-            <TaskCard name={item.name} description={item.description} timeStarts={item.timeStarts ? new Date(item.timeStarts) : new Date()}
-            timeEnds={item.timeEnds ? new Date(item.timeEnds) : new Date()} isCompleted={false} color={'#013C58'}/>
-          </Pressable>
+          <View>
+            {item == null && <TaskCard name='No Current Task' isCompleted={false} color={'#013C58'}/>}
+            {item != null && 
+              <Pressable>
+                <TaskCard 
+                  name={item.name} 
+                  description={item.description} 
+                  timeStarts={item.timeStarts ? new Date(item.timeStarts) : new Date()}
+                  timeEnds={item.timeEnds ? new Date(item.timeEnds) : new Date()} 
+                  isCompleted={false} 
+                  color={'#013C58'}/>
+              </Pressable>}
+          </View>
         )}
       />
-
-      {/* <Text style={[styles.header,{backgroundColor: '#013C58'}]}>Upcoming Tasks</Text>
-      <TaskCard name='Short Task Name' description='A short task description' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'}/>
-      <TaskCard name='Task w/o Description' description='' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'}/>
-      <TaskCard name='Another Task Name' description='A very very long description that also needs to get cut off' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'}/> */}
     </View>
   )
 }
