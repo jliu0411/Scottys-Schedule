@@ -1,4 +1,4 @@
-import { Link, Stack, router } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useUser } from '../hooks/useUser';
@@ -42,13 +42,12 @@ const Landing = () => {
       
       <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
         
-      <ThemedButton onPress={handleLogout} style={styles.logoutButton}>
-          <Image source={Logout} style={styles.logout} resizeMode="contain"/>
-        </ThemedButton>
+        <ThemedButton onPress={handleLogout} style={styles.logoutButton}>
+            <Image source={Logout} style={styles.logout} resizeMode="contain"/>
+          </ThemedButton>
 
-      <LandingTaskList/>
-    </SafeAreaView>
-
+        <LandingTaskList/>
+      </SafeAreaView>
     </UserOnly>
   )
 }
