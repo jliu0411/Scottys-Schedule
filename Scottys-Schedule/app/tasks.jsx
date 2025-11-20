@@ -26,7 +26,7 @@ const Tasks = () => {
         contentContainerStyle={styles.list}
         renderItem={({ item }) => (
           <Pressable>
-            <TaskCard name={item.name} description={item.description} timeStarts={item.timeStarts ? new Date(item.timeStarts) : new Date()}
+            <TaskCard id={item.$id} name={item.name} description={item.description} timeStarts={item.timeStarts ? new Date(item.timeStarts) : new Date()}
             timeEnds={item.timeEnds ? new Date(item.timeEnds) : new Date()} isCompleted={false} color={'#013C58'}/>
           </Pressable>
         )}
