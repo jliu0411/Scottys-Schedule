@@ -17,10 +17,25 @@ export function BooksProvider({ children }) {
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
-                [Query.equal('userID', user.$id)]
-            )
+                [   
+                    Query.equal('userID', user.$id),
+                ]
+            );
 
-            setBooks(response.documents)
+            const sortedTasks = response.documents.sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+
+                const [hoursA, minutesA] = a.timeEnds.split(':').map(Number);
+                const [hoursB, minutesB] = b.timeEnds.split(':').map(Number);
+
+                dateA.setHours(hoursA, minutesA);
+                dateB.setHours(hoursB, minutesB);
+
+                return dateA.getTime() - dateB.getTime();
+            });
+
+            setBooks(sortedTasks)
 
         } catch (error) {
             console.error(error.message)
@@ -77,7 +92,23 @@ export function BooksProvider({ children }) {
                 console.log(events)
 
                 if (events[0].includes("create")) {
-                setBooks((prevBooks) => [...prevBooks, payload])
+                    setBooks((prevBooks) => {
+                        const updated = [...prevBooks, payload]
+                        
+                        //sorts after task created
+                        return updated.sort((a, b) => {
+                            const dateA = new Date(a.date);
+                            const dateB = new Date(b.date);
+
+                            const [hoursA, minutesA] = a.timeEnds.split(':').map(Number);
+                            const [hoursB, minutesB] = b.timeEnds.split(':').map(Number);
+
+                            dateA.setHours(hoursA, minutesA);
+                            dateB.setHours(hoursB, minutesB);
+
+                            return dateA.getTime() - dateB.getTime();
+                        });
+                    });
                 }
 
                 if (events[0].includes("delete")) {
