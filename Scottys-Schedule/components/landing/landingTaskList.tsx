@@ -4,8 +4,13 @@ import React, { useState, useEffect } from 'react'
 import UpArrow from "../../assets/arrows/upArrow.png"
 import TaskCard from '../tasks/taskCard';
 import { useBooks } from '../../hooks/useBooks';
+import { phrases } from './phrases';
 
-const LandingTaskList = () => { 
+type ListProps = {
+  handleComplete: () => void,
+}
+
+const LandingTaskList = ({handleComplete} : ListProps) => { 
   const date = new Date();
   const [ currentTasks, setCurrentTasks ] = useState(null);
   const [ upcomingTasks, setUpcomingTasks ] = useState(null);

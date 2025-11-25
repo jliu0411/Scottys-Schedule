@@ -2,16 +2,27 @@ import { Stack, router } from 'expo-router';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useUser } from '../hooks/useUser';
-import Scotty from '../assets/scottys/ScottyOMAU.png';
+import Room from '../assets/scottys/Room.png';
 import Logout from '../assets/scottys/Logout.png';
 import ThemedButton from "../components/themes/ThemedButton";
 import UserOnly from '../components/auth/UserOnly';
 import LandingTaskList from '../components/landing/landingTaskList'
 import LandingHeader from '../components/landing/landingHeader'
-import Background from '../components/landing/background'
+import Scotty from '../components/tasks/scotty';
+import { useState } from 'react';
+import { phrases } from '../components/landing/phrases';
 
 const Landing = () => {
-  const {logout, user, authChecked, setIsLoggingOut } = useUser()
+  const {logout, user, authChecked, setIsLoggingOut } = useUser();
+  
+  const [phrase, setPhrase] = useState('');
+  const [showPhrase, setShowPhrase] = useState(false);
+
+  const handleComplete = () => {
+    const randomNum = Math.floor(Math.random() * phrases.length);
+    setPhrase(phrases[randomNum]);
+    setShowPhrase(true);
+  }
 
   const handleLogout = async () => {
         try {
@@ -33,17 +44,20 @@ const Landing = () => {
             header: () => <LandingHeader/>
           }} 
         />
-        
-        <Background/>
-        <Image source={Scotty} style={styles.scotty} />
 
+        <View style={{position: 'absolute'}}>
+          <Image source={Room} style={styles.room} />
+        </View>
+
+        <Scotty showPhrase={showPhrase} phrase={phrase}/>
+      
         <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
         
         <ThemedButton onPress={handleLogout} style={styles.logoutButton}>
-            <Image source={Logout} style={styles.logout} resizeMode="contain"/>
-          </ThemedButton>
+          <Image source={Logout} style={styles.logout} resizeMode="contain"/>
+        </ThemedButton>
 
-        <LandingTaskList/>
+        <LandingTaskList handleComplete={handleComplete}/>
       </SafeAreaView>
     </UserOnly>
   )
@@ -70,13 +84,6 @@ const styles = StyleSheet.create({
   room: {
     position: 'relative',
     top: -110
-  },
-  scotty: {
-    position: 'absolute', 
-    right: 60, 
-    top: 50,
-    width: 400,
-    height: 400
   },
   logout: {
     position: 'absolute',
