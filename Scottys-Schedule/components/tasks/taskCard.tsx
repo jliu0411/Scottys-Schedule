@@ -1,18 +1,35 @@
 import React from 'react'
-import { Link } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native'
+import { useBooks } from '../../hooks/useBooks'
+import { Link, useRouter } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import BouncyCheckbox from 'react-native-bouncy-checkbox'
 
-export interface TaskProps {
+
+type taskData = {
+    id: string,
     name: string,
-    description?: string,
-    timeStarts?: Date,
-    timeEnds?: Date,
+    description: string,
+    timeStarts: string,
+    timeEnds: string,
     isCompleted: boolean,
     color: string
 }
+const formatTime = (t?: string | Date) => {
+  if (!t) return "--:--";
+  if (t instanceof Date) {
+    return t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  const dateObj = new Date(`1970-01-01T${t}`);
+  if (isNaN(dateObj.getTime())) {
+    return t;
+  }
+  return dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
 
-const TaskCard = ({name, description, timeStarts, timeEnds, isCompleted, color} : TaskProps) => {
+const TaskCard = ({id, name, description, timeStarts, timeEnds, isCompleted, color} : taskData) => {
+  const { books } = useBooks()
+  const router = useRouter()
+
   return (
     <View style={[styles.container, {borderColor: color}]}>
       <BouncyCheckbox 
@@ -25,7 +42,7 @@ const TaskCard = ({name, description, timeStarts, timeEnds, isCompleted, color} 
         style={{paddingHorizontal: 12, flex: 1}}
       />
     
-      <Link href='/editTask' style={styles.link}>
+      <Pressable onPress={() => router.push(`/books/${id}`)} style={styles.link}>
         <View style={styles.innerLink}>
           <View style={styles.taskDataContainer}>
             <Text style={styles.name} numberOfLines={1} ellipsizeMode='tail'>
@@ -37,13 +54,13 @@ const TaskCard = ({name, description, timeStarts, timeEnds, isCompleted, color} 
           </View>
 
           <View style={styles.timeContainer}>
-            <Text style={styles.time}> 
-              {timeStarts.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} - 
-              {timeEnds.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
-            </Text>
+          <Text style={styles.time}>
+            {formatTime(timeStarts)} - {formatTime(timeEnds)}
+          </Text>
+
           </View>
         </View>
-      </Link>
+      </Pressable>
     </View>
   )
 };

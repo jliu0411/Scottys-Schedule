@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from 'react'
-import { databases } from '../lib/appwrite'
+import { databases, client } from '../lib/appwrite'
 import { ID, Permission, Query, Role } from 'react-native-appwrite'
 import { useUser } from '../hooks/useUser'
 
@@ -17,10 +17,25 @@ export function BooksProvider({ children }) {
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
-                Query.equal('userId', user.$id)
-            )
+                [   
+                    Query.equal('userID', user.$id),
+                ]
+            );
 
-            setBooks(response.documents)
+            const sortedTasks = response.documents.sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+
+                const [hoursA, minutesA] = a.timeEnds.split(':').map(Number);
+                const [hoursB, minutesB] = b.timeEnds.split(':').map(Number);
+
+                dateA.setHours(hoursA, minutesA);
+                dateB.setHours(hoursB, minutesB);
+
+                return dateA.getTime() - dateB.getTime();
+            });
+
+            setBooks(sortedTasks)
 
         } catch (error) {
             console.error(error.message)
@@ -80,10 +95,7 @@ export function BooksProvider({ children }) {
 
     async function createBook(data) {
         try {
-            //dummy user
-            const userID = "690e99ac0010ac3ed009"
-
-            const newBook = await databases.getDocument(
+             await databases.createDocument(
                 DATABASE_ID,
                 COLLECTION_ID,
                 ID.unique(),
@@ -95,9 +107,6 @@ export function BooksProvider({ children }) {
                     Permission.delete(Role.user(user.$id)),
                 ]
             );
-            setBooks(prev => [...prev, newBook]);
-
-            return newBook;
         } catch (error) {
             console.error(error.message)
         }
@@ -105,16 +114,61 @@ export function BooksProvider({ children }) {
 
     async function deleteBook(id) {
         try {
-
+            await databases.deleteDocument(
+                DATABASE_ID,
+                COLLECTION_ID,
+                id
+            )
         } catch (error) {
             console.error(error.message)
         }
     }
 
     useEffect(() => {
-        fetchBooks()
+        let unsubscribe
+        const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`
 
-    }, [])
+        if (user) {
+            fetchBooks()
+            unsubscribe = client.subscribe(channel, (response) => {
+                const { payload, events } = response
+                console.log(events)
+
+                if (events[0].includes("create")) {
+                    setBooks((prevBooks) => {
+                        const updated = [...prevBooks, payload]
+                        
+                        //sorts after task created
+                        return updated.sort((a, b) => {
+                            const dateA = new Date(a.date);
+                            const dateB = new Date(b.date);
+
+                            const [hoursA, minutesA] = a.timeEnds.split(':').map(Number);
+                            const [hoursB, minutesB] = b.timeEnds.split(':').map(Number);
+
+                            dateA.setHours(hoursA, minutesA);
+                            dateB.setHours(hoursB, minutesB);
+
+                            return dateA.getTime() - dateB.getTime();
+                        });
+                    });
+                }
+
+                if (events[0].includes("delete")) {
+                setBooks((prevBooks) => prevBooks.filter((book) => book.$id !== payload.$id))
+                }
+            })
+
+    } else {
+      setBooks([])
+    }
+
+    return () => {
+      if (unsubscribe) unsubscribe()
+    }
+
+  }, [user])
+
 
     return (
         <BooksContext.Provider value={{ books, fetchBooks, fetchCurrentTasks, fetchUpcomingTasks, fetchBookByID, createBook, deleteBook }}>

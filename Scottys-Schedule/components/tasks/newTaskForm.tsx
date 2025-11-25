@@ -12,7 +12,9 @@ const NewTaskForm = () => {
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date());
   const [timeStarts, setTimeStarts] = useState(new Date());
+  const [timeStartsString, setTimeStartsString] = useState("00:00");
   const [timeEnds, setTimeEnds] = useState(new Date());
+  const [timeEndsString, setTimeEndsString] = useState("00:00");
   const [repeats, setRepeats] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -27,10 +29,22 @@ const NewTaskForm = () => {
     if (newDate) { setDate(newDate); }
   }
   const onTimeStartsChange = (event : DateTimePickerEvent, newTime?: Date) => {
-    if (newTime) { setTimeStarts(newTime); }
+    if (newTime) { 
+      setTimeStarts(newTime);
+      const hours = newTime.getHours();
+      const minutes = newTime.getMinutes();
+      const stringTime = `${hours.toString()}:${minutes.toString()}`;
+      setTimeStartsString(stringTime)
+    }
   }
   const onTimeEndsChange = (event : DateTimePickerEvent, newTime?: Date) => {
-    if (newTime) { setTimeEnds(newTime); }
+    if (newTime) { 
+      setTimeEnds(newTime);
+      const hours = newTime.getHours();
+      const minutes = newTime.getMinutes();
+      const stringTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      setTimeEndsString(stringTime)
+    }
   }
 
   //TASK CREATION
@@ -42,14 +56,23 @@ const NewTaskForm = () => {
 
     setLoading(true);
 
-    await createBook({name, description, date, timeStarts, timeEnds, repeats})
+    const normalizedDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      0, 0, 0, 0
+    );
+
+    await createBook({name, description, date: normalizedDate.toISOString(), timeStarts: timeStartsString, timeEnds: timeEndsString, repeats})
 
     //reset fields
     setName('');
     setDescription('');
     setDate(new Date());
     setTimeStarts(new Date());
+    setTimeStartsString("00:00");
     setTimeEnds(new Date());
+    setTimeEndsString("00:00");
     setRepeats([]);
 
     // redirect

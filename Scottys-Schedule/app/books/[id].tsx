@@ -1,11 +1,18 @@
 import React, { useState } from 'react'
+import { useLocalSearchParams, useRouter } from "expo-router"
 import { StyleSheet, Text, View, TextInput, Pressable } from 'react-native'
 import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker'
-import RepeatsDropdown from '../repeatsDropdown'
+import RepeatsDropdown from '../../components/repeatsDropdown'
+import { useBooks } from "../../hooks/useBooks"
 
 
 
 const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isCompleted, repeats} : taskData) => {
+  const [book, setBook] = useState(null)
+  const { id } = useLocalSearchParams()
+  const { deleteBook } = useBooks()
+  const router = useRouter()
+  
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimeStartsPicker, setShowTimeStartsPicker] = useState(false);
   const [showTimeEndsPicker, setShowTimeEndsPicker] = useState(false);
@@ -25,7 +32,13 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
   const onTimeEndsChange = (event : DateTimePickerEvent, newTimeEnds?: Date) => {
     if (newTimeEnds) { timeEnds = newTimeEnds; }
   }
-  
+  const handleDelete = async () => {
+    console.log("Deleting id: ", id)
+    await deleteBook(id)
+    setBook(null)
+    router.replace('/landing')
+  }
+
   return (
     <View style={styles.container}>
       
@@ -98,6 +111,10 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
         <Pressable style={styles.createButton} >
           <Text style={styles.createButtonText}>Save Changes</Text>
         </Pressable>
+
+        <Pressable onPress={handleDelete} style={styles.createButton} >
+          <Text style={styles.createButtonText}>Delete</Text>
+        </Pressable>
     </View>
   )
 }
@@ -131,6 +148,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5A201',
     color: '#FFFF',
     marginHorizontal: 90,
+    marginVertical: 9,
   },
   createButtonText: {
     fontFamily: 'Jersey10',
