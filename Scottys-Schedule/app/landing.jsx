@@ -9,9 +9,20 @@ import UserOnly from '../components/auth/UserOnly';
 import LandingTaskList from '../components/landing/landingTaskList'
 import LandingHeader from '../components/landing/landingHeader'
 import Scotty from '../components/tasks/scotty';
+import { useState } from 'react';
+import { phrases } from '../components/landing/phrases';
 
 const Landing = () => {
-  const {logout, user, authChecked, setIsLoggingOut } = useUser()
+  const {logout, user, authChecked, setIsLoggingOut } = useUser();
+  
+  const [phrase, setPhrase] = useState('');
+  const [showPhrase, setShowPhrase] = useState(false);
+
+  const handleComplete = () => {
+    const randomNum = Math.floor(Math.random() * phrases.length);
+    setPhrase(phrases[randomNum]);
+    setShowPhrase(true);
+  }
 
   const handleLogout = async () => {
         try {
@@ -28,25 +39,25 @@ const Landing = () => {
   return (
     <UserOnly>
       <SafeAreaView style={styles.container}>
-      <Stack.Screen 
-        options={{
-          header: () => <LandingHeader/>
-        }} 
-      />
+        <Stack.Screen 
+          options={{
+            header: () => <LandingHeader/>
+          }} 
+        />
 
-      <View style={{position: 'absolute'}}>
-        <Image source={Room} style={styles.room} />
-      </View>
+        <View style={{position: 'absolute'}}>
+          <Image source={Room} style={styles.room} />
+        </View>
 
-      <Scotty/>
+        <Scotty showPhrase={showPhrase} phrase={phrase}/>
       
-      <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
+        <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
         
         <ThemedButton onPress={handleLogout} style={styles.logoutButton}>
-            <Image source={Logout} style={styles.logout} resizeMode="contain"/>
-          </ThemedButton>
+          <Image source={Logout} style={styles.logout} resizeMode="contain"/>
+        </ThemedButton>
 
-        <LandingTaskList/>
+        <LandingTaskList handleComplete={handleComplete}/>
       </SafeAreaView>
     </UserOnly>
   )

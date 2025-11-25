@@ -1,29 +1,31 @@
-import React from 'react'
+import React, { useState }  from 'react'
 import { useBooks } from '../../hooks/useBooks'
 import { Link, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import BouncyCheckbox from 'react-native-bouncy-checkbox'
+import { phrases } from '../landing/phrases';
 
-
-type taskData = {
+type taskProps = {
     id: string,
     name: string,
     description: string,
     timeStarts: Date,
     timeEnds: Date,
     isCompleted: boolean,
-    color: string
+    color: string,
+    handleComplete: () => void,
 }
 
-const TaskCard = ({id, name, description, timeStarts, timeEnds, isCompleted, color} : taskData) => {
-  const { books } = useBooks()
-  const router = useRouter()
+const TaskCard = ({id, name, description, timeStarts, timeEnds, isCompleted, color, handleComplete} : taskProps) => {
+  const { books } = useBooks();
+  const router = useRouter();
 
   return (
     <View style={[styles.container, {borderColor: color}]}>
       <BouncyCheckbox 
         onPress={(isCompleted: boolean) => {
           console.log('checked')
+          handleComplete();
         }}
         fillColor={color}
         iconStyle={{borderRadius: 0}}
