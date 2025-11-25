@@ -9,11 +9,22 @@ type taskData = {
     id: string,
     name: string,
     description: string,
-    timeStarts: Date,
-    timeEnds: Date,
+    timeStarts: string,
+    timeEnds: string,
     isCompleted: boolean,
     color: string
 }
+const formatTime = (t?: string | Date) => {
+  if (!t) return "--:--";
+  if (t instanceof Date) {
+    return t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  const dateObj = new Date(`1970-01-01T${t}`);
+  if (isNaN(dateObj.getTime())) {
+    return t;
+  }
+  return dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
 
 const TaskCard = ({id, name, description, timeStarts, timeEnds, isCompleted, color} : taskData) => {
   const { books } = useBooks()
@@ -43,10 +54,10 @@ const TaskCard = ({id, name, description, timeStarts, timeEnds, isCompleted, col
           </View>
 
           <View style={styles.timeContainer}>
-            <Text style={styles.time}> 
-              {timeStarts.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} - 
-              {timeEnds.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
-            </Text>
+          <Text style={styles.time}>
+            {formatTime(timeStarts)} - {formatTime(timeEnds)}
+          </Text>
+
           </View>
         </View>
       </Pressable>
