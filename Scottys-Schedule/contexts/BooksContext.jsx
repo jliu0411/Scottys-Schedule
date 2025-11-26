@@ -50,23 +50,19 @@ export function BooksProvider({ children }) {
         }
     }
 
-    async function fetchCurrentTasks(date, currentTime) {
+    async function fetchCurrentTasks(date, currentTimeString) {
         try {
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
-                date,
-                currentTime
-                [
-                    Query.and(
-                        [ 
-                            Query.equal('userId', user.$id),
-                            Query.equal('date', date)
-                        ]
-                    )
+                [   
+                    Query.equal('userID', user.$id), 
+                    Query.equal('date', date),
+                    Query.greaterThan('timeEnds', currentTimeString),
+                    Query.lessThanEqual('timeStarts', currentTimeString),
+                    Query.limit(1)
                 ]
             )
-
             return response
         } catch (error) {
             console.error(error.message)
@@ -78,19 +74,13 @@ export function BooksProvider({ children }) {
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
-                date,
-                currentTime,
                 [
-                    Query.and(
-                        [
-                            Query.equal('userId', user.$id),
-                            Query.equal('date', date),
-                            Query.greaterThan('timeEnds', currentTime)
-                        ]
-                    )
+                    Query.equal('userID', user.$id),
+                    Query.equal('date', date),
+                    Query.greaterThan('timeStarts', currentTime),
+                    Query.limit(3)
                 ]
             )
-
             return response
         } catch (error) {
             console.error(error.message)
