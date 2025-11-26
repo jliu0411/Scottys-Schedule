@@ -1,43 +1,95 @@
+// app/editAlarm.jsx
+import React, { useMemo, useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Switch,
+  Alert,
 } from "react-native";
-import React, { useState } from "react";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
+
 import TimePickerSheet from "../components/alarms/TimePickerSheet";
 import RepeatSelectorSheet from "../components/alarms/RepeatSelectorSheet";
 import { formatRepeatDays } from "../components/alarms/formatRepeatDays";
 import { useAlarms } from "../components/alarms/alarmLocalStorage";
 
-export default function newAlarm() {
+export default function EditAlarm() {
   const router = useRouter();
-  const { addAlarm } = useAlarms();
+  const { id } = useLocalSearchParams(); // from /editAlarm?id=...
+  const alarmId = Number(id);
 
-  const [time, setTime] = useState(new Date());
+  const { alarms, updateAlarm, deleteAlarm } = useAlarms();
+
+  const existingAlarm = useMemo(
+    () => alarms.find((a) => a.id === alarmId),
+    [alarms, alarmId]
+  );
+
+  useEffect(() => {
+    if (!existingAlarm) {
+      console.warn("EditAlarm: no alarm found for id", alarmId);
+    }
+  }, [existingAlarm, alarmId]);
+
+  const [time, setTime] = useState(
+    existingAlarm ? new Date(existingAlarm.time) : new Date()
+  );
   const [showPicker, setShowPicker] = useState(false);
 
   const allDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const [repeatDays, setRepeatDays] = useState([]);
+  const [repeatDays, setRepeatDays] = useState(
+    existingAlarm?.repeatDays ?? []
+  );
   const [showRepeat, setShowRepeat] = useState(false);
 
-  const [puzzle, setPuzzle] = useState(false);
+  const [puzzle, setPuzzle] = useState(existingAlarm?.puzzle ?? false);
 
-  const handleCreateAlarm = () => {
-    addAlarm({
-      id: Date.now(),
+  const handleSave = () => {
+    if (!existingAlarm) return;
+
+    updateAlarm(alarmId, {
       time: time.getTime(),
       repeatDays,
       puzzle,
-      enabled: true,
     });
+
     router.back();
   };
 
+  const handleDelete = () => {
+    if (!existingAlarm) return;
+
+    Alert.alert(
+      "Delete Alarm",
+      "Are you sure you want to delete this alarm?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            await deleteAlarm(alarmId);
+            router.back();
+          },
+        },
+      ]
+    );
+  };
+
+  if (!existingAlarm) {
+    return (
+      <View style={[styles.fullScreen, { justifyContent: "center" }]}>
+        <Text style={styles.missingText}>
+          Could not find this alarm. Please go back.
+        </Text>
+      </View>
+    );
+  }
+
   return (
-    <View style={{ flex: 1}}>
+    <View style={styles.fullScreen}>
       <View style={styles.page}>
         <View style={styles.card}>
           <Text style={styles.label}>Time Task Ends</Text>
@@ -75,8 +127,12 @@ export default function newAlarm() {
             <Text style={styles.puzzleLabel}>Puzzle?</Text>
           </View>
 
-          <TouchableOpacity style={styles.button} onPress={handleCreateAlarm}>
-            <Text style={styles.buttonText}>Create Alarm</Text>
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveText}>Save Changes</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+            <Text style={styles.deleteText}>Delete Alarm</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -100,6 +156,11 @@ export default function newAlarm() {
 }
 
 const styles = StyleSheet.create({
+  fullScreen: {
+    flex: 1,
+    backgroundColor: "#0A5875",
+  },
+
   page: {
     flex: 1,
     justifyContent: "center",
@@ -109,8 +170,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
     borderRadius: 20,
-    margin: 50,
-    padding: 30,
+    margin: 32,
+    padding: 24,
     width: "90%",
     alignSelf: "center",
   },
@@ -119,7 +180,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "600",
     color: "#222",
-    fontFamily: "Jersey10-Regular"
+    fontFamily: "Jersey10-Regular",
   },
 
   inputBox: {
@@ -151,18 +212,41 @@ const styles = StyleSheet.create({
     color: "#222",
   },
 
-  button: {
+  saveButton: {
     backgroundColor: "#f4a30b",
     paddingVertical: 12,
     borderRadius: 8,
     marginTop: 24,
   },
 
-  buttonText: {
+  saveText: {
     textAlign: "center",
-    fontSize: 25,
+    fontSize: 24,
     fontWeight: "700",
     color: "#fff",
-    fontFamily: "Jersey10-Regular"
+    fontFamily: "Jersey10-Regular",
+  },
+
+  deleteButton: {
+    backgroundColor: "#e53935",
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 12,
+  },
+
+  deleteText: {
+    textAlign: "center",
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#fff",
+    fontFamily: "Jersey10-Regular",
+  },
+
+  missingText: {
+    textAlign: "center",
+    paddingHorizontal: 24,
+    fontSize: 18,
+    color: "#fff",
+    fontFamily: "Jersey10-Regular",
   },
 });

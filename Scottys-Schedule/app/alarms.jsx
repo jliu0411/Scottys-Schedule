@@ -36,34 +36,6 @@ export default function Alarms(onRightPress, showBack = true) {
 
   return (
     <View style= {styles.page}>
-      <View style={styles.container}>
-        {showBack ? (
-          <TouchableOpacity onPress={() => router.back()} style={styles.iconBox}>
-            <Image 
-              source = {require("../assets/arrows/leftArrow.png")}
-              style = {{width: 50, height: 50}}
-              resizeMode = "contain"
-            />
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.placeholderBox} />
-        )}
-
-        <Text style={styles.title}> Alarms </Text>
-
-        {onRightPress ? (
-          <TouchableOpacity onPress={() => router.push("/newAlarm")} style={styles.iconBox}>
-            <Image 
-              source = {require("../assets/buttons/addbButton.png")}
-              style = {{width: 50, height: 50}}
-              resizeMode = "contain"
-            />
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.placeholderBox} />
-        )}
-      </View>
-
       <View style={styles.list}>
         {alarms.map((alarm) => (
           <View key={alarm.id} style={styles.alarmCard}>
@@ -84,14 +56,14 @@ export default function Alarms(onRightPress, showBack = true) {
             <View style={styles.center}>
               <Switch
                 value={alarm.enabled ?? true}
-                onValueChange={() => {}}
+                onValueChange={() => toggleAlarm(alarm.id)}
                 trackColor={{ false: "#ccc", true: "#0A5875" }}
-                thumbColor={"#fff"}
+                thumbColor="#fff"
               />
             </View>
 
             {onRightPress ? (
-              <TouchableOpacity onPress={() => router.push("/newAlarm")} style={styles.iconBox}>
+              <TouchableOpacity onPress={() => router.push({pathname: "/editAlarm", params: { id: alarm.id.toString()}})} style={styles.iconBox}>
                 <Image 
                   source = {require("../assets/buttons/yellowMenu.png")}
                   style = {{width: 50, height: 50}}
