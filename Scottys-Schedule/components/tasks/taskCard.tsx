@@ -8,13 +8,14 @@ import { phrases } from '../landing/phrases';
 type taskProps = {
     id: string,
     name: string,
-    description: string,
+    description?: string,
     timeStarts: string,
     timeEnds: string,
     isCompleted: boolean,
     color: string,
     handleComplete: () => void,
 }
+
 const formatTime = (t?: string | Date) => {
   if (!t) return "--:--";
   if (t instanceof Date) {
