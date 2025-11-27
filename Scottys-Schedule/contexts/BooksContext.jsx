@@ -86,9 +86,9 @@ export function BooksProvider({ children }) {
             await databases.updateDocument(
                 DATABASE_ID,
                 COLLECTION_ID,
-                id,
+                id, 
                 { 'isCompleted': !currentStatus }
-            )
+            );
         } catch (error) {
             console.error(error.message)
         }
@@ -141,7 +141,7 @@ export function BooksProvider({ children }) {
 
 
     return (
-        <BooksContext.Provider value={{ books, fetchBooks, fetchBookByID, createBook, deleteBook }}>
+        <BooksContext.Provider value={{ books, fetchBooks, fetchBookByID, createBook, deleteBook, changeIsCompleted }}>
             {children}
         </BooksContext.Provider>
     )

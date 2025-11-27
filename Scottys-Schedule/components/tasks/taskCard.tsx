@@ -28,23 +28,30 @@ const formatTime = (t?: string | Date) => {
 };
 
 const TaskCard = ({id, name, description, timeStarts, timeEnds, isCompleted, color, handlePhrase} : taskProps) => {
-  const { books } = useBooks();
+  const { changeIsCompleted } = useBooks();
   const router = useRouter();
+  const [checked, setChecked] = useState(isCompleted);
+
+  const handleComplete = async () => {
+    setChecked(prev => !prev);
+    await changeIsCompleted(id, checked)
+  }
 
   return (
     <View style={[styles.container, {borderColor: color}]}>
       <BouncyCheckbox 
-        onPress={(isCompleted: boolean) => {
-          console.log('checked')
-          if (typeof handlePhrase !== 'undefined') {
+        onPress={() => {
+          if (handlePhrase) {
             handlePhrase();
           }
+          handleComplete();
         }}
         fillColor={color}
         iconStyle={{borderRadius: 0}}
         innerIconStyle={[styles.checkbox, {borderColor: color}]}
         disableText={true}
-        useBuiltInState={true}
+        useBuiltInState={false}
+        isChecked={checked}
         style={{paddingHorizontal: 12, flex: 1}}
       />
     
