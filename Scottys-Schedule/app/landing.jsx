@@ -18,7 +18,7 @@ const Landing = () => {
   const [phrase, setPhrase] = useState('');
   const [showPhrase, setShowPhrase] = useState(false);
 
-  const handleComplete = () => {
+  const handlePhrase = () => {
     const randomNum = Math.floor(Math.random() * phrases.length);
     setPhrase(phrases[randomNum]);
     setShowPhrase(true);
@@ -57,7 +57,7 @@ const Landing = () => {
           <Image source={Logout} style={styles.logout} resizeMode="contain"/>
         </ThemedButton>
 
-        <LandingTaskList handleComplete={handleComplete}/>
+        <LandingTaskList handlePhrase={handlePhrase}/>
       </SafeAreaView>
     </UserOnly>
   )

@@ -6,24 +6,24 @@ import TaskCard from '../tasks/taskCard';
 import { phrases } from './phrases';
 
 type ListProps = {
-  handleComplete: () => void,
+  handlePhrase: () => void,
 }
 
-const LandingTaskList = ({handleComplete} : ListProps) => { 
+const LandingTaskList = ({handlePhrase} : ListProps) => { 
   return (
     <View style={styles.container}>
       <View style={{flexDirection: 'row'}}>
         <Text style={[styles.header,{backgroundColor: '#F5A201'}]}>Current Task</Text>
-        <Link href='/tasks' style={styles.arrowContainer}>
+        <Link href='../tasks' style={styles.arrowContainer}>
           <Image source={UpArrow}/>
         </Link>
       </View>
-      <TaskCard handleComplete={handleComplete} id={'1'} name='Task 1 With a Very Long Name That Needs to be Cut ' description='A very very long description that also needs to get cut off' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#F5A201'} />
+      <TaskCard handlePhrase={handlePhrase} id={'1'} name='Task 1 With a Very Long Name That Needs to be Cut ' description='A very very long description that also needs to get cut off' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#F5A201'} />
     
       <Text style={[styles.header,{backgroundColor: '#013C58'}]}>Upcoming Tasks</Text>
-      <TaskCard handleComplete={handleComplete} id={'2'} name='Short Task Name' description='A short task description' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'} />
-      <TaskCard handleComplete={handleComplete} id={'3'} name='Task w/o Description' description='' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'} />
-      <TaskCard handleComplete={handleComplete} id={'4'} name='Another Task Name' description='A very very long description that also needs to get cut off' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'}/>
+      <TaskCard handlePhrase={handlePhrase} id={'2'} name='Short Task Name' description='A short task description' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'} />
+      <TaskCard handlePhrase={handlePhrase} id={'3'} name='Task w/o Description' description='' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'} />
+      <TaskCard handlePhrase={handlePhrase} id={'4'} name='Another Task Name' description='A very very long description that also needs to get cut off' timeStarts={new Date()} timeEnds={new Date()} isCompleted={false} color={'#013C58'}/>
     </View>
   )
 }

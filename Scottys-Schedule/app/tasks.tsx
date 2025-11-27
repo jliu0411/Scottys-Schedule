@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList, Pressable, Image } from 'react-native'
+import { StyleSheet, Text, View, FlatList, Pressable, Image, Task } from 'react-native'
 import React from 'react'
 import { Stack, Link } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -8,7 +8,6 @@ import LeftArrow from '../assets/arrows/leftArrow.png'
 import RightArrow from '../assets/arrows/rightArrow.png'
 import { useBooks } from '../hooks/useBooks'
 
-
 const Tasks = () => {
   const { books } = useBooks()
 
@@ -16,18 +15,17 @@ const Tasks = () => {
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <Stack.Screen
         options={{
-          headerRight: () => <AddButton pathname={'/newTask'}/>,
+          headerRight: () => <AddButton pathname={'../newTask'}/>,
         }}
       />
 
       <FlatList 
         data={books}
         keyExtractor={(item => item.$id)}
-        contentContainerStyle={styles.list}
         renderItem={({ item }) => (
           <Pressable>
             <TaskCard id={item.$id} name={item.name} description={item.description} timeStarts={item.timeStarts}
-            timeEnds={item.timeEnds} isCompleted={false} color={'#013C58'}/>
+            timeEnds={item.timeEnds} isCompleted={false} color={'#013C58'} />
           </Pressable>
         )}
       />
@@ -37,12 +35,12 @@ const Tasks = () => {
       </View>
       
       <SafeAreaView style={styles.bottom} edges={[ 'left', 'right', 'bottom']} >
-        <Link href='\alarms' style={styles.link}> <Image source={LeftArrow} style={styles.arrow}/> </Link>
+        <Link href='../alarms' style={styles.link}> <Image source={LeftArrow} style={styles.arrow}/> </Link>
         <View style={{alignItems: 'center'}}>
           <Text style={styles.dateText}>{new Date().toLocaleDateString([], {weekday:'long'})}</Text>
           <Text style={styles.dateText}>{new Date().toLocaleDateString([], {month: 'long', day: 'numeric', year: 'numeric'})}</Text>
         </View>
-        <Link href='' style={styles.link}> <Image source={RightArrow} style={styles.arrow}/> </Link>
+        <Link href='../alarms' style={styles.link}> <Image source={RightArrow} style={styles.arrow}/> </Link>
       </SafeAreaView>
 
     </SafeAreaView>

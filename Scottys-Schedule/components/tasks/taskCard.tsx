@@ -13,7 +13,7 @@ type taskProps = {
     timeEnds: string,
     isCompleted: boolean,
     color: string,
-    handleComplete: () => void,
+    handlePhrase?: () => void,
 }
 const formatTime = (t?: string | Date) => {
   if (!t) return "--:--";
@@ -27,7 +27,7 @@ const formatTime = (t?: string | Date) => {
   return dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
 
-const TaskCard = ({id, name, description, timeStarts, timeEnds, isCompleted, color, handleComplete} : taskProps) => {
+const TaskCard = ({id, name, description, timeStarts, timeEnds, isCompleted, color, handlePhrase} : taskProps) => {
   const { books } = useBooks();
   const router = useRouter();
 
@@ -36,7 +36,9 @@ const TaskCard = ({id, name, description, timeStarts, timeEnds, isCompleted, col
       <BouncyCheckbox 
         onPress={(isCompleted: boolean) => {
           console.log('checked')
-          handleComplete();
+          if (typeof handlePhrase !== 'undefined') {
+            handlePhrase();
+          }
         }}
         fillColor={color}
         iconStyle={{borderRadius: 0}}
@@ -46,7 +48,7 @@ const TaskCard = ({id, name, description, timeStarts, timeEnds, isCompleted, col
         style={{paddingHorizontal: 12, flex: 1}}
       />
     
-      <Pressable onPress={() => router.push(`/books/${id}`)} style={styles.link}>
+      <Pressable onPress={() => router.push(`../books/${id}`)} style={styles.link}>
         <View style={styles.innerLink}>
           <View style={styles.taskDataContainer}>
             <Text style={styles.name} numberOfLines={1} ellipsizeMode='tail'>

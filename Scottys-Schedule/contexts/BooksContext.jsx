@@ -81,6 +81,19 @@ export function BooksProvider({ children }) {
         }
     }
 
+    async function changeIsCompleted(id, currentStatus) {
+        try {
+            await databases.updateDocument(
+                DATABASE_ID,
+                COLLECTION_ID,
+                id,
+                { 'isCompleted': !currentStatus }
+            )
+        } catch (error) {
+            console.error(error.message)
+        }
+    }
+
     useEffect(() => {
         let unsubscribe
         const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`
