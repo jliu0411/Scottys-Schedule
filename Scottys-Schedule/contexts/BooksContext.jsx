@@ -131,6 +131,46 @@ export function BooksProvider({ children }) {
         }
     }
 
+    async function fetchProgress(date) {
+        try {
+            const completedTasks = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTION_ID,
+                [   
+                    Query.equal('userID', user.$id),
+                    Query.equal('date', date),
+                    Query.equal('isCompleted', true)
+                ]
+            );
+
+            const completed = completedTasks.total;
+
+            if (completed === 0) {
+                return 0;
+            }
+
+            console.log('completed', completed)
+
+            const allTasks = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTION_ID,
+                [   
+                    Query.equal('userID', user.$id),
+                    Query.equal('date', date)
+                ]
+            );
+            const total = allTasks.total;
+            console.log('total', total);
+
+            const progress = (completed/total);
+            console.log('progress', progress);
+            return progress;
+
+        } catch(error) {
+            console.error(error.message)
+        }
+    }
+
     useEffect(() => {
         let unsubscribe
         const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`
@@ -178,7 +218,7 @@ export function BooksProvider({ children }) {
 
 
     return (
-        <BooksContext.Provider value={{ books, fetchBooks, fetchCurrentTasks, fetchUpcomingTasks, fetchBookByID, createBook, deleteBook, changeIsCompleted }}>
+        <BooksContext.Provider value={{ books, fetchBooks, fetchCurrentTasks, fetchUpcomingTasks, fetchBookByID, createBook, deleteBook, changeIsCompleted, fetchProgress }}>
             {children}
         </BooksContext.Provider>
     )
