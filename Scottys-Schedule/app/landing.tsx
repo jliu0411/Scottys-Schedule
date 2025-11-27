@@ -2,13 +2,13 @@ import { Stack, router } from 'expo-router';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useUser } from '../hooks/useUser';
-import Room from '../assets/scottys/Room.png';
 import Logout from '../assets/scottys/Logout.png';
 import ThemedButton from "../components/themes/ThemedButton";
 import UserOnly from '../components/auth/UserOnly';
 import LandingTaskList from '../components/landing/landingTaskList'
 import LandingHeader from '../components/landing/landingHeader'
-import Scotty from '../components/tasks/scotty';
+import Scotty from '../components/landing/scotty';
+import Background from '../components/landing/background'
 import { useState } from 'react';
 import { phrases } from '../components/landing/phrases';
 
@@ -28,7 +28,7 @@ const Landing = () => {
         try {
             setIsLoggingOut(true)
             await logout()
-            router.replace('/(auth)/login')
+            router.replace('../(auth)/login')
         } catch (error) {
             console.error("Logout failed:", error)
         } finally {
@@ -45,12 +45,9 @@ const Landing = () => {
           }} 
         />
 
-        <View style={{position: 'absolute'}}>
-          <Image source={Room} style={styles.room} />
-        </View>
-
+        <Background/>
         <Scotty showPhrase={showPhrase} phrase={phrase}/>
-      
+        
         <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
         
         <ThemedButton onPress={handleLogout} style={styles.logoutButton}>
@@ -58,6 +55,7 @@ const Landing = () => {
         </ThemedButton>
 
         <LandingTaskList handleComplete={handleComplete}/>
+
       </SafeAreaView>
     </UserOnly>
   )
