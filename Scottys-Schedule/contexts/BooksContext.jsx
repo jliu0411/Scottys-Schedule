@@ -50,6 +50,43 @@ export function BooksProvider({ children }) {
         }
     }
 
+    async function fetchCurrentTasks(date, currentTimeString) {
+        try {
+            const response = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTION_ID,
+                [   
+                    Query.equal('userID', user.$id), 
+                    Query.equal('date', date),
+                    Query.greaterThan('timeEnds', currentTimeString),
+                    Query.lessThanEqual('timeStarts', currentTimeString),
+                    Query.limit(1)
+                ]
+            )
+            return response
+        } catch (error) {
+            console.error(error.message)
+        }
+    }
+
+    async function fetchUpcomingTasks(date, currentTime) {
+        try {
+            const response = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTION_ID,
+                [
+                    Query.equal('userID', user.$id),
+                    Query.equal('date', date),
+                    Query.greaterThan('timeStarts', currentTime),
+                    Query.limit(3)
+                ]
+            )
+            return response
+        } catch (error) {
+            console.error(error.message)
+        }
+    }
+
     async function createBook(data) {
         try {
              await databases.createDocument(
@@ -128,7 +165,7 @@ export function BooksProvider({ children }) {
 
 
     return (
-        <BooksContext.Provider value={{ books, fetchBooks, fetchBookByID, createBook, deleteBook }}>
+        <BooksContext.Provider value={{ books, fetchBooks, fetchCurrentTasks, fetchUpcomingTasks, fetchBookByID, createBook, deleteBook }}>
             {children}
         </BooksContext.Provider>
     )
