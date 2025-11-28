@@ -27,7 +27,9 @@ const NewTaskForm = () => {
 
   const onDateChange = (event : DateTimePickerEvent, newDate?: Date) => {
     if (newDate) { setDate(newDate); }
+    setShowDatePicker(false)
   }
+  
   const onTimeStartsChange = (event : DateTimePickerEvent, newTime?: Date) => {
     if (newTime) { 
       setTimeStarts(newTime);
@@ -35,7 +37,7 @@ const NewTaskForm = () => {
       const minutes = newTime.getMinutes();
       const stringTime = `${hours.toString()}:${minutes.toString()}`;
       setTimeStartsString(stringTime)
-    }
+    setShowTimeStartsPicker(false) }
   }
   const onTimeEndsChange = (event : DateTimePickerEvent, newTime?: Date) => {
     if (newTime) { 
@@ -44,7 +46,7 @@ const NewTaskForm = () => {
       const minutes = newTime.getMinutes();
       const stringTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
       setTimeEndsString(stringTime)
-    }
+    setShowTimeEndsPicker(false) }
   }
 
   //TASK CREATION
