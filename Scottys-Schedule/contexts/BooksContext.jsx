@@ -123,6 +123,9 @@ export function BooksProvider({ children }) {
                 COLLECTION_ID,
                 id
             )
+            await fetchCurrentTasks();
+            await fetchUpcomingTasks();
+            await fetchProgress();
         } catch (error) {
             console.error(error.message)
         }
@@ -170,7 +173,8 @@ export function BooksProvider({ children }) {
             const total = allTasks.total;
 
             if (total === 0 || completed === 0) {
-                setProgress(0);
+                setProgress(0)
+                return;
             }
 
             const progressCalc = (completed/total).toFixed(2);
