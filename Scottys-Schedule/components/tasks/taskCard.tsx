@@ -1,9 +1,8 @@
 import React, { useState }  from 'react'
 import { useBooks } from '../../hooks/useBooks'
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import BouncyCheckbox from 'react-native-bouncy-checkbox'
-import { phrases } from '../landing/phrases';
 
 type taskProps = {
     id: string,
@@ -13,7 +12,7 @@ type taskProps = {
     timeEnds: string,
     isCompleted: boolean,
     color: string,
-    handleComplete: () => void,
+    handlePhrase?: () => void,
 }
 
 const formatTime = (t?: string | Date) => {
@@ -28,26 +27,29 @@ const formatTime = (t?: string | Date) => {
   return dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
 
-const TaskCard = ({id, name, description, timeStarts, timeEnds, isCompleted, color, handleComplete} : taskProps) => {
-  const { books } = useBooks();
+const TaskCard = ({id, name, description, timeStarts, timeEnds, isCompleted, color, handlePhrase} : taskProps) => {
+  const { changeIsCompleted } = useBooks();
   const router = useRouter();
 
   return (
     <View style={[styles.container, {borderColor: color}]}>
       <BouncyCheckbox 
-        onPress={(isCompleted: boolean) => {
-          console.log('checked')
-          handleComplete();
+        onPress={() => {
+          if (handlePhrase) {
+            handlePhrase();
+          }
+          changeIsCompleted(id, isCompleted);
         }}
         fillColor={color}
         iconStyle={{borderRadius: 0}}
         innerIconStyle={[styles.checkbox, {borderColor: color}]}
         disableText={true}
-        useBuiltInState={true}
+        useBuiltInState={false}
+        isChecked={isCompleted}
         style={{paddingHorizontal: 12, flex: 1}}
       />
     
-      <Pressable onPress={() => router.push(`/books/${id}`)} style={styles.link}>
+      <Pressable onPress={() => router.push(`../books/${id}`)} style={styles.link}>
         <View style={styles.innerLink}>
           <View style={styles.taskDataContainer}>
             <Text style={styles.name} numberOfLines={1} ellipsizeMode='tail'>
