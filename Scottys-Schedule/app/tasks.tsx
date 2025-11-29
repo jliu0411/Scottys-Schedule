@@ -24,8 +24,14 @@ const Tasks = () => {
         keyExtractor={(item => item.$id)}
         renderItem={({ item }) => (
           <Pressable>
-            <TaskCard id={item.$id} name={item.name} description={item.description} timeStarts={item.timeStarts}
-            timeEnds={item.timeEnds} isCompleted={item.isCompleted} color={'#013C58'} />
+            <TaskCard 
+              id={item.$id} 
+              name={item.name} 
+              description={item.description} 
+              timeStarts={item.timeStarts}
+              timeEnds={item.timeEnds} 
+              isCompleted={item.isCompleted} 
+              color={'#013C58'} />
           </Pressable>
         )}
       />

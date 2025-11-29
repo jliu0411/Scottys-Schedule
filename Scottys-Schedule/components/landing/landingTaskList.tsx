@@ -82,7 +82,7 @@ const LandingTaskList = ({handlePhrase} : ListProps) => {
                   description={item.description} 
                   timeStarts={item.timeStarts} 
                   timeEnds={item.timeEnds} 
-                  isCompleted={false} 
+                  isCompleted={item.isCompleted} 
                   handlePhrase={handlePhrase}
                   color={'#F5A201'}/>
               </Pressable>

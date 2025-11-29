@@ -152,7 +152,6 @@ export function BooksProvider({ children }) {
                     Query.equal('isCompleted', true)
                 ]
             );
-
             const completed = completedTasks.total;
 
             if (completed === 0) {
@@ -187,7 +186,9 @@ export function BooksProvider({ children }) {
         const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`
 
         if (user) {
-            fetchBooks()
+            fetchBooks();
+            handleProgress();
+
             unsubscribe = client.subscribe(channel, (response) => {
                 const { payload, events } = response
                 console.log(events)
@@ -221,8 +222,8 @@ export function BooksProvider({ children }) {
             })
 
     } else {
-      setBooks([])
-      setProgress(0)
+      setBooks([]);
+      setProgress(0);
     }
 
     return () => {
