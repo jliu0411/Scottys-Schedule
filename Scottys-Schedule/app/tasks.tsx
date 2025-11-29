@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList, Pressable, Image, Task } from 'react-native'
+import { StyleSheet, Text, View, FlatList, Pressable, Image } from 'react-native'
 import React from 'react'
 import { Stack, Link } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -48,7 +48,6 @@ const Tasks = () => {
         </View>
         <Link href='../alarms' style={styles.link}> <Image source={RightArrow} style={styles.arrow}/> </Link>
       </SafeAreaView>
-
     </SafeAreaView>
   )
 }

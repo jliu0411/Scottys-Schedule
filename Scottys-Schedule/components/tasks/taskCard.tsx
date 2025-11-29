@@ -1,9 +1,8 @@
 import React, { useState }  from 'react'
 import { useBooks } from '../../hooks/useBooks'
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import BouncyCheckbox from 'react-native-bouncy-checkbox'
-import { phrases } from '../landing/phrases';
 
 type taskProps = {
     id: string,

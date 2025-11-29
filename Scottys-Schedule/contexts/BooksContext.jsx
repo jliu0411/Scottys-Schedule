@@ -178,8 +178,8 @@ export function BooksProvider({ children }) {
     const handleProgress = async () => {
         const progressCalculation = await fetchProgress(normalizedDate);
         setProgress(progressCalculation);
+        fetchBooks();
     }
-
 
     useEffect(() => {
         let unsubscribe

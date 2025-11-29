@@ -62,7 +62,7 @@ const LandingTaskList = ({handlePhrase} : ListProps) => {
 
   return (
     <SafeAreaView edges={['right', 'bottom', 'left']} style={styles.container} >
-      <View style={{}}>
+      <View>
         <Text style={[styles.header,{backgroundColor: '#F5A201'}]}>Current Task</Text>
         <Link href='../tasks' style={styles.arrowContainer}>
           <Image source={UpArrow}/>
