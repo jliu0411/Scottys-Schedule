@@ -61,6 +61,7 @@ export default function RootLayout() {
             <Stack.Screen name="newTask" options={{ title: 'New Task' }} />
             <Stack.Screen name="editTask" options={{ title: 'Edit Task' }} />
             <Stack.Screen name="tasks" options={{ title: 'Tasks' }} />
+            <Stack.Screen name="books/[id]" options={{ headerTitle: 'Edit Task' }}/>
           </Stack>
         </AlarmProvider>
       </BooksProvider>

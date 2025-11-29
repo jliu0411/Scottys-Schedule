@@ -118,6 +118,32 @@ export function BooksProvider({ children }) {
         }
     }
 
+    async function updateBook(id, data) {
+        try {
+            await databases.updateDocument(
+                DATABASE_ID,
+                COLLECTION_ID,
+                id,
+                data
+            ) 
+        }catch (error) {
+            console.error(error.message)
+    }
+}
+
+    const sortTasks = (a, b) => {
+        const dateA = new Date(a.date)
+        const dateB = new Date(b.date)
+
+        const [hoursA, minutesA] = a.timeEnds.split(':').map(Number)
+        const [hoursB, minutesB] = b.timeEnds.split(':').map(Number)
+
+        dateA.setHours(hoursA, minutesA)
+        dateB.setHours(hoursB, minutesB)
+
+        return dateA.getTime() - dateB.getTime()
+    }
+
     useEffect(() => {
         let unsubscribe
         const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`
@@ -129,27 +155,17 @@ export function BooksProvider({ children }) {
                 console.log(events)
 
                 if (events[0].includes("create")) {
-                    setBooks((prevBooks) => {
-                        const updated = [...prevBooks, payload]
-                        
-                        //sorts after task created
-                        return updated.sort((a, b) => {
-                            const dateA = new Date(a.date);
-                            const dateB = new Date(b.date);
-
-                            const [hoursA, minutesA] = a.timeEnds.split(':').map(Number);
-                            const [hoursB, minutesB] = b.timeEnds.split(':').map(Number);
-
-                            dateA.setHours(hoursA, minutesA);
-                            dateB.setHours(hoursB, minutesB);
-
-                            return dateA.getTime() - dateB.getTime();
-                        });
-                    });
+                    setBooks(prev => [...prev, payload].sort(sortTasks))
                 }
 
                 if (events[0].includes("delete")) {
-                setBooks((prevBooks) => prevBooks.filter((book) => book.$id !== payload.$id))
+                    setBooks((prevBooks) => prevBooks.filter((book) => book.$id !== payload.$id))
+                }
+                if (events[0].includes("update")) {
+                    setBooks(prevBooks => {
+                        const updatedBooks = prevBooks.map(b => b.$id === payload.$id ? payload : b)
+                        return updatedBooks.sort(sortTasks)
+                    })
                 }
             })
 
@@ -165,7 +181,7 @@ export function BooksProvider({ children }) {
 
 
     return (
-        <BooksContext.Provider value={{ books, fetchBooks, fetchCurrentTasks, fetchUpcomingTasks, fetchBookByID, createBook, deleteBook }}>
+        <BooksContext.Provider value={{ books, fetchBooks, fetchCurrentTasks, fetchUpcomingTasks, fetchBookByID, createBook, deleteBook, updateBook }}>
             {children}
         </BooksContext.Provider>
     )
