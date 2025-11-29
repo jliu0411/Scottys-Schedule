@@ -1,64 +1,18 @@
 import { StyleSheet, Text, View, FlatList, Pressable, Image } from 'react-native'
 import { Link } from 'expo-router'
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import UpArrow from "../../assets/arrows/upArrow.png"
 import TaskCard from '../tasks/taskCard';
 import EmptyTaskCard from '../tasks/emptyTaskCard';
 import { useBooks } from '../../hooks/useBooks';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-type Task = {
-  $id: string,
-  name: string,
-  description: string,
-  timeStarts: string,
-  timeEnds: string,
-  isCompleted: boolean
-}
-
 type ListProps = {
   handlePhrase: () => void,
 }
 
 const LandingTaskList = ({handlePhrase} : ListProps) => { 
-  const date = new Date();
-  const currentTimeString = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-  const [ currentTasks, setCurrentTasks ] = useState<Task[]>([]);
-  const [ upcomingTasks, setUpcomingTasks ] = useState<Task[]>([]);
-  const { fetchCurrentTasks, fetchUpcomingTasks } = useBooks();
-
-  useEffect(() => {
-    async function loadCurrentTasks() {
-      const normalizedDate = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        0, 0, 0, 0
-      );
-
-      const tasksData = await fetchCurrentTasks(normalizedDate, currentTimeString);
-      console.log('current tasks: ', tasksData);
-      setCurrentTasks(tasksData?.documents ?? []);
-    }
-    loadCurrentTasks();
-  }, [])
-
-  useEffect(() => {
-    async function loadUpcomingTasks() {
-      const normalizedDate = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        0, 0, 0, 0
-      );
-
-      const tasksData = await fetchUpcomingTasks(normalizedDate, currentTimeString);
-      console.log('upcoming tasks: ', tasksData);
-      setUpcomingTasks(tasksData?.documents ?? []);
-    }
-    loadUpcomingTasks();
-  }, [])
-
+  const { currentTasks, upcomingTasks } = useBooks();
 
   return (
     <SafeAreaView edges={['right', 'bottom', 'left']} style={styles.container} >
@@ -107,7 +61,7 @@ const LandingTaskList = ({handlePhrase} : ListProps) => {
                 description={item.description} 
                 timeStarts={item.timeStarts}
                 timeEnds={item.timeEnds} 
-                isCompleted={false} 
+                isCompleted={item.isCompleted} 
                 handlePhrase={handlePhrase}
                 color={'#013C58'}/>
             </Pressable>

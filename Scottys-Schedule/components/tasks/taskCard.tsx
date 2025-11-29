@@ -30,12 +30,6 @@ const formatTime = (t?: string | Date) => {
 const TaskCard = ({id, name, description, timeStarts, timeEnds, isCompleted, color, handlePhrase} : taskProps) => {
   const { changeIsCompleted } = useBooks();
   const router = useRouter();
-  const [checked, setChecked] = useState(isCompleted);
-
-  const handleComplete = async () => {
-    setChecked(prev => !prev);
-    await changeIsCompleted(id, checked)
-  }
 
   return (
     <View style={[styles.container, {borderColor: color}]}>
@@ -44,14 +38,14 @@ const TaskCard = ({id, name, description, timeStarts, timeEnds, isCompleted, col
           if (handlePhrase) {
             handlePhrase();
           }
-          handleComplete();
+          changeIsCompleted(id, isCompleted);
         }}
         fillColor={color}
         iconStyle={{borderRadius: 0}}
         innerIconStyle={[styles.checkbox, {borderColor: color}]}
         disableText={true}
         useBuiltInState={false}
-        isChecked={checked}
+        isChecked={isCompleted}
         style={{paddingHorizontal: 12, flex: 1}}
       />
     
