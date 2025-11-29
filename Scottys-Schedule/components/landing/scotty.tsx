@@ -1,10 +1,9 @@
-import { StyleSheet, Text, View, Image, Animated } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import { StyleSheet, Text, View, Image } from 'react-native'
+import React from 'react'
 import ScottyCMAD from '../../assets/scottys/ScottyCMAD.png'
 import ScottyCMAU from '../../assets/scottys/ScottyCMAU.png'
 import ScottyOMAD from '../../assets/scottys/ScottyOMAD.png'
 import ScottyOMAU from '../../assets/scottys/ScottyOMAU.png'
-import { phrases } from '../landing/phrases'
 
 type ScottyProps = {
   showPhrase: boolean,
@@ -28,14 +27,14 @@ export default Scotty
 
 const styles = StyleSheet.create({
     container: {
+      zIndex: -1,
       width: '100%',
-      height: '100%',
-      flex: 1
+      height: '55%',
     },
     image: {
       width: '65%',
-      height: '50%',
-      marginTop: 30
+      height: '100%',
+      
     },
     textContainer: {
       height: 'auto',
@@ -43,7 +42,7 @@ const styles = StyleSheet.create({
       backgroundColor: '#FFF',
       position: 'absolute',
       alignSelf: 'flex-end',
-      marginRight: 50,
+      marginRight: 35,
       marginTop: 85,
       padding: 10,
     },
