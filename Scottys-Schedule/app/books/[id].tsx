@@ -80,6 +80,19 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
     router.replace('/landing')
   }
 
+  const formatTime = (t?: string | Date) => {
+    if (!t) return "--:--";
+    if (t instanceof Date) {
+      return t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+    }
+    const dateObj = new Date(`1970-01-01T${t}`);
+    if (isNaN(dateObj.getTime())) {
+      return t;
+    }
+    return dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+  };
+
+
   return (
     <View style={styles.container}>
       
@@ -122,7 +135,7 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
       <Text style={styles.subheader}> Time Task Starts</Text>
       <Pressable onPress={() => setShowTimeStartsPicker(!showTimeStartsPicker)}>
         <Text style={styles.input}>
-          {book.timeStarts}
+          {formatTime(book.timeStarts)}
         </Text>
         {showTimeStartsPicker && 
           (<RNDateTimePicker 
@@ -135,7 +148,7 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
       <Text style={styles.subheader}>Time Task Ends</Text>
         <Pressable onPress={() => setShowTimeEndsPicker(!showTimeEndsPicker)}>
           <Text style={styles.input}>
-            {book.timeEnds}
+            {formatTime(book.timeEnds)}
           </Text>
           {showTimeEndsPicker && 
             (<RNDateTimePicker 
