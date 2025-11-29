@@ -45,8 +45,10 @@ const Landing = () => {
           }} 
         />
 
-        <Background/>
-        <Scotty showPhrase={showPhrase} phrase={phrase}/>
+        <View style={{width: '100%', height: '100%'}}>
+          <Background/>
+          <Scotty showPhrase={showPhrase} phrase={phrase}/>
+        </View>
         
         <Text style={styles.date}>{new Date().toLocaleDateString([], {weekday:'long', month: 'long', day: 'numeric', year: 'numeric'})}</Text>
         
@@ -77,11 +79,9 @@ const styles = StyleSheet.create({
     color: '#FFF',
     position: 'absolute',
     top: 15,
-    left: 70,
   },
   room: {
     position: 'relative',
-    top: -110
   },
   logout: {
     position: 'absolute',

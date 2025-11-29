@@ -27,17 +27,14 @@ export default Scotty
 
 const styles = StyleSheet.create({
     container: {
-      position: 'absolute',
       zIndex: -1,
-      alignSelf: 'center',
       width: '100%',
-      height: '100%',
-      top: 50
+      height: '55%',
     },
     image: {
       width: '65%',
-      height: '50%',
-      marginTop: 30
+      height: '100%',
+      
     },
     textContainer: {
       height: 'auto',
@@ -45,7 +42,7 @@ const styles = StyleSheet.create({
       backgroundColor: '#FFF',
       position: 'absolute',
       alignSelf: 'flex-end',
-      marginRight: 50,
+      marginRight: 35,
       marginTop: 85,
       padding: 10,
     },
