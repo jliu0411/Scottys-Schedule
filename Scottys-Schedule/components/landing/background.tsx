@@ -11,7 +11,7 @@ const Background = () => {
     <View style={styles.container}>
       {currentHour >= 7 && currentHour < 17 && <Image source={DayWindow} style={styles.image}/>}
       {currentHour >= 17 && currentHour < 19 && <Image source={SunsetWindow} style={styles.image}/>}
-      {(currentHour >= 19 && currentHour <= 23) || (currentHour >= 0 && currentHour < 5)  && <Image source={NightWindow} style={styles.image}/>}
+      {((currentHour >= 19 && currentHour <= 23) || (currentHour >= 0 && currentHour < 5))  && <Image source={NightWindow} style={styles.image}/>}
       {currentHour >= 5 && currentHour < 7 && <Image source={SunriseWindow} style={styles.image}/>}
     </View>
   )
@@ -21,6 +21,8 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     height: '100%',
+    position: 'absolute',
+    zIndex: -2
   },
   image: {
     width: '100%',
