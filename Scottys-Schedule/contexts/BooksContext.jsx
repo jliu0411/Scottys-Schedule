@@ -9,8 +9,18 @@ const COLLECTION_ID = "books"
 export const BooksContext = createContext()
 
 export function BooksProvider({ children }) {
-    const [books, setBooks] = useState([])
-    const { user } = useUser()
+    const [books, setBooks] = useState([]);
+    const { user } = useUser();
+
+    //progress info.
+    const [progress, setProgress] = useState(0);
+    const date = new Date();
+    const normalizedDate = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        0, 0, 0, 0
+    );
 
     async function fetchBooks() {
         try {
@@ -149,8 +159,6 @@ export function BooksProvider({ children }) {
                 return 0;
             }
 
-            console.log('completed', completed)
-
             const allTasks = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
@@ -160,16 +168,19 @@ export function BooksProvider({ children }) {
                 ]
             );
             const total = allTasks.total;
-            console.log('total', total);
 
-            const progress = (completed/total);
-            console.log('progress', progress);
-            return progress;
-
+            return (completed/total);
+            
         } catch(error) {
             console.error(error.message)
         }
     }
+
+    const handleProgress = async () => {
+        const progressCalculation = await fetchProgress(normalizedDate);
+        setProgress(progressCalculation);
+    }
+
 
     useEffect(() => {
         let unsubscribe
@@ -204,10 +215,14 @@ export function BooksProvider({ children }) {
                 if (events[0].includes("delete")) {
                 setBooks((prevBooks) => prevBooks.filter((book) => book.$id !== payload.$id))
                 }
+
+                console.log('checking progress');
+                handleProgress();
             })
 
     } else {
       setBooks([])
+      setProgress(0)
     }
 
     return () => {
@@ -218,7 +233,7 @@ export function BooksProvider({ children }) {
 
 
     return (
-        <BooksContext.Provider value={{ books, fetchBooks, fetchCurrentTasks, fetchUpcomingTasks, fetchBookByID, createBook, deleteBook, changeIsCompleted, fetchProgress }}>
+        <BooksContext.Provider value={{ books, fetchBooks, fetchCurrentTasks, fetchUpcomingTasks, fetchBookByID, createBook, deleteBook, changeIsCompleted, fetchProgress, progress }}>
             {children}
         </BooksContext.Provider>
     )
