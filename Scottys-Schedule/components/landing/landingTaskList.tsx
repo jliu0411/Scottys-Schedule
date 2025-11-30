@@ -44,31 +44,27 @@ const LandingTaskList = ({handlePhrase} : ListProps) => {
           />
         }
       </View>
-      
     
       <Text style={[styles.header,{backgroundColor: '#013C58'}]}>Upcoming Tasks</Text>
-      
-      <View>
-        {upcomingTasks.length === 0 ? <EmptyTaskCard type='Upcoming' color={'#013C58'}/> :
-          <FlatList 
-          data={upcomingTasks}
-          keyExtractor={(item => item.$id)}
-          renderItem={({ item }) => (
-            <Pressable>
-              <TaskCard 
-                id={item.$id}
-                name={item.name} 
-                description={item.description} 
-                timeStarts={item.timeStarts}
-                timeEnds={item.timeEnds} 
-                isCompleted={item.isCompleted} 
-                handlePhrase={handlePhrase}
-                color={'#013C58'}/>
-            </Pressable>
-            )}
-          />
-        }
-      </View>
+      {upcomingTasks.length === 0 ? <EmptyTaskCard type='Upcoming' color={'#013C58'}/> :
+        <FlatList 
+        data={upcomingTasks}
+        keyExtractor={(item => item.$id)}
+        renderItem={({ item }) => (
+          <Pressable>
+            <TaskCard 
+              id={item.$id}
+              name={item.name} 
+              description={item.description} 
+              timeStarts={item.timeStarts}
+              timeEnds={item.timeEnds} 
+              isCompleted={item.isCompleted} 
+              handlePhrase={handlePhrase}
+              color={'#013C58'}/>
+          </Pressable>
+          )}
+        />
+      }
     </SafeAreaView>
   )
 }

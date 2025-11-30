@@ -101,11 +101,10 @@ export function BooksProvider({ children }) {
                     Query.equal('userID', user.$id),
                     Query.equal('date', normalizedDate),
                     Query.greaterThan('timeStarts', currentTimeString),
-                    Query.limit(3)
                 ]
             )
             const tasks = (response?.documents ?? []).sort(sortTasks)
-            setUpcomingTasks(tasks.slice(0,3));
+            setUpcomingTasks(tasks);
         } catch (error) {
             console.error(error.message)
         }
