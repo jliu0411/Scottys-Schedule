@@ -160,7 +160,7 @@ const NewTaskForm = () => {
           </TouchableOpacity>
 
           <Text style={styles.subheader}> Repeats</Text>
-          <RepeatsDropdown repeats={repeats}/>
+          <RepeatsDropdown repeats={repeats} setRepeats={setRepeats} />
 
           <TouchableOpacity style={styles.createButton} onPress={handleCreateTask} disabled={loading}>
             <Text style={styles.createButtonText}>

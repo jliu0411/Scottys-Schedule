@@ -2,6 +2,7 @@ import { createContext, useEffect, useState } from 'react'
 import { databases, client } from '../lib/appwrite'
 import { ID, Permission, Query, Role } from 'react-native-appwrite'
 import { useUser } from '../hooks/useUser'
+import { getNextRepeatDate } from '../contexts/repeats'
 
 const DATABASE_ID = "68fd56d40037f2743501"
 const COLLECTION_ID = "books"
@@ -169,15 +170,29 @@ export function BooksProvider({ children }) {
                 }
             })
 
-    } else {
-      setBooks([])
-    }
+        } else {
+            setBooks([])
+        }
 
-    return () => {
-      if (unsubscribe) unsubscribe()
-    }
+        return () => {
+            if (unsubscribe) unsubscribe()
+        }
+    }, [user])
 
-  }, [user])
+    useEffect(() => {
+        if (!books.length) return;
+
+        books.forEach(async task => {
+            const taskDate = new Date(task.date);
+            const now = new Date();
+
+            if (taskDate < now && task.repeats?.length > 0) {
+            const nextDate = getNextRepeatDate(now, task.repeats, task.timeEnds);
+            await updateBook(task.$id, { date: nextDate.toISOString() });
+            }
+        });
+    }, [books]); 
+
 
 
     return (
