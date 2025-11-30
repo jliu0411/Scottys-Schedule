@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
@@ -6,11 +12,19 @@ import * as Notifications from "expo-notifications";
 const alarmLocalStorage = createContext();
 const STORAGE_KEY = "alarms";
 
-const NAG_INTERVAL_MS = 3000;
-const NAG_COUNT = 20;   
+const DAY_TO_INDEX = {
+  Sun: 0,
+  Mon: 1,
+  Tue: 2,
+  Wed: 3,
+  Thu: 4,
+  Fri: 5,
+  Sat: 6,
+};
 
 export const AlarmProvider = ({ children }) => {
   const [alarms, setAlarms] = useState([]);
+  const [activeRingingAlarmId, setActiveRingingAlarmId] = useState(null);
 
 
   useEffect(() => {
@@ -26,6 +40,12 @@ export const AlarmProvider = ({ children }) => {
     };
 
     loadAlarms();
+  }, []);
+
+  useEffect(() => {
+    Notifications.cancelAllScheduledNotificationsAsync().catch((e) =>
+      console.log("Error cancelling all notifications:", e)
+    );
   }, []);
 
   useEffect(() => {
@@ -63,49 +83,74 @@ export const AlarmProvider = ({ children }) => {
     });
   };
 
+  const getNextTriggerTimeMs = (repeatDays, hour, minute, startFrom = new Date()) => {
+    const start = new Date(startFrom);
+    const baseToday = new Date(start);
+    baseToday.setHours(hour);
+    baseToday.setMinutes(minute);
+    baseToday.setSeconds(0);
+    baseToday.setMilliseconds(0);
+
+    const candidates = (repeatDays ?? [])
+      .map((day) => DAY_TO_INDEX[day])
+      .filter((idx) => idx != null);
+
+    if (candidates.length === 0) {
+      if (baseToday > start) return baseToday.getTime();
+      const tomorrow = new Date(baseToday);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return tomorrow.getTime();
+    }
+
+    let best = null;
+    for (const dayIndex of candidates) {
+      const candidate = new Date(baseToday);
+      const offset = (dayIndex - start.getDay() + 7) % 7;
+      candidate.setDate(candidate.getDate() + offset);
+      if (candidate <= start) {
+        candidate.setDate(candidate.getDate() + 7);
+      }
+      const ms = candidate.getTime();
+      if (best == null || ms < best) best = ms;
+    }
+
+    return best;
+  };
+
   const scheduleNotificationsForAlarm = async (alarm) => {
     const storedTime = new Date(alarm.time);
     const hour = storedTime.getHours();
     const minute = storedTime.getMinutes();
 
-    const ids = [];
-
-    const baseContent = {
-      title: "Alarm",
-      body: "Time to do your task!",
-      sound: "default",
-      data: { alarmId: alarm.id },
-    };
-
-    const now = new Date();
-    let firstTrigger = new Date();
-
-    firstTrigger.setHours(hour);
-    firstTrigger.setMinutes(minute);
-    firstTrigger.setSeconds(0);
-    firstTrigger.setMilliseconds(0);
-
-    if (firstTrigger <= now) {
-      firstTrigger.setDate(firstTrigger.getDate() + 1);
+    if (!Number.isFinite(hour) || !Number.isFinite(minute)) {
+      console.log("Invalid alarm time, skipping schedule", alarm.time);
+      return [];
     }
 
-    for (let i = 0; i < NAG_COUNT; i++) {
-      const triggerDate = new Date(
-        firstTrigger.getTime() + i * NAG_INTERVAL_MS
-      );
+    const repeatDays = alarm.repeatDays ?? [];
 
-      const id = await Notifications.scheduleNotificationAsync({
-        content: baseContent,
-        trigger: {
-          date: triggerDate,  
-          channelId: "alarm",  
-        },
-      });
-
-      ids.push(id);
+    const firstMs = getNextTriggerTimeMs(repeatDays, hour, minute);
+    if (!firstMs) {
+      console.log("Could not compute next trigger time");
+      return [];
     }
 
-    return ids;
+    const fireDate = new Date(firstMs);
+
+    const id = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Alarm",
+        body: "Time to do your task!",
+        sound: "default",
+        data: { alarmId: alarm.id },
+      },
+      trigger: {
+        type: "date", 
+        date: fireDate,
+      },
+    });
+
+    return [id];
   };
 
   const cancelNotificationsForAlarm = async (alarm) => {
@@ -189,12 +234,42 @@ export const AlarmProvider = ({ children }) => {
     }
   };
 
-  const toggleAlarm = async (id) => {
+  const toggleAlarm = async (id, nextEnabled) => {
     const existing = alarms.find((a) => a.id === id);
     if (!existing) return;
 
-    await updateAlarm(id, { enabled: !existing.enabled });
+    const baseAlarm = { ...existing, enabled: nextEnabled };
+
+    await saveAlarms((prev) =>
+      prev.map((a) => (a.id === id ? baseAlarm : a))
+    );
+
+    await cancelNotificationsForAlarm(existing);
+
+    let notificationIds = [];
+    if (nextEnabled) {
+      notificationIds = await scheduleNotificationsForAlarm(baseAlarm);
+    }
+
+    const finalAlarm = { ...baseAlarm, notificationIds };
+
+    // 3) Save again with real notificationIds
+    await saveAlarms((prev) =>
+      prev.map((a) => (a.id === id ? finalAlarm : a))
+    );
   };
+
+
+  const markAlarmAsRinging = useCallback((id) => {
+    if (id == null) return;
+    setActiveRingingAlarmId((current) => current ?? id);
+  }, []);
+
+  const clearRingingAlarm = useCallback((id) => {
+    setActiveRingingAlarmId((current) =>
+      id != null && current === id ? null : current
+    );
+  }, []);
 
   return (
     <alarmLocalStorage.Provider
@@ -205,6 +280,9 @@ export const AlarmProvider = ({ children }) => {
         deleteAlarm,
         toggleAlarm,
         cancelFutureNotificationsForAlarm,
+        activeRingingAlarmId,
+        markAlarmAsRinging,
+        clearRingingAlarm,
       }}
     >
       {children}

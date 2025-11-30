@@ -12,8 +12,8 @@ import { useAlarms } from "../components/alarms/alarmLocalStorage";
 function generateQuestions(count) {
   const qs = [];
   for (let i = 0; i < count; i++) {
-    const a = Math.floor(Math.random() * 9) + 1; // 1–9
-    const b = Math.floor(Math.random() * 9) + 1; // 1–9
+    const a = Math.floor(Math.random() * 9) + 1; 
+    const b = Math.floor(Math.random() * 9) + 1; 
     qs.push({ a, b });
   }
   return qs;
@@ -28,6 +28,7 @@ export default function AlarmRinging() {
     alarms,
     updateAlarm,
     cancelFutureNotificationsForAlarm,
+    clearRingingAlarm,
   } = useAlarms();
 
   const alarm = useMemo(
@@ -35,23 +36,29 @@ export default function AlarmRinging() {
     [alarms, alarmId]
   );
 
-  // 🔔 First time we show this screen: kill the burst for this alarm
   useEffect(() => {
     if (Number.isFinite(alarmId)) {
       cancelFutureNotificationsForAlarm(alarmId);
     }
   }, [alarmId, cancelFutureNotificationsForAlarm]);
 
-  // Generate 3 random questions once
+  useEffect(() => {
+    return () => {
+      clearRingingAlarm(alarmId);
+    };
+  }, [alarmId, clearRingingAlarm]);
+
   const [questions] = useState(() => generateQuestions(3));
   const [answers, setAnswers] = useState(["", "", ""]);
   const [error, setError] = useState("");
 
   const handleTurnOff = async () => {
     if (Number.isFinite(alarmId)) {
-      // Disable this alarm so it won't ring again until re-enabled
-      await updateAlarm(alarmId, { enabled: false });
+      const shouldStayEnabled =
+        Array.isArray(alarm?.repeatDays) && alarm.repeatDays.length > 0;
+      await updateAlarm(alarmId, { enabled: shouldStayEnabled });
     }
+    clearRingingAlarm(alarmId);
     router.replace("/alarms");
   };
 

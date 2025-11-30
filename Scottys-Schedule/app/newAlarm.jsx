@@ -5,14 +5,14 @@ import {
   TouchableOpacity,
   Switch,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useRouter } from "expo-router";
 import TimePickerSheet from "../components/alarms/TimePickerSheet";
 import RepeatSelectorSheet from "../components/alarms/RepeatSelectorSheet";
 import { formatRepeatDays } from "../components/alarms/formatRepeatDays";
 import { useAlarms } from "../components/alarms/alarmLocalStorage";
 
-export default function newAlarm() {
+export default function NewAlarm() {
   const router = useRouter();
   const { addAlarm } = useAlarms();
 
@@ -22,22 +22,40 @@ export default function newAlarm() {
   const allDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const [repeatDays, setRepeatDays] = useState([]);
   const [showRepeat, setShowRepeat] = useState(false);
+  const [repeatAnchor, setRepeatAnchor] = useState(null);
 
   const [puzzle, setPuzzle] = useState(false);
 
+  const repeatInputRef = useRef(null);
+
+  const handleOpenRepeat = () => {
+    if (repeatInputRef.current && repeatInputRef.current.measureInWindow) {
+      repeatInputRef.current.measureInWindow((x, y, width, height) => {
+        setRepeatAnchor({ x, y, width, height });
+        setShowRepeat(true);
+      });
+    } else {
+      setRepeatAnchor(null);
+      setShowRepeat(true);
+    }
+  };
+
   const handleCreateAlarm = () => {
+    const id = Date.now();
+
     addAlarm({
-      id: Date.now(),
+      id,
       time: time.getTime(),
       repeatDays,
       puzzle,
       enabled: true,
     });
+
     router.back();
   };
 
   return (
-    <View style={{ flex: 1}}>
+    <View style={{ flex: 1, backgroundColor: "#0A5875" }}>
       <View style={styles.page}>
         <View style={styles.card}>
           <Text style={styles.label}>Time Task Ends</Text>
@@ -57,12 +75,15 @@ export default function newAlarm() {
           <Text style={[styles.label, { marginTop: 16 }]}>Repeats</Text>
 
           <TouchableOpacity
+            ref={repeatInputRef}
             style={styles.inputBox}
-            onPress={() => setShowRepeat(true)}
+            onPress={handleOpenRepeat}
           >
             <Text style={styles.inputText}>
               {formatRepeatDays(repeatDays)}
             </Text>
+
+            <Text style={styles.dropdown}>^</Text>
           </TouchableOpacity>
 
           <View style={styles.row}>
@@ -71,6 +92,7 @@ export default function newAlarm() {
               onValueChange={setPuzzle}
               trackColor={{ false: "#ccc", true: "#0A5875" }}
               thumbColor="#fff"
+              style={styles.puzzleSwitch}
             />
             <Text style={styles.puzzleLabel}>Puzzle?</Text>
           </View>
@@ -94,6 +116,7 @@ export default function newAlarm() {
         selectedDays={repeatDays}
         setSelectedDays={setRepeatDays}
         onClose={() => setShowRepeat(false)}
+        anchor={repeatAnchor}
       />
     </View>
   );
@@ -104,6 +127,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    fontFamily: "Jersey10",
   },
 
   card: {
@@ -116,10 +140,9 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    fontSize: 20,
-    fontWeight: "600",
+    fontSize: 22,
     color: "#222",
-    fontFamily: "Jersey10-Regular"
+    fontFamily: "Jersey10",
   },
 
   inputBox: {
@@ -135,8 +158,16 @@ const styles = StyleSheet.create({
   },
 
   inputText: {
-    fontSize: 16,
+    fontSize: 20,
     color: "#444",
+    fontFamily: "Jersey10",
+  },
+
+  dropdown: {
+    fontSize: 20,
+    marginLeft: 8,
+    fontFamily: "Jersey10",
+    transform: [{ rotate: "180deg" }]
   },
 
   row: {
@@ -145,10 +176,17 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 
+  puzzleSwitch: {
+    transform: [{ scaleX: 2 }, { scaleY: 2 }],
+    marginRight: 45,
+    paddingLeft: 60,
+  },
+
   puzzleLabel: {
     marginLeft: 8,
-    fontSize: 16,
+    fontSize: 30,
     color: "#222",
+    fontFamily: "Jersey10",
   },
 
   button: {
@@ -160,9 +198,8 @@ const styles = StyleSheet.create({
 
   buttonText: {
     textAlign: "center",
-    fontSize: 25,
-    fontWeight: "700",
+    fontSize: 30,
     color: "#fff",
-    fontFamily: "Jersey10-Regular"
+    fontFamily: "Jersey10",
   },
 });

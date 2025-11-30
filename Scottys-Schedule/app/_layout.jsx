@@ -1,7 +1,7 @@
 import { Stack, router } from 'expo-router'
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import {useEffect} from 'react';
+import { useCallback, useEffect } from 'react';
 import "@/assets/font/Jersey10-Regular.ttf"
 import * as Notifications from "expo-notifications"
 import 'expo-router/entry'
@@ -24,19 +24,39 @@ Notifications.setNotificationHandler({
 });
 
 function NotificationNavigationHandler() {
-  useEffect(() => {
-    const handleAlarmNotification = (alarmId) => {
+  const { alarms, activeRingingAlarmId, markAlarmAsRinging } = useAlarms();
+
+  const handleAlarmNotification = useCallback(
+    (alarmId) => {
       if (alarmId == null) return;
+
+      const alarm = alarms.find((a) => a.id === alarmId);
+
+      if (!alarm || !alarm.enabled) {
+        return;
+      }
+
+      if (activeRingingAlarmId === alarmId) return;
+
+      markAlarmAsRinging(alarmId);
       router.push({
         pathname: "/alarmRinging",
         params: { id: String(alarmId) },
       });
-    };
+    },
+    [alarms, activeRingingAlarmId, markAlarmAsRinging]
+  );
 
+
+  useEffect(() => {
     const receivedSub = Notifications.addNotificationReceivedListener(
       (notification) => {
         const alarmId = notification.request.content.data?.alarmId;
-        handleAlarmNotification(alarmId);
+        const deliveredAt = notification.date?.getTime?.() ?? Date.now();
+        const isRecent = Date.now() - deliveredAt < 2 * 60 * 1000;
+        if (isRecent) {
+          handleAlarmNotification(alarmId);
+        }
       }
     );
 
@@ -50,7 +70,21 @@ function NotificationNavigationHandler() {
       receivedSub.remove();
       responseSub.remove();
     };
-  }, []);
+  }, [handleAlarmNotification]);
+
+  useEffect(() => {
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      const alarmId = response?.notification.request.content.data?.alarmId;
+      const deliveredAt =
+        response?.notification.date?.getTime?.() ??
+        response?.notification.date ??
+        Date.now();
+      const isRecent = Date.now() - deliveredAt < 2 * 60 * 1000;
+      if (isRecent) {
+        handleAlarmNotification(alarmId);
+      }
+    });
+  }, [handleAlarmNotification]);
 
   return null;
 }
@@ -78,6 +112,7 @@ export default function RootLayout() {
     <UserProvider>
       <BooksProvider>
         <AlarmProvider>
+          <NotificationNavigationHandler />
           <StatusBar value="auto" />
           <Stack screenOptions={{
             headerStyle: { backgroundColor: theme.navBackground },
