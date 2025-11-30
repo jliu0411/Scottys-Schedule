@@ -10,11 +10,32 @@ const COLLECTION_ID = "books"
 export const BooksContext = createContext()
 
 export function BooksProvider({ children }) {
-    const [books, setBooks] = useState([])
-    const { user } = useUser()
+    const [ books, setBooks ] = useState([]);
+    const [ progress, setProgress ] = useState(0);
+    const [ currentTasks, setCurrentTasks ] = useState([]);
+    const [ upcomingTasks, setUpcomingTasks ] = useState([]);
+    const { user } = useUser();
+
+    const date = new Date();
+    const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+    const currentTimeString = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+
+    const sortTasks = (a, b) => {
+        const dateA = new Date(a.date)
+        const dateB = new Date(b.date)
+
+        const [hoursA, minutesA] = a.timeEnds.split(':').map(Number)
+        const [hoursB, minutesB] = b.timeEnds.split(':').map(Number)
+
+        dateA.setHours(hoursA, minutesA)
+        dateB.setHours(hoursB, minutesB)
+
+        return dateA.getTime() - dateB.getTime()
+    }
 
     async function fetchBooks() {
         try {
+            console.log('fetching books');
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
@@ -51,38 +72,40 @@ export function BooksProvider({ children }) {
         }
     }
 
-    async function fetchCurrentTasks(date, currentTimeString) {
+    async function fetchCurrentTasks() {
         try {
+            console.log('fetching current tasks');
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
                 [   
                     Query.equal('userID', user.$id), 
-                    Query.equal('date', date),
+                    Query.equal('date', normalizedDate),
                     Query.greaterThan('timeEnds', currentTimeString),
                     Query.lessThanEqual('timeStarts', currentTimeString),
                     Query.limit(1)
                 ]
             )
-            return response
+            setCurrentTasks(response?.documents ?? []);
         } catch (error) {
             console.error(error.message)
         }
     }
 
-    async function fetchUpcomingTasks(date, currentTime) {
+    async function fetchUpcomingTasks() {
         try {
+            console.log('fetching upcoming tasks');
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
                 [
                     Query.equal('userID', user.$id),
-                    Query.equal('date', date),
-                    Query.greaterThan('timeStarts', currentTime),
-                    Query.limit(3)
+                    Query.equal('date', normalizedDate),
+                    Query.greaterThan('timeStarts', currentTimeString),
                 ]
             )
-            return response
+            const tasks = (response?.documents ?? []).sort(sortTasks)
+            setUpcomingTasks(tasks);
         } catch (error) {
             console.error(error.message)
         }
@@ -114,7 +137,63 @@ export function BooksProvider({ children }) {
                 COLLECTION_ID,
                 id
             )
+            await fetchCurrentTasks();
+            await fetchUpcomingTasks();
+            await fetchProgress();
         } catch (error) {
+            console.error(error.message)
+        }
+    }
+
+    async function changeIsCompleted(id, currentStatus) {
+        try {
+            console.log('changing check');
+            await databases.updateDocument(
+                DATABASE_ID,
+                COLLECTION_ID,
+                id, 
+                { 'isCompleted': !currentStatus }
+            );
+            await fetchProgress();
+            await fetchUpcomingTasks();
+            await fetchCurrentTasks();
+        } catch (error) {
+            console.error(error.message)
+        }
+    }
+
+    async function fetchProgress() {
+        try {
+            console.log('fetching progress');
+            const completedTasks = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTION_ID,
+                [   
+                    Query.equal('userID', user.$id),
+                    Query.equal('date', normalizedDate),
+                    Query.equal('isCompleted', true)
+                ]
+            );
+            const completed = completedTasks.total;
+
+            const allTasks = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTION_ID,
+                [   
+                    Query.equal('userID', user.$id),
+                    Query.equal('date', normalizedDate)
+                ]
+            );
+            const total = allTasks.total;
+
+            if (total === 0 || completed === 0) {
+                setProgress(0)
+                return;
+            }
+
+            const progressCalc = (completed/total).toFixed(2);
+            setProgress(progressCalc);
+        } catch(error) {
             console.error(error.message)
         }
     }
@@ -129,20 +208,7 @@ export function BooksProvider({ children }) {
             ) 
         }catch (error) {
             console.error(error.message)
-    }
-}
-
-    const sortTasks = (a, b) => {
-        const dateA = new Date(a.date)
-        const dateB = new Date(b.date)
-
-        const [hoursA, minutesA] = a.timeEnds.split(':').map(Number)
-        const [hoursB, minutesB] = b.timeEnds.split(':').map(Number)
-
-        dateA.setHours(hoursA, minutesA)
-        dateB.setHours(hoursB, minutesB)
-
-        return dateA.getTime() - dateB.getTime()
+        }
     }
 
     useEffect(() => {
@@ -150,8 +216,12 @@ export function BooksProvider({ children }) {
         const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`
 
         if (user) {
-            fetchBooks()
-            unsubscribe = client.subscribe(channel, (response) => {
+            fetchBooks();
+            fetchCurrentTasks();
+            fetchUpcomingTasks();
+            fetchProgress();
+
+            unsubscribe = client.subscribe(channel, async (response) => {
                 const { payload, events } = response
                 console.log(events)
 
@@ -162,17 +232,24 @@ export function BooksProvider({ children }) {
                 if (events[0].includes("delete")) {
                     setBooks((prevBooks) => prevBooks.filter((book) => book.$id !== payload.$id))
                 }
+
                 if (events[0].includes("update")) {
                     setBooks(prevBooks => {
-                        const updatedBooks = prevBooks.map(b => b.$id === payload.$id ? payload : b)
-                        return updatedBooks.sort(sortTasks)
-                    })
+                        const updatedBooks = prevBooks.map(b => b.$id === payload.$id ? payload : b);
+                        return updatedBooks.sort(sortTasks);
+                    });
                 }
-            })
+                await fetchCurrentTasks();
+                await fetchUpcomingTasks();
+                await fetchProgress();
+            });
 
-        } else {
-            setBooks([])
-        }
+    } else {
+      setBooks([]);
+      setCurrentTasks([]);
+      setUpcomingTasks([]);
+      setProgress(0);
+    }
 
         return () => {
             if (unsubscribe) unsubscribe()
@@ -196,7 +273,7 @@ export function BooksProvider({ children }) {
 
 
     return (
-        <BooksContext.Provider value={{ books, fetchBooks, fetchCurrentTasks, fetchUpcomingTasks, fetchBookByID, createBook, deleteBook, updateBook }}>
+        <BooksContext.Provider value={{ books, fetchBooks, fetchCurrentTasks, currentTasks, fetchUpcomingTasks, upcomingTasks, fetchBookByID, createBook, deleteBook, changeIsCompleted, fetchProgress, progress, updateBook }}>
             {children}
         </BooksContext.Provider>
     )
