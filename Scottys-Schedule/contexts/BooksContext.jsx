@@ -19,6 +19,19 @@ export function BooksProvider({ children }) {
     const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
     const currentTimeString = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
 
+    const sortTasks = (a, b) => {
+        const dateA = new Date(a.date)
+        const dateB = new Date(b.date)
+
+        const [hoursA, minutesA] = a.timeEnds.split(':').map(Number)
+        const [hoursB, minutesB] = b.timeEnds.split(':').map(Number)
+
+        dateA.setHours(hoursA, minutesA)
+        dateB.setHours(hoursB, minutesB)
+
+        return dateA.getTime() - dateB.getTime()
+    }
+
     async function fetchBooks() {
         try {
             console.log('fetching books');
@@ -91,7 +104,8 @@ export function BooksProvider({ children }) {
                     Query.limit(3)
                 ]
             )
-            setUpcomingTasks(response?.documents ?? []);
+            const tasks = (response?.documents ?? []).sort(sortTasks)
+            setUpcomingTasks(tasks.slice(0,3));
         } catch (error) {
             console.error(error.message)
         }
@@ -194,20 +208,7 @@ export function BooksProvider({ children }) {
             ) 
         }catch (error) {
             console.error(error.message)
-    }
-}
-
-    const sortTasks = (a, b) => {
-        const dateA = new Date(a.date)
-        const dateB = new Date(b.date)
-
-        const [hoursA, minutesA] = a.timeEnds.split(':').map(Number)
-        const [hoursB, minutesB] = b.timeEnds.split(':').map(Number)
-
-        dateA.setHours(hoursA, minutesA)
-        dateB.setHours(hoursB, minutesB)
-
-        return dateA.getTime() - dateB.getTime()
+        }
     }
 
     useEffect(() => {
@@ -220,7 +221,7 @@ export function BooksProvider({ children }) {
             fetchUpcomingTasks();
             fetchProgress();
 
-            unsubscribe = client.subscribe(channel, (response) => {
+            unsubscribe = client.subscribe(channel, async (response) => {
                 const { payload, events } = response
                 console.log(events)
 
@@ -234,11 +235,14 @@ export function BooksProvider({ children }) {
 
                 if (events[0].includes("update")) {
                     setBooks(prevBooks => {
-                        const updatedBooks = prevBooks.map(b => b.$id === payload.$id ? payload : b)
-                        return updatedBooks.sort(sortTasks)
-                    })
+                        const updatedBooks = prevBooks.map(b => b.$id === payload.$id ? payload : b);
+                        return updatedBooks.sort(sortTasks);
+                    });
                 }
-            })
+                await fetchCurrentTasks();
+                await fetchUpcomingTasks();
+                await fetchProgress();
+            });
 
     } else {
       setBooks([]);
