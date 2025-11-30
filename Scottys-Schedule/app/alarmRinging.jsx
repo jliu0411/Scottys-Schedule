@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAlarms } from "../components/alarms/alarmLocalStorage";
@@ -12,8 +11,8 @@ import { useAlarms } from "../components/alarms/alarmLocalStorage";
 function generateQuestions(count) {
   const qs = [];
   for (let i = 0; i < count; i++) {
-    const a = Math.floor(Math.random() * 9) + 1; 
-    const b = Math.floor(Math.random() * 9) + 1; 
+    const a = Math.floor(Math.random() * 9) + 1;
+    const b = Math.floor(Math.random() * 9) + 1;
     qs.push({ a, b });
   }
   return qs;
@@ -49,8 +48,11 @@ export default function AlarmRinging() {
   }, [alarmId, clearRingingAlarm]);
 
   const [questions] = useState(() => generateQuestions(3));
-  const [answers, setAnswers] = useState(["", "", ""]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentAnswer, setCurrentAnswer] = useState("");
   const [error, setError] = useState("");
+
+  const currentQuestion = questions[currentIndex];
 
   const handleTurnOff = async () => {
     if (Number.isFinite(alarmId)) {
@@ -62,33 +64,34 @@ export default function AlarmRinging() {
     router.replace("/alarms");
   };
 
-  const handleChangeAnswer = (index, text) => {
+  const handleDigitPress = (digit) => {
     setError("");
-    setAnswers((prev) => {
-      const copy = [...prev];
-      copy[index] = text;
-      return copy;
-    });
+    setCurrentAnswer((prev) => prev + digit);
   };
 
-  const handleSubmitPuzzle = () => {
-    let allCorrect = true;
+  const handleBackspace = () => {
+    setError("");
+    setCurrentAnswer((prev) => prev.slice(0, -1));
+  };
 
-    for (let i = 0; i < questions.length; i++) {
-      const q = questions[i];
-      const userAns = parseInt(answers[i], 10);
-      if (Number.isNaN(userAns) || userAns !== q.a + q.b) {
-        allCorrect = false;
-        break;
-      }
-    }
+  const handleSubmit = () => {
+    if (!currentQuestion) return;
 
-    if (!allCorrect) {
-      setError("At least one answer is incorrect. Try again!");
+    const correct = currentQuestion.a + currentQuestion.b;
+    const userAns = parseInt(currentAnswer, 10);
+
+    if (Number.isNaN(userAns) || userAns !== correct) {
+      setError("Incorrect. Try again!");
       return;
     }
 
-    handleTurnOff();
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex((idx) => idx + 1);
+      setCurrentAnswer("");
+      setError("");
+    } else {
+      handleTurnOff();
+    }
   };
 
   if (!alarm) {
@@ -98,10 +101,10 @@ export default function AlarmRinging() {
           <Text style={styles.title}>Alarm</Text>
           <Text style={styles.text}>Could not find this alarm.</Text>
           <TouchableOpacity
-            style={[styles.button, { marginTop: 24 }]}
+            style={[styles.primaryButton, { marginTop: 24 }]}
             onPress={() => router.replace("/alarms")}
           >
-            <Text style={styles.buttonText}>Back to Alarms</Text>
+            <Text style={styles.primaryButtonText}>Back to Alarms</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -117,46 +120,56 @@ export default function AlarmRinging() {
 
         {!showPuzzle && (
           <>
-            <Text style={styles.text}>
-              Tap below to turn off this alarm.
-            </Text>
+            <Text style={styles.text}>Tap below to turn off this alarm.</Text>
             <TouchableOpacity
-              style={[styles.button, { marginTop: 24 }]}
+              style={[styles.primaryButton, { marginTop: 24 }]}
               onPress={handleTurnOff}
             >
-              <Text style={styles.buttonText}>Turn Off Alarm</Text>
+              <Text style={styles.primaryButtonText}>Turn Off Alarm</Text>
             </TouchableOpacity>
           </>
         )}
 
         {showPuzzle && (
           <>
-            <Text style={[styles.text, { marginBottom: 12 }]}>
-              Solve all 3 questions to turn off the alarm.
+            <Text style={styles.progressText}>
+              {currentIndex + 1}/{questions.length}
             </Text>
 
-            {questions.map((q, idx) => (
-              <View key={idx} style={styles.questionRow}>
-                <Text style={styles.questionText}>
-                  {q.a} + {q.b} =
-                </Text>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  value={answers[idx]}
-                  onChangeText={(text) => handleChangeAnswer(idx, text)}
-                />
-              </View>
-            ))}
+            <Text style={styles.questionBig}>
+              {currentQuestion?.a} + {currentQuestion?.b}
+            </Text>
+
+            <View style={styles.answerBox}>
+              <Text style={styles.answerText}>
+                {currentAnswer || ""}
+              </Text>
+            </View>
 
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-            <TouchableOpacity
-              style={[styles.button, { marginTop: 24 }]}
-              onPress={handleSubmitPuzzle}
-            >
-              <Text style={styles.buttonText}>Submit Answers</Text>
-            </TouchableOpacity>
+            <View style={styles.keypad}>
+              <View style={styles.keypadRow}>
+                <KeyButton label="1" onPress={() => handleDigitPress("1")} />
+                <KeyButton label="2" onPress={() => handleDigitPress("2")} />
+                <KeyButton label="3" onPress={() => handleDigitPress("3")} />
+                <KeyButton label="⌫" onPress={handleBackspace} isSecondary />
+              </View>
+
+              <View style={styles.keypadRow}>
+                <KeyButton label="4" onPress={() => handleDigitPress("4")} />
+                <KeyButton label="5" onPress={() => handleDigitPress("5")} />
+                <KeyButton label="6" onPress={() => handleDigitPress("6")} />
+                <KeyButton label="✓" onPress={handleSubmit} isPrimary />
+              </View>
+
+              <View style={styles.keypadRow}>
+                <KeyButton label="7" onPress={() => handleDigitPress("7")} />
+                <KeyButton label="8" onPress={() => handleDigitPress("8")} />
+                <KeyButton label="9" onPress={() => handleDigitPress("9")} />
+                <KeyButton label="0" onPress={() => handleDigitPress("0")} />
+              </View>
+            </View>
           </>
         )}
       </View>
@@ -164,70 +177,136 @@ export default function AlarmRinging() {
   );
 }
 
+function KeyButton({ label, onPress, isPrimary, isSecondary }) {
+  return (
+    <TouchableOpacity
+      style={[
+        styles.keyButton,
+        isPrimary && styles.keyButtonPrimary,
+        isSecondary && styles.keyButtonSecondary,
+      ]}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
+      <Text
+        style={[
+          styles.keyButtonText,
+          (isPrimary || isSecondary) && styles.keyButtonTextStrong,
+        ]}
+      >
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
   fullScreen: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "#0A5875",
     justifyContent: "center",
     alignItems: "center",
   },
   card: {
-    backgroundColor: "#fff",
-    padding: 24,
+    backgroundColor: "#ffffff",
+    paddingVertical: 32,
+    paddingHorizontal: 24,
     borderRadius: 20,
-    width: "85%",
-    maxWidth: 400,
+    width: "90%",
+    maxWidth: 420,
     alignItems: "center",
   },
   title: {
     fontSize: 32,
-    fontFamily: "Jersey10-Regular",
-    marginBottom: 12,
-    color: "#0A5875",
+    fontFamily: "Jersey10",
+    marginBottom: 8,
+    color: "#000",
   },
   text: {
     fontSize: 18,
     textAlign: "center",
-    color: "#333",
+    color: "#444",
+    fontFamily: "Jersey10",
   },
-  questionRow: {
-    flexDirection: "row",
-    alignItems: "center",
+  progressText: {
     marginTop: 8,
-    width: "100%",
-    justifyContent: "space-between",
-  },
-  questionText: {
-    fontSize: 20,
-    fontFamily: "Jersey10-Regular",
-    color: "#222",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    width: 80,
     fontSize: 18,
+    color: "#8C8C8C",
+    fontFamily: "Jersey10",
+  },
+  questionBig: {
+    marginTop: 28,
+    fontSize: 56,
+    color: "#000",
+    fontFamily: "Jersey10",
     textAlign: "center",
   },
-  button: {
-    backgroundColor: "#f4a30b",
-    paddingVertical: 12,
-    paddingHorizontal: 32,
+  answerBox: {
+    marginTop: 20,
+    borderWidth: 2,
+    borderColor: "#0A5875",
     borderRadius: 12,
-    marginTop: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    minWidth: 180,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  buttonText: {
-    color: "#fff",
-    fontSize: 20,
-    fontFamily: "Jersey10-Regular",
+  answerText: {
+    fontSize: 32,
+    color: "#000",
+    fontFamily: "Jersey10",
   },
   errorText: {
     marginTop: 8,
-    color: "#e53935",
+    color: "#E53935",
     fontSize: 14,
     textAlign: "center",
+    fontFamily: "Jersey10",
+  },
+  keypad: {
+    marginTop: 28,
+    width: "100%",
+  },
+  keypadRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  keyButton: {
+    flex: 1,
+    marginHorizontal: 4,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F4F4F4",
+  },
+  keyButtonPrimary: {
+    backgroundColor: "#f4a30b",
+  },
+  keyButtonSecondary: {
+    backgroundColor: "#E6F1FA",
+  },
+  keyButtonText: {
+    fontSize: 22,
+    color: "#000",
+    fontFamily: "Jersey10",
+  },
+  keyButtonTextStrong: {
+    fontWeight: "700",
+  },
+  primaryButton: {
+    backgroundColor: "#f4a30b",
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 10,
+    marginTop: 24,
+  },
+  primaryButtonText: {
+    color: "#fff",
+    fontSize: 24,
+    fontFamily: "Jersey10",
   },
 });
+

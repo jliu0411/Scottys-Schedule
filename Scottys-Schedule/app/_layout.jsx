@@ -129,7 +129,7 @@ export default function RootLayout() {
                   <TouchableOpacity onPress={() =>router.back()} style={{paddingHorizontal: 8}}>
                     <Image 
                       source = {require("../assets/arrows/leftArrow.png")}
-                      style = {{width: 32, height: 32}}
+                      style = {{width: 50, height: 50}}
                       resizeMode = "contain"
                     />
                   </TouchableOpacity>
@@ -138,7 +138,7 @@ export default function RootLayout() {
                   <TouchableOpacity onPress={() => router.push("/newAlarm")} style={{paddingHorizontal: 8}}>
                     <Image 
                       source = {require("../assets/buttons/addButton.png")}
-                      style = {{width: 32, height: 32}}
+                      style = {{width: 45, height: 45}}
                       resizeMode = "contain"
                     />
                   </TouchableOpacity>
@@ -156,7 +156,7 @@ export default function RootLayout() {
                   <TouchableOpacity onPress={() =>router.back()} style={{paddingHorizontal: 8}}>
                     <Image 
                       source = {require("../assets/arrows/leftArrow.png")}
-                      style = {{width: 32, height: 32}}
+                      style = {{width: 50, height: 50}}
                       resizeMode = "contain"
                     />
                   </TouchableOpacity>
@@ -175,7 +175,7 @@ export default function RootLayout() {
                   >
                     <Image
                       source={require("../assets/arrows/leftArrow.png")}
-                      style={{ width: 32, height: 32 }}
+                      style={{ width: 50, height: 50 }}
                       resizeMode="contain"
                     />
                   </TouchableOpacity>

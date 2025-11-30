@@ -12,6 +12,12 @@ import * as Notifications from "expo-notifications";
 const alarmLocalStorage = createContext();
 const STORAGE_KEY = "alarms";
 
+const NAG_INTERVAL_MS = 30 * 1000;
+const NAG_DURATION_MINUTES = 10;
+const NAG_COUNT = Math.ceil(
+  (NAG_DURATION_MINUTES * 60 * 1000) / NAG_INTERVAL_MS
+);
+
 const DAY_TO_INDEX = {
   Sun: 0,
   Mon: 1,
@@ -26,7 +32,6 @@ export const AlarmProvider = ({ children }) => {
   const [alarms, setAlarms] = useState([]);
   const [activeRingingAlarmId, setActiveRingingAlarmId] = useState(null);
 
-
   useEffect(() => {
     const loadAlarms = async () => {
       try {
@@ -40,12 +45,6 @@ export const AlarmProvider = ({ children }) => {
     };
 
     loadAlarms();
-  }, []);
-
-  useEffect(() => {
-    Notifications.cancelAllScheduledNotificationsAsync().catch((e) =>
-      console.log("Error cancelling all notifications:", e)
-    );
   }, []);
 
   useEffect(() => {
@@ -83,7 +82,12 @@ export const AlarmProvider = ({ children }) => {
     });
   };
 
-  const getNextTriggerTimeMs = (repeatDays, hour, minute, startFrom = new Date()) => {
+  const getNextTriggerTimeMs = (
+    repeatDays,
+    hour,
+    minute,
+    startFrom = new Date()
+  ) => {
     const start = new Date(startFrom);
     const baseToday = new Date(start);
     baseToday.setHours(hour);
@@ -135,22 +139,39 @@ export const AlarmProvider = ({ children }) => {
       return [];
     }
 
-    const fireDate = new Date(firstMs);
+    const ids = [];
+    const baseContent = {
+      title: "Alarm",
+      body: "Time to do your task!",
+      sound: "default",
+      data: { alarmId: alarm.id },
+    };
 
-    const id = await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "Alarm",
-        body: "Time to do your task!",
-        sound: "default",
-        data: { alarmId: alarm.id },
-      },
-      trigger: {
-        type: "date", 
-        date: fireDate,
-      },
-    });
+    for (let i = 0; i < NAG_COUNT; i++) {
+      const fireMs = firstMs + i * NAG_INTERVAL_MS;
+      const fireDate = new Date(fireMs);
 
-    return [id];
+      const trigger =
+        Platform.OS === "android"
+          ? {
+              type: "date",
+              date: fireDate,
+              channelId: "alarm", 
+            }
+          : {
+              type: "date",
+              date: fireDate,
+            };
+
+      const id = await Notifications.scheduleNotificationAsync({
+        content: baseContent,
+        trigger,
+      });
+
+      ids.push(id);
+    }
+
+    return ids;
   };
 
   const cancelNotificationsForAlarm = async (alarm) => {
@@ -253,12 +274,10 @@ export const AlarmProvider = ({ children }) => {
 
     const finalAlarm = { ...baseAlarm, notificationIds };
 
-    // 3) Save again with real notificationIds
     await saveAlarms((prev) =>
       prev.map((a) => (a.id === id ? finalAlarm : a))
     );
   };
-
 
   const markAlarmAsRinging = useCallback((id) => {
     if (id == null) return;
