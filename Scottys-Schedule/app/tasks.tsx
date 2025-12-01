@@ -1,15 +1,47 @@
-import { StyleSheet, Text, View, FlatList, Pressable, Image } from 'react-native'
-import React from 'react'
-import { Stack, Link } from 'expo-router'
+import { StyleSheet, Text, View, Pressable, Image } from 'react-native'
+import { useState, useEffect} from 'react'
+import { Stack } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import TaskCard from '../components/tasks/taskCard'
 import AddButton from '../components/addButton'
+import DailyTaskList from '@/components/tasks/dailyTaskList'
+import PreviousTaskList from '@/components/tasks/previousTaskList'
+import CurrentTaskList from '@/components/tasks/currentTaskList'
+import UpcomingTaskList from '@/components/tasks/upcomingTaskList'
 import LeftArrow from '../assets/arrows/leftArrow.png'
 import RightArrow from '../assets/arrows/rightArrow.png'
 import { useBooks } from '../hooks/useBooks'
 
 const Tasks = () => {
-  const { books } = useBooks()
+  const { fetchTasksByDate } = useBooks();
+
+  const today = new Date();
+  const normalizedToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
+
+  const [currentDate, setCurrentDate] = useState(normalizedToday);
+  const [showPrevious, setShowPrevious] = useState(false);
+  const [showCategories, setShowCategories] = useState(true);
+  const [showToday, setShowToday] = useState(true);
+
+  const handleIncrement = async () => {
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1, 0, 0, 0, 0);
+    await fetchTasksByDate(newDate);
+    setCurrentDate(newDate);
+  }
+  const handleDecrement = async () => {
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 1, 0, 0, 0, 0);
+    await fetchTasksByDate(newDate);
+    setCurrentDate(newDate);
+  }
+
+  useEffect(() => {
+    if (currentDate.valueOf() === normalizedToday.valueOf()) {
+      setShowToday(true);
+      setShowCategories(true);
+    } else {
+      setShowToday(false);
+      setShowCategories(false);
+    }
+  }, [currentDate])
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
@@ -19,34 +51,59 @@ const Tasks = () => {
         }}
       />
 
-      <FlatList 
-        data={books}
-        keyExtractor={(item => item.$id)}
-        renderItem={({ item }) => (
-          <Pressable>
-            <TaskCard 
-              id={item.$id} 
-              name={item.name} 
-              description={item.description} 
-              timeStarts={item.timeStarts}
-              timeEnds={item.timeEnds} 
-              isCompleted={item.isCompleted} 
-              color={'#013C58'} />
+      {showCategories && 
+        <View>
+          <Pressable onPress={() => setShowPrevious(!showPrevious)} style={styles.headerSection}>
+            <Text style={styles.header}>Previous Tasks</Text>
+            <Image source={LeftArrow} style={[styles.link, {transform: [{rotate: '-90deg'}], marginRight: 30}]} width={20} height={14}/>
           </Pressable>
-        )}
-      />
+      
+          {showPrevious && <PreviousTaskList/>}
+        
+          <Text style={[styles.header, {backgroundColor: '#F5A201'}]}>Current Task</Text>
+          <CurrentTaskList/>
+
+          <Text style={[styles.header, {backgroundColor: '#013C58'}]}>Upcoming Tasks</Text>
+          <UpcomingTaskList/>
+        </View>
+      }
+
+      {!showCategories && 
+        <View>
+          {(currentDate.valueOf() < today.valueOf()) ?
+            <DailyTaskList currentDate={currentDate} today={today} type='Previous' color='#595959'/> 
+            :
+            <DailyTaskList currentDate={currentDate} today={today} type='Upcoming' color='#013C58'/> 
+          }
+        </View>
+      }
+
       <View style={styles.alarmContainer}>
           <Text style={styles.nextAlarm}>Next Alarm:</Text>
           <Text style={styles.alarmTime}>6:00 AM</Text>
       </View>
       
       <SafeAreaView style={styles.bottom} edges={[ 'left', 'right', 'bottom']} >
-        <Link href='../alarms' style={styles.link}> <Image source={LeftArrow} style={styles.arrow}/> </Link>
+        <Pressable onPress={() => handleDecrement()} style={styles.link}>
+          <Image source={LeftArrow} style={styles.arrow}/>
+        </Pressable>
+        
+        {showToday && <Text style={styles.today}>Today</Text>}
+
+        {!showToday && 
+          <Pressable onPress={() => setCurrentDate(normalizedToday)} style={styles.jump}>
+            <Text style={styles.jumpText}>Jump to Today</Text>
+          </Pressable>
+        }
+
         <View style={{alignItems: 'center'}}>
-          <Text style={styles.dateText}>{new Date().toLocaleDateString([], {weekday:'long'})}</Text>
-          <Text style={styles.dateText}>{new Date().toLocaleDateString([], {month: 'long', day: 'numeric', year: 'numeric'})}</Text>
+          <Text style={styles.dateText}>{currentDate.toLocaleDateString([], {weekday:'long'})}</Text>
+          <Text style={styles.dateText}>{currentDate.toLocaleDateString([], {month: 'long', day: 'numeric', year: 'numeric'})}</Text>
         </View>
-        <Link href='../alarms' style={styles.link}> <Image source={RightArrow} style={styles.arrow}/> </Link>
+        
+        <Pressable onPress={() => handleIncrement()} style={styles.link}>
+          <Image source={RightArrow} style={styles.arrow}/>
+        </Pressable>
       </SafeAreaView>
     </SafeAreaView>
   )
@@ -73,11 +130,13 @@ const styles = StyleSheet.create({
   bottom: {
     backgroundColor: '#013C58',
     alignItems: 'center',
-    paddingTop: 20,
-    paddingHorizontal: 10,
+    paddingTop: 15,
     flexDirection: 'row',
     width: '100%',
-    justifyContent: 'space-between'
+    height: '22%',
+    justifyContent: 'space-between',
+    position: 'absolute',
+    bottom: 0
   },
   dateText: {
     fontFamily: 'Jersey10',
@@ -105,5 +164,43 @@ const styles = StyleSheet.create({
   arrow: {
     width: 55, 
     height: 35
-  }
+  },
+  header: {
+    fontFamily: 'Jersey10',
+    color: '#FFFF',
+    fontSize: 24,
+    padding: 8,
+    paddingLeft: 20
+  },
+  today: {
+    fontFamily: 'Jersey10',
+    color: '#F5A201',
+    fontSize: 32,
+    position: 'absolute',
+    width: '100%',
+    alignSelf: 'flex-start',
+    textAlign: 'center',
+    marginTop: 15
+  },
+  headerSection: {
+    flexDirection: 'row', 
+    backgroundColor: '#595959', 
+    width: '100%', 
+    alignItems: 'center', 
+    justifyContent: 'space-between'
+  },
+  jump: {
+    position: 'absolute', 
+    width: '100%', 
+    top: 20
+  },
+  jumpText: {
+    fontFamily: 'Jersey10', 
+    color: '#F5A201', 
+    fontSize: 24, 
+    textAlign: 'center', 
+    width: '40%', 
+    alignSelf: 'center'
+  },
+
 })

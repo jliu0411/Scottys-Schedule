@@ -46,7 +46,7 @@ const LandingTaskList = ({handlePhrase} : ListProps) => {
       </View>
     
       <Text style={[styles.header,{backgroundColor: '#013C58'}]}>Upcoming Tasks</Text>
-      {upcomingTasks.length === 0 ? <EmptyTaskCard type='Upcoming' color={'#013C58'}/> :
+      {upcomingTasks.length === 0 ? <EmptyTaskCard type='Upcoming Landing' color={'#013C58'}/> :
         <FlatList 
         data={upcomingTasks}
         keyExtractor={(item => item.$id)}
