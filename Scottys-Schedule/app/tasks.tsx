@@ -71,13 +71,9 @@ const Tasks = () => {
       {!showCategories && 
         <View>
           {(currentDate.valueOf() < today.valueOf()) ?
-            <View>
-              <DailyTaskList currentDate={currentDate} today={today} type='Previous' color='#595959'/> 
-            </View> 
+            <DailyTaskList currentDate={currentDate} today={today} type='Previous' color='#595959'/> 
             :
-            <View>
-              <DailyTaskList currentDate={currentDate} today={today} type='Upcoming' color='#013C58'/> 
-            </View>
+            <DailyTaskList currentDate={currentDate} today={today} type='Upcoming' color='#013C58'/> 
           }
         </View>
       }
@@ -88,18 +84,26 @@ const Tasks = () => {
       </View>
       
       <SafeAreaView style={styles.bottom} edges={[ 'left', 'right', 'bottom']} >
-        <Pressable onPress={() => handleDecrement()} style={styles.link}> <Image source={LeftArrow} style={styles.arrow}/> </Pressable>
-          {showToday && <Text style={styles.today}>Today</Text>}
-          {!showToday && 
-            <Pressable onPress={() => setCurrentDate(normalizedToday)} style={styles.jump}>
-              <Text style={styles.jumpText}>Jump to Today</Text>
-            </Pressable>
-          }
-          <View style={{alignItems: 'center'}}>
-            <Text style={styles.dateText}>{currentDate.toLocaleDateString([], {weekday:'long'})}</Text>
-            <Text style={styles.dateText}>{currentDate.toLocaleDateString([], {month: 'long', day: 'numeric', year: 'numeric'})}</Text>
-          </View>
-        <Pressable onPress={() => handleIncrement()} style={styles.link}> <Image source={RightArrow} style={styles.arrow}/> </Pressable>
+        <Pressable onPress={() => handleDecrement()} style={styles.link}>
+          <Image source={LeftArrow} style={styles.arrow}/>
+        </Pressable>
+        
+        {showToday && <Text style={styles.today}>Today</Text>}
+
+        {!showToday && 
+          <Pressable onPress={() => setCurrentDate(normalizedToday)} style={styles.jump}>
+            <Text style={styles.jumpText}>Jump to Today</Text>
+          </Pressable>
+        }
+
+        <View style={{alignItems: 'center'}}>
+          <Text style={styles.dateText}>{currentDate.toLocaleDateString([], {weekday:'long'})}</Text>
+          <Text style={styles.dateText}>{currentDate.toLocaleDateString([], {month: 'long', day: 'numeric', year: 'numeric'})}</Text>
+        </View>
+        
+        <Pressable onPress={() => handleIncrement()} style={styles.link}>
+          <Image source={RightArrow} style={styles.arrow}/>
+        </Pressable>
       </SafeAreaView>
     </SafeAreaView>
   )
