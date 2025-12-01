@@ -11,8 +11,10 @@ export const BooksContext = createContext()
 export function BooksProvider({ children }) {
     const [ books, setBooks ] = useState([]);
     const [ progress, setProgress ] = useState(0);
+    const [ previousTasks, setPreviousTasks ] = useState([]);
     const [ currentTasks, setCurrentTasks ] = useState([]);
     const [ upcomingTasks, setUpcomingTasks ] = useState([]);
+    const [ dailyTasks, setDailyTasks ] = useState([]);
     const { user } = useUser();
 
     const date = new Date();
@@ -71,6 +73,39 @@ export function BooksProvider({ children }) {
         }
     }
 
+    async function fetchTasksByDate(date) {
+        try {
+            const response = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTION_ID,
+                [
+                    Query.equal('userID', user.$id),
+                    Query.equal('date', date)
+                ]
+            )
+            setDailyTasks(response?.documents ?? []);
+        } catch (error) {
+            console.error(error.message)
+        }
+    }
+
+    async function fetchPreviousTasks() {
+        try {
+            const response = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTION_ID,
+                [
+                    Query.equal('userID', user.$id),
+                    Query.equal('date', normalizedDate),
+                    Query.lessThan('timeEnds', currentTimeString)
+                ]
+            )
+            setPreviousTasks(response?.documents ?? []);
+        } catch (error) {
+            console.error(error.message)
+        }
+    }
+
     async function fetchCurrentTasks() {
         try {
             console.log('fetching current tasks');
@@ -103,8 +138,7 @@ export function BooksProvider({ children }) {
                     Query.greaterThan('timeStarts', currentTimeString),
                 ]
             )
-            const tasks = (response?.documents ?? []).sort(sortTasks)
-            setUpcomingTasks(tasks);
+            setUpcomingTasks(response?.documents ?? []);
         } catch (error) {
             console.error(error.message)
         }
@@ -136,6 +170,7 @@ export function BooksProvider({ children }) {
                 COLLECTION_ID,
                 id
             )
+            await fetchPreviousTasks();
             await fetchCurrentTasks();
             await fetchUpcomingTasks();
             await fetchProgress();
@@ -154,6 +189,7 @@ export function BooksProvider({ children }) {
                 { 'isCompleted': !currentStatus }
             );
             await fetchProgress();
+            await fetchPreviousTasks();
             await fetchUpcomingTasks();
             await fetchCurrentTasks();
         } catch (error) {
@@ -216,6 +252,7 @@ export function BooksProvider({ children }) {
 
         if (user) {
             fetchBooks();
+            fetchPreviousTasks();
             fetchCurrentTasks();
             fetchUpcomingTasks();
             fetchProgress();
@@ -238,6 +275,7 @@ export function BooksProvider({ children }) {
                         return updatedBooks.sort(sortTasks);
                     });
                 }
+                await fetchPreviousTasks();
                 await fetchCurrentTasks();
                 await fetchUpcomingTasks();
                 await fetchProgress();
@@ -245,6 +283,7 @@ export function BooksProvider({ children }) {
 
     } else {
       setBooks([]);
+      setPreviousTasks([]);
       setCurrentTasks([]);
       setUpcomingTasks([]);
       setProgress(0);
@@ -258,7 +297,7 @@ export function BooksProvider({ children }) {
 
 
     return (
-        <BooksContext.Provider value={{ books, fetchBooks, fetchCurrentTasks, currentTasks, fetchUpcomingTasks, upcomingTasks, fetchBookByID, createBook, deleteBook, changeIsCompleted, fetchProgress, progress, updateBook }}>
+        <BooksContext.Provider value={{ books, fetchBooks, fetchPreviousTasks, previousTasks, fetchCurrentTasks, currentTasks, fetchUpcomingTasks, upcomingTasks, fetchTasksByDate, dailyTasks, createBook, deleteBook, updateBook, fetchBookByID, progress, changeIsCompleted }}>
             {children}
         </BooksContext.Provider>
     )
