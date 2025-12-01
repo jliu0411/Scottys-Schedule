@@ -4,6 +4,7 @@ import { StyleSheet, Text, View, TextInput, Pressable } from 'react-native'
 import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker'
 import RepeatsDropdown from '../../components/repeatsDropdown'
 import { useBooks } from "../../hooks/useBooks"
+import { getNextRepeatDate } from '@/contexts/repeats'
 
 type taskData = {
     $id: string
@@ -22,13 +23,15 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
   const realId = Array.isArray(id) ? id[0] : id; // safe
   const { deleteBook, updateBook, books } = useBooks()
   const router = useRouter()
-
+  const book = books?.find((b: taskData) => b.$id === realId);
+  
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimeStartsPicker, setShowTimeStartsPicker] = useState(false);
   const [showTimeEndsPicker, setShowTimeEndsPicker] = useState(false);
-
-  const book = books?.find((b: taskData) => b.$id === realId);
+  const [taskRepeats, setTaskRepeats] = useState<string[]>(book?.repeats || []); // initialize with current data
+  
   if (!book) return <Text>Book not found.</Text>
+  
   
   
   const onDateChange = (event : DateTimePickerEvent, newDate?: Date) => {
@@ -54,6 +57,7 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
   }
 
   const handleDelete = async () => {
+    if (!book) return;
     await deleteBook(id)
     router.replace('/landing')
   }
@@ -64,16 +68,21 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
       return;
     } 
 
-    const normalizedDate = new Date(book.date)
-    normalizedDate.setHours(0,0,0,0)
+      let newDate = new Date(book.date);
+      if (taskRepeats.length > 0) {
+        const now = new Date();
+        if (newDate < now) {
+          newDate = getNextRepeatDate(now, taskRepeats, book.timeEnds); 
+        }
+      }
 
     await updateBook(book.$id, {
       name: book.name,
       description: book.description,
-      date: normalizedDate.toISOString(),
+      date: newDate.toISOString,
       timeStarts: book.timeStarts,
       timeEnds: book.timeEnds,
-      repeats: book.repeats,
+      repeats: taskRepeats,
       isCompleted: book.isCompleted
     })
 
@@ -160,7 +169,8 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
         </Pressable>
 
         <Text style={styles.subheader}> Repeats</Text>
-        <RepeatsDropdown repeats={repeats}/>
+        <Text style={styles.selectedTextStyle}>{taskRepeats.length === 0 ? 'N/A' : book.repeats?.join(', ')}</Text>
+        <RepeatsDropdown repeats={taskRepeats} setRepeats={(days) => setTaskRepeats(days)}/>
 
         <Pressable onPress={handleSave} style={styles.createButton} >
           <Text style={styles.createButtonText}>Save Changes</Text>
@@ -214,5 +224,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Jersey10',
     fontSize: 30,
     textAlign: 'center'
-  }
+  },
+  selectedTextStyle: {
+    marginHorizontal: 50,
+    fontSize: 14,
+    fontFamily: 'Jersey10'
+  },
 })
+

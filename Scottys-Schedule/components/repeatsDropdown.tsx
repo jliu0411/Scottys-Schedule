@@ -14,14 +14,13 @@ const data = [
 ]
 
 interface RepeatsProps {
-  repeats: string[]
+  repeats: string[];
+  setRepeats: (days: string[]) => void;
 }
 
-const RepeatsDropdown = ({repeats} : RepeatsProps) => {
+const RepeatsDropdown = ({repeats, setRepeats} : RepeatsProps) => {
   const [selected, setSelected] = useState<string[]>([]);
-  const setRepeats = (selected: string[]) => {
-    repeats = selected;
-  }
+
 
   return (
     <View style={styles.container}>
@@ -36,9 +35,9 @@ const RepeatsDropdown = ({repeats} : RepeatsProps) => {
           valueField="value"
           placeholder=" Select days"
           value={selected}
-          onChange={(item) => {
-            setSelected(item);
-            setRepeats(selected);
+          onChange={(items) => {
+            setSelected(items);
+            setRepeats(items);
           }}
           renderLeftIcon={() => (
             <AntDesign
