@@ -6,22 +6,20 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useAlarms } from "../components/alarms/alarmLocalStorage";
+import { useAlarms } from "../components/alarms/alarmContext";
 
-function generateQuestions(count) {
-  const qs = [];
-  for (let i = 0; i < count; i++) {
-    const a = Math.floor(Math.random() * 9) + 1;
-    const b = Math.floor(Math.random() * 9) + 1;
-    qs.push({ a, b });
-  }
-  return qs;
-}
+import {
+  generateQuestions,
+  scheduleNagNotification,
+  cancelNagNotification,
+  clearAlarmNotificationsFromTray,
+} from "../components/alarms/alarmRingingHelpers";
 
 export default function AlarmRinging() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const alarmId = Number(id);
+
+  const alarmId = Array.isArray(id) ? id[0] : id;
 
   const {
     alarms,
@@ -35,15 +33,40 @@ export default function AlarmRinging() {
     [alarms, alarmId]
   );
 
+  const [nagNotificationId, setNagNotificationId] = useState(null);
+
   useEffect(() => {
-    if (Number.isFinite(alarmId)) {
+    if (alarmId) {
       cancelFutureNotificationsForAlarm(alarmId);
     }
-  }, [alarmId, cancelFutureNotificationsForAlarm]);
+  }, [alarmId]); 
+
+  useEffect(() => {
+    if (!alarmId) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const id = await scheduleNagNotification(alarmId);
+        if (!cancelled && id) {
+          setNagNotificationId(id);
+        }
+      } catch (e) {
+        console.log("Error scheduling nag notification:", e);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [alarmId]);
 
   useEffect(() => {
     return () => {
-      clearRingingAlarm(alarmId);
+      if (alarmId) {
+        clearRingingAlarm(alarmId);
+      }
     };
   }, [alarmId, clearRingingAlarm]);
 
@@ -54,12 +77,24 @@ export default function AlarmRinging() {
 
   const currentQuestion = questions[currentIndex];
 
+  const stopNagNotification = async () => {
+    if (!nagNotificationId) return;
+    await cancelNagNotification(nagNotificationId);
+    setNagNotificationId(null);
+  };
+
   const handleTurnOff = async () => {
-    if (Number.isFinite(alarmId)) {
+    await stopNagNotification();
+
+    await clearAlarmNotificationsFromTray(alarmId);
+
+    if (alarmId) {
       const shouldStayEnabled =
         Array.isArray(alarm?.repeatDays) && alarm.repeatDays.length > 0;
+
       await updateAlarm(alarmId, { enabled: shouldStayEnabled });
     }
+
     clearRingingAlarm(alarmId);
     router.replace("/alarms");
   };
@@ -309,4 +344,3 @@ const styles = StyleSheet.create({
     fontFamily: "Jersey10",
   },
 });
-

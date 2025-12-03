@@ -17,14 +17,14 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import TimePickerSheet from "../components/alarms/TimePickerSheet";
 import RepeatSelectorSheet from "../components/alarms/RepeatSelectorSheet";
 import { formatRepeatDays } from "../components/alarms/formatRepeatDays";
-import { useAlarms } from "../components/alarms/alarmLocalStorage";
+import { useAlarms } from "../components/alarms/alarmContext.jsx";
 
 const ALL_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function EditAlarm() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const alarmId = Number(id);
+  const alarmId = Array.isArray(id) ? id[0] : id;
 
   const { alarms, updateAlarm, deleteAlarm } = useAlarms();
 

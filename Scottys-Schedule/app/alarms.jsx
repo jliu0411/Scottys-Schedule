@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import React, { useMemo } from "react";
 import { useRouter } from "expo-router";
-import { useAlarms } from "../components/alarms/alarmLocalStorage";
+import { useAlarms } from "../components/alarms/alarmContext.jsx";
 
 const formatRepeatDays = (days) => {
   if (!days || days.length === 0) return "ONE-TIME";

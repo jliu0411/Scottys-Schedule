@@ -10,7 +10,7 @@ import { useRouter } from "expo-router";
 import TimePickerSheet from "../components/alarms/TimePickerSheet";
 import RepeatSelectorSheet from "../components/alarms/RepeatSelectorSheet";
 import { formatRepeatDays } from "../components/alarms/formatRepeatDays";
-import { useAlarms } from "../components/alarms/alarmLocalStorage";
+import { useAlarms } from "../components/alarms/alarmContext.jsx";
 
 export default function NewAlarm() {
   const router = useRouter();
@@ -41,11 +41,8 @@ export default function NewAlarm() {
   };
 
   const handleCreateAlarm = () => {
-    const id = Date.now();
-
     addAlarm({
-      id,
-      time: time.getTime(),
+      time: time.getTime(), 
       repeatDays,
       puzzle,
       enabled: true,
