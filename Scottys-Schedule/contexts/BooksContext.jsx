@@ -1,10 +1,11 @@
-import { createContext, useEffect, useState } from 'react'
+import { createContext, useEffect, useState, useRef } from 'react'
 import { AppState } from 'react-native'
 import { databases, client } from '../lib/appwrite'
 import { ID, Permission, Query, Role } from 'react-native-appwrite'
 import { useUser } from '../hooks/useUser'
 import { getNextRepeatDate } from '../contexts/repeats'
-import {registerForNotificationsAsync, scheduleTaskNotification, cancelTaskNotification} from '../hooks/useNotification'
+import { registerForNotificationsAsync, scheduleTaskNotification, cancelTaskNotification } from '../hooks/useNotification'
+import * as Notifications from 'expo-notifications';
 
 const DATABASE_ID = "68fd56d40037f2743501"
 const COLLECTION_ID = "books"
@@ -12,13 +13,34 @@ const COLLECTION_ID = "books"
 export const BooksContext = createContext()
 
 export function BooksProvider({ children }) {
-    const [ books, setBooks ] = useState([]);
-    const [ progress, setProgress ] = useState(0);
-    const [ previousTasks, setPreviousTasks ] = useState([]);
-    const [ currentTasks, setCurrentTasks ] = useState([]);
-    const [ upcomingTasks, setUpcomingTasks ] = useState([]);
-    const [ dailyTasks, setDailyTasks ] = useState([]);
+    const [books, setBooks] = useState([]);
+    const [progress, setProgress] = useState(0);
+    const [previousTasks, setPreviousTasks] = useState([]);
+    const [currentTasks, setCurrentTasks] = useState([]);
+    const [upcomingTasks, setUpcomingTasks] = useState([]);
+    const [dailyTasks, setDailyTasks] = useState([]);
     const { user } = useUser();
+    const unsubscribeRealtime = useRef(null);
+    const responseListener = useRef();
+
+    const refreshAllData = async () => {
+        if (!user) {
+            console.log("Skipping refresh: No user logged in.");
+            return;
+        }
+
+        console.log("Refreshing all data...");
+        try {
+            await Promise.all([
+                fetchCurrentTasks(),
+                fetchPreviousTasks(),
+                fetchUpcomingTasks(),
+                fetchProgress()
+            ]);
+        } catch (e) {
+            console.error("Refresh failed", e);
+        }
+    };
 
     const sortTasks = (a, b) => {
         const dateA = new Date(a.date)
@@ -41,33 +63,27 @@ export function BooksProvider({ children }) {
     }
 
     async function fetchBooks() {
+        if (!user) return;
         try {
-            console.log('fetching books');
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
-                [   
-                    Query.equal('userID', user.$id),
-                ]
+                [Query.equal('userID', user.$id)]
             );
 
             const sortedTasks = response.documents.sort((a, b) => {
                 const dateA = new Date(a.date);
                 const dateB = new Date(b.date);
-
                 const [hoursA, minutesA] = a.timeEnds.split(':').map(Number);
                 const [hoursB, minutesB] = b.timeEnds.split(':').map(Number);
-
                 dateA.setHours(hoursA, minutesA);
                 dateB.setHours(hoursB, minutesB);
-
                 return dateA.getTime() - dateB.getTime();
             });
 
             setBooks(sortedTasks)
-
         } catch (error) {
-            console.error(error.message)
+            console.error("fetchBooks error:", error.message)
         }
     }
 
@@ -116,12 +132,11 @@ export function BooksProvider({ children }) {
     async function fetchCurrentTasks() {
         const { normalizedDate, currentTimeString } = getTimeParams();
         try {
-            //console.log('fetching current tasks');
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
-                [   
-                    Query.equal('userID', user.$id), 
+                [
+                    Query.equal('userID', user.$id),
                     Query.equal('date', normalizedDate),
                     Query.greaterThan('timeEnds', currentTimeString),
                     Query.lessThanEqual('timeStarts', currentTimeString),
@@ -156,23 +171,24 @@ export function BooksProvider({ children }) {
     async function createBook(data) {
         try {
             const notificationId = await scheduleTaskNotification(
-                data.name, 
-                data.date, 
+                data.name,
+                data.date,
                 data.timeStarts
             );
 
-             await databases.createDocument(
+            await databases.createDocument(
                 DATABASE_ID,
                 COLLECTION_ID,
                 ID.unique(),
-                {...data, userID: user.$id, notificationId: notificationId || null},
-                
+                { ...data, userID: user.$id, notificationId: notificationId || null },
+
                 [
                     Permission.read(Role.user(user.$id)),
                     Permission.update(Role.user(user.$id)),
                     Permission.delete(Role.user(user.$id)),
                 ]
             );
+            refreshAllData();
         } catch (error) {
             console.error(error.message)
         }
@@ -214,7 +230,7 @@ export function BooksProvider({ children }) {
             await databases.updateDocument(
                 DATABASE_ID,
                 COLLECTION_ID,
-                id, 
+                id,
                 { 'isCompleted': !currentStatus }
             );
             await fetchProgress();
@@ -229,11 +245,10 @@ export function BooksProvider({ children }) {
     async function fetchProgress() {
         const { normalizedDate } = getTimeParams();
         try {
-            //console.log('fetching progress');
             const completedTasks = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
-                [   
+                [
                     Query.equal('userID', user.$id),
                     Query.equal('date', normalizedDate),
                     Query.equal('isCompleted', true)
@@ -244,7 +259,7 @@ export function BooksProvider({ children }) {
             const allTasks = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
-                [   
+                [
                     Query.equal('userID', user.$id),
                     Query.equal('date', normalizedDate)
                 ]
@@ -256,9 +271,9 @@ export function BooksProvider({ children }) {
                 return;
             }
 
-            const progressCalc = (completed/total).toFixed(2);
+            const progressCalc = (completed / total).toFixed(2);
             setProgress(progressCalc);
-        } catch(error) {
+        } catch (error) {
             console.error(error.message)
         }
     }
@@ -275,8 +290,8 @@ export function BooksProvider({ children }) {
 
             if (!data.isCompleted) {
                 newNotificationId = await scheduleTaskNotification(
-                    data.name, 
-                    data.date, 
+                    data.name,
+                    data.date,
                     data.timeStarts
                 );
             }
@@ -285,40 +300,53 @@ export function BooksProvider({ children }) {
                 DATABASE_ID,
                 COLLECTION_ID,
                 id,
-                { ...data, notificationId: newNotificationId || null}
-            ) 
-        }catch (error) {
+                { ...data, notificationId: newNotificationId || null }
+            )
+            refreshAllData();
+        } catch (error) {
             console.error(error.message)
         }
     }
 
     useEffect(() => {
         registerForNotificationsAsync();
-    }, []);
+
+        if (responseListener.current) {
+            responseListener.current.remove();
+        }
+
+        responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+            console.log("Notification tapped!");
+            refreshAllData();
+        });
+
+        return () => {
+            if (responseListener.current) {
+                responseListener.current.remove();
+            }
+        };
+    }, [user]);
 
     useEffect(() => {
         if (!user) return;
-        
+
         const interval = setInterval(() => {
-            fetchCurrentTasks();
-            fetchPreviousTasks();
-            fetchUpcomingTasks();
+            refreshAllData();
         }, 5000);
 
         return () => clearInterval(interval);
     }, [user]);
 
     useEffect(() => {
-        let unsubscribe = null;
         const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`;
 
         const startRealtime = () => {
-            if (unsubscribe) return;
-            
+            if (unsubscribeRealtime.current) return;
+
             console.log("Starting Realtime...");
-            unsubscribe = client.subscribe(channel, async (response) => {
+            unsubscribeRealtime.current = client.subscribe(channel, async (response) => {
                 const { payload, events } = response;
-                
+
                 if (events[0].includes("create")) {
                     setBooks(prev => [...prev, payload].sort(sortTasks));
                 }
@@ -331,43 +359,35 @@ export function BooksProvider({ children }) {
                         return updatedBooks.sort(sortTasks);
                     });
                 }
-                await fetchPreviousTasks();
-                await fetchCurrentTasks();
-                await fetchUpcomingTasks();
-                await fetchProgress();
+                refreshAllData();
             });
         };
 
         const stopRealtime = () => {
-            if (unsubscribe) {
+            if (unsubscribeRealtime.current) {
                 console.log("Stopping Realtime...");
                 try {
-                    unsubscribe();
+                    unsubscribeRealtime.current();
                 } catch (e) {
-                    console.log("Realtime cleanup:", e.message);
+                    console.log("Realtime cleanup error (harmless):", e.message);
                 }
-                unsubscribe = null;
+                unsubscribeRealtime.current = null;
             }
         };
 
         if (user) {
             fetchBooks();
-            fetchPreviousTasks();
-            fetchCurrentTasks();
-            fetchUpcomingTasks();
-            fetchProgress();
+            refreshAllData();
             startRealtime();
 
             const subscription = AppState.addEventListener('change', (nextAppState) => {
                 if (nextAppState === 'active') {
                     console.log("App active, refreshing data...");
                     fetchBooks();
-                    fetchCurrentTasks();
-                    fetchPreviousTasks();
-                    fetchUpcomingTasks();
-                    startRealtime();
-                } else if (nextAppState.match(/inactive|background/)) {
-                    stopRealtime();
+                    refreshAllData();
+                    if (!unsubscribeRealtime.current) {
+                        startRealtime();
+                    }
                 }
             });
 
@@ -381,24 +401,26 @@ export function BooksProvider({ children }) {
             setCurrentTasks([]);
             setUpcomingTasks([]);
             setProgress(0);
+            stopRealtime();
         }
     }, [user]);
 
     useEffect(() => {
         if (!books.length) return;
 
-        books.forEach(async task => {
-            const taskDate = new Date(task.date);
+        const checkRepeats = async () => {
             const now = new Date();
-
-            if (taskDate < now && task.repeats?.length > 0) {
-            const nextDate = getNextRepeatDate(now, task.repeats, task.timeEnds);
-            await updateBook(task.$id, { date: nextDate.toISOString() });
+            for (const task of books) {
+                const taskDate = new Date(task.date);
+                if (taskDate < now && task.repeats?.length > 0) {
+                    const nextDate = getNextRepeatDate(now, task.repeats, task.timeEnds);
+                    await updateBook(task.$id, { date: nextDate.toISOString() });
+                }
             }
-        });
-    }, [books]); 
+        };
 
-
+        checkRepeats();
+    }, [books]);
 
     return (
         <BooksContext.Provider value={{ books, fetchBooks, fetchPreviousTasks, previousTasks, fetchCurrentTasks, currentTasks, fetchUpcomingTasks, upcomingTasks, fetchTasksByDate, dailyTasks, createBook, deleteBook, updateBook, fetchBookByID, progress, changeIsCompleted }}>
