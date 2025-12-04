@@ -13,7 +13,7 @@ import {
   scheduleNagNotification,
   cancelNagNotification,
   clearAlarmNotificationsFromTray,
-} from "../components/alarms/alarmRingingHelpers";
+} from "../components/alarms/alarmRingingHelper";
 
 export default function AlarmRinging() {
   const router = useRouter();

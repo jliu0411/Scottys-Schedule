@@ -2,7 +2,7 @@ import { DAY_TO_INDEX } from "./alarmConstants";
 
 export const mapDocToAlarm = (doc) => ({
   id: doc.$id,                  
-  time: doc.time != null ? doc.time * 1000 : doc.time, 
+  time: doc.timer != null ? doc.timer * 1000 : doc.timer, 
   repeatDays: doc.repeatDays || [],
   puzzle: doc.puzzle ?? false,
   enabled: doc.enabled ?? true,

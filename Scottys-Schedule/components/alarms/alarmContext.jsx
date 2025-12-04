@@ -1,5 +1,3 @@
-
-
 import React, {
   createContext,
   useCallback,
@@ -22,6 +20,7 @@ import {
 } from "./alarmContextHelper/alarmNotifications";
 
 import { useUser } from "../../hooks/useUser";
+
 
 const alarmContext = createContext();
 
@@ -47,7 +46,7 @@ export const AlarmProvider = ({ children }) => {
     setupNotifications();
   }, []);
 
-  const addAlarm = async ({ time, repeatDays, puzzle, enabled }) => {
+  const addAlarm = async ({ timer, repeatDays, puzzle, enabled }) => {
     try {
       if (!user) {
         console.warn("addAlarm called with no logged-in user");
@@ -55,13 +54,13 @@ export const AlarmProvider = ({ children }) => {
       }
 
       const baseAlarm = await createAlarmInAppwrite({
-        time,
+        timer,
         repeatDays,
         puzzle,
         enabled,
         userId: user.$id, 
       });
-
+      //user.$id
       let notificationIds = [];
       if (baseAlarm.enabled) {
         notificationIds = await scheduleNotificationsForAlarm(baseAlarm);

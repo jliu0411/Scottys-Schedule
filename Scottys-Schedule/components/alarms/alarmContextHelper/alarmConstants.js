@@ -1,5 +1,5 @@
-export const DATABASE_ID = "68f80da00030dc769415";
-export const COLLECTION_ID = "books";
+export const DATABASE_ID = "68fd56d40037f2743501"
+export const COLLECTION_ID = "books"
 
 export const DAY_TO_INDEX = {
   Sun: 0,

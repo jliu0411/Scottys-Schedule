@@ -42,7 +42,7 @@ export default function NewAlarm() {
 
   const handleCreateAlarm = () => {
     addAlarm({
-      time: time.getTime(), 
+      timer: time.getTime(), 
       repeatDays,
       puzzle,
       enabled: true,

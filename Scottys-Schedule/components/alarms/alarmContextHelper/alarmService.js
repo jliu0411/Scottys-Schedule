@@ -1,6 +1,6 @@
 import { databases } from "../../../lib/appwrite.js";
 import { ID, Permission, Role, Query } from "react-native-appwrite";
-import { DATABASE_ID, COLLECTION_ID } from "./alarmConstants.js";
+import { DATABASE_ID, COLLECTION_ID} from "./alarmConstants.js";
 import { mapDocToAlarm } from "./alarmUtils.js";
 
 export const loadAlarmsFromAppwrite = async (userId) => {
@@ -25,7 +25,7 @@ export const loadAlarmsFromAppwrite = async (userId) => {
 };
 
 export const createAlarmInAppwrite = async ({
-  time,
+  timer,
   repeatDays,
   puzzle,
   enabled,
@@ -41,7 +41,7 @@ export const createAlarmInAppwrite = async ({
     ID.unique(),
     {
       userID: userId, 
-      time: Math.floor(time / 1000),
+      timer: Math.floor(timer / 1000),
       repeatDays,
       puzzle,
       enabled,
@@ -58,7 +58,7 @@ export const createAlarmInAppwrite = async ({
 
 export const updateAlarmInAppwrite = async (id, updatedAlarm) => {
   await databases.updateDocument(DATABASE_ID, COLLECTION_ID, id, {
-    time: Math.floor(updatedAlarm.time / 1000), 
+    timer: Math.floor(updatedAlarm.time / 1000), 
     repeatDays: updatedAlarm.repeatDays,
     puzzle: updatedAlarm.puzzle,
     enabled: updatedAlarm.enabled,
