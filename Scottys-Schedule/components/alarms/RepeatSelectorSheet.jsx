@@ -28,7 +28,7 @@ export default function RepeatSelectorSheet({
   const anchoredStyle = anchor
     ? {
         position: "absolute",
-        top: anchor.y + 47,
+        top: anchor.y + (anchor.height ?? 0) + 55,
         left: anchor.x,
         width: anchor.width,
       }

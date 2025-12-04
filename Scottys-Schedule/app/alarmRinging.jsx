@@ -10,8 +10,6 @@ import { useAlarms } from "../components/alarms/alarmContext";
 
 import {
   generateQuestions,
-  scheduleNagNotification,
-  cancelNagNotification,
   clearAlarmNotificationsFromTray,
 } from "../components/alarms/alarmRingingHelper";
 
@@ -32,37 +30,11 @@ export default function AlarmRinging() {
     [alarms, alarmId]
   );
 
-  const [nagNotificationIds, setNagNotificationIds] = useState([]);
-
   useEffect(() => {
     if (alarmId) {
       cancelFutureNotificationsForAlarm(alarmId);
     }
   }, [alarmId]); 
-
-  useEffect(() => {
-    if (!alarmId) return;
-
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const ids = await scheduleNagNotification(alarmId);
-        if (!cancelled && ids && ids.length > 0) {
-          setNagNotificationIds(ids);
-        }
-      } catch (e) {
-        console.log("Error scheduling nag notification:", e);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-      if (nagNotificationIds.length > 0) {
-        cancelNagNotification(nagNotificationIds);
-      }
-    };
-  }, [alarmId]);
 
   useEffect(() => {
     return () => {
@@ -79,23 +51,15 @@ export default function AlarmRinging() {
 
   const currentQuestion = questions[currentIndex];
 
-  const stopNagNotification = async () => {
-    if (!nagNotificationIds || nagNotificationIds.length === 0) return;
-    
-    await cancelNagNotification(nagNotificationIds);
-    setNagNotificationIds([]);
-  };
-
   const handleTurnOff = async () => {
-    await stopNagNotification();
+    if (alarmId) {
+      await cancelFutureNotificationsForAlarm(alarmId);
+    }
 
     await clearAlarmNotificationsFromTray(alarmId);
 
     if (alarmId) {
-      const shouldStayEnabled =
-        Array.isArray(alarm?.repeatDays) && alarm.repeatDays.length > 0;
-
-      await updateAlarm(alarmId, { enabled: shouldStayEnabled });
+      await updateAlarm(alarmId, { enabled: false });
     }
 
     clearRingingAlarm(alarmId);

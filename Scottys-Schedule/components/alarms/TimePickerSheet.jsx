@@ -19,7 +19,6 @@ export default function TimePickerSheet({ visible, time, onChange, onClose }) {
     <DateTimePicker
       value={time}
       mode="time"
-      display="spinner"
       onChange={handleChange}
     />
   );

@@ -12,10 +12,15 @@ export const setupNotifications = async () => {
     if (Platform.OS === "android") {
       await Notifications.setNotificationChannelAsync("alarm", {
         name: "Alarms",
-        importance: Notifications.AndroidImportance.HIGH,
+        importance: Notifications.AndroidImportance.MAX,
         sound: "default",
         vibrationPattern: [0, 250, 250, 250],
         lightColor: "#FF231F7C",
+        enableLights: true,
+        enableVibrate: true,
+        bypassDnd: true,
+        lockscreenVisibility:
+          Notifications.AndroidNotificationVisibility.PUBLIC,
       });
     }
   } catch (e) {
@@ -46,21 +51,54 @@ export const scheduleNotificationsForAlarm = async (alarm) => {
 
   const fireDate = new Date(firstMs);
 
-  const id = await Notifications.scheduleNotificationAsync({
-    content: {
-      title: "Alarm",
-      body: "Time to do your task!",
-      sound: "default",
-      data: { alarmId: alarm.id }, 
-    },
-    trigger: {
-      channelId: "alarm",
-      type: "date",
-      date: fireDate,
+  const buildContent = (extraData = {}) => ({
+    title: "Alarm",
+    body: "Time to do your task!",
+    sound: "default",
+    priority: Notifications.AndroidNotificationPriority.MAX,
+    sticky: true,
+    data: {
+      alarmId: String(alarm.id),
+      ...extraData,
     },
   });
 
-  return [id];
+  const ids = [];
+
+  const scheduleDateNotification = async (date, extraData = {}) => {
+    const trigger = {
+      channelId: "alarm",
+      type: "date",
+      date,
+      allowWhileIdle: true,
+    };
+
+    const notificationId = await Notifications.scheduleNotificationAsync({
+      content: buildContent(extraData),
+      trigger,
+    });
+
+    ids.push(notificationId);
+  };
+
+  await scheduleDateNotification(fireDate, { kind: "primary" });
+
+  const nagOffsetsSeconds = [60, 180, 300, 420, 540];
+  const nowMs = Date.now();
+
+  for (const offsetSeconds of nagOffsetsSeconds) {
+    const targetMs = firstMs + offsetSeconds * 1000;
+    if (targetMs <= nowMs) {
+      continue;
+    }
+
+    await scheduleDateNotification(new Date(targetMs), {
+      kind: "nag",
+      offsetSeconds,
+    });
+  }
+
+  return ids;
 };
 
 export const cancelNotificationsForAlarm = async (alarm) => {
