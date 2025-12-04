@@ -18,7 +18,6 @@ import {
 export default function AlarmRinging() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-
   const alarmId = Array.isArray(id) ? id[0] : id;
 
   const {
@@ -33,7 +32,7 @@ export default function AlarmRinging() {
     [alarms, alarmId]
   );
 
-  const [nagNotificationId, setNagNotificationId] = useState(null);
+  const [nagNotificationIds, setNagNotificationIds] = useState([]);
 
   useEffect(() => {
     if (alarmId) {
@@ -48,9 +47,9 @@ export default function AlarmRinging() {
 
     (async () => {
       try {
-        const id = await scheduleNagNotification(alarmId);
-        if (!cancelled && id) {
-          setNagNotificationId(id);
+        const ids = await scheduleNagNotification(alarmId);
+        if (!cancelled && ids && ids.length > 0) {
+          setNagNotificationIds(ids);
         }
       } catch (e) {
         console.log("Error scheduling nag notification:", e);
@@ -59,6 +58,9 @@ export default function AlarmRinging() {
 
     return () => {
       cancelled = true;
+      if (nagNotificationIds.length > 0) {
+        cancelNagNotification(nagNotificationIds);
+      }
     };
   }, [alarmId]);
 
@@ -78,9 +80,10 @@ export default function AlarmRinging() {
   const currentQuestion = questions[currentIndex];
 
   const stopNagNotification = async () => {
-    if (!nagNotificationId) return;
-    await cancelNagNotification(nagNotificationId);
-    setNagNotificationId(null);
+    if (!nagNotificationIds || nagNotificationIds.length === 0) return;
+    
+    await cancelNagNotification(nagNotificationIds);
+    setNagNotificationIds([]);
   };
 
   const handleTurnOff = async () => {

@@ -11,31 +11,49 @@ export function generateQuestions(count) {
 }
 
 export async function scheduleNagNotification(alarmId) {
-  if (!alarmId) return null;
+  if (!alarmId) return [];
 
-  const id = await Notifications.scheduleNotificationAsync({
-    content: {
-      title: "Alarm still ringing!",
-      body: "Solve the puzzle or turn off the alarm.",
-      sound: "default",
-      data: { alarmId },
-    },
-    trigger: {
-      seconds: 60, 
-      repeats: true,
-      channelId: "alarm",
-    },
-  });
+  const scheduledIds = [];
+  const now = Date.now();
 
-  return id;
+  for (let i = 0; i < 200; i++) {
+    const triggerTime = now + (i * 3000); // 0s, 3s, 6s...
+
+    // We use a try-catch inside the loop so one failure doesn't stop the rest
+    try {
+      const id = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Alarm still ringing!",
+          body: "Solve the puzzle or turn off the alarm.",
+          sound: "default", // Ensure your channel setup in Context enables sound
+          data: { alarmId },
+        },
+        trigger: {
+          date: new Date(triggerTime), // Trigger at specific timestamp
+          channelId: "alarm",
+        },
+      });
+      scheduledIds.push(id);
+    } catch (e) {
+      console.log("Failed to schedule individual nag:", e);
+    }
+  }
+
+  return scheduledIds; // Return ARRAY of IDs
 }
 
-export async function cancelNagNotification(nagNotificationId) {
-  if (!nagNotificationId) return;
+// MODIFIED: Accepts an Array of IDs
+export async function cancelNagNotification(nagNotificationIds) {
+  if (!nagNotificationIds || !Array.isArray(nagNotificationIds)) return;
+  
   try {
-    await Notifications.cancelScheduledNotificationAsync(nagNotificationId);
+    await Promise.all(
+      nagNotificationIds.map((id) => 
+        Notifications.cancelScheduledNotificationAsync(id)
+      )
+    );
   } catch (e) {
-    console.log("Error cancelling nag notification:", e);
+    console.log("Error cancelling nag notifications:", e);
   }
 }
 
