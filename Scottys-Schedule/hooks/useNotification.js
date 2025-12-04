@@ -10,11 +10,59 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export const getTriggerDate = (dateString, timeString) => {
+const parseDateInput = (input) => {
+  if (!input) {
+    return null;
+  }
+
+  if (input instanceof Date) {
+    return new Date(input.getFullYear(), input.getMonth(), input.getDate(), 0, 0, 0, 0);
+  }
+
+  if (typeof input === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
+      const [year, month, day] = input.split('-').map(Number);
+      return new Date(year, month - 1, day, 0, 0, 0, 0);
+    }
+
+    const parsed = new Date(input);
+    if (!Number.isNaN(parsed.getTime())) {
+      if (input.includes('T')) {
+        return new Date(parsed.getTime() + parsed.getTimezoneOffset() * 60000);
+      }
+      return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 0, 0, 0, 0);
+    }
+  }
+
+  return null;
+};
+
+const parseTimeString = (timeString) => {
+  if (typeof timeString !== 'string' || !timeString.includes(':')) {
+    throw new Error('Invalid time input');
+  }
+
+  const [hours, minutes] = timeString.split(':').map((part) => Number(part));
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    throw new Error('Invalid time input');
+  }
+
+  return { hours, minutes };
+};
+
+export const getTriggerDate = (dateInput, timeString) => {
   try {
-    const dateObj = new Date(dateString);
-    const [hours, minutes] = timeString.split(':').map(Number);
-    dateObj.setHours(hours, minutes, 0, 0);
+    if (!timeString) {
+      throw new Error('Invalid date/time input');
+    }
+
+    const dateObj = parseDateInput(dateInput);
+    if (!dateObj) {
+      throw new Error('Invalid date/time input');
+    }
+
+    const { hours, minutes } = parseTimeString(timeString);
+    dateObj.setHours(hours || 0, minutes || 0, 0, 0);
     return dateObj;
   } catch (e) {
     console.error("Error parsing date/time for notification", e);
@@ -49,8 +97,8 @@ export async function registerForNotificationsAsync() {
   return true;
 }
 
-export async function scheduleTaskNotification(title, dateString, timeString) {
-  const triggerDate = getTriggerDate(dateString, timeString);
+export async function scheduleTaskNotification(title, dateValue, timeString) {
+  const triggerDate = getTriggerDate(dateValue, timeString);
   const now = new Date();
 
   if (!triggerDate || triggerDate <= now) {

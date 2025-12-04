@@ -79,7 +79,7 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
     await updateBook(book.$id, {
       name: book.name,
       description: book.description,
-      date: newDate.toISOString,
+      date: newDate.toISOString(),
       timeStarts: book.timeStarts,
       timeEnds: book.timeEnds,
       repeats: taskRepeats,

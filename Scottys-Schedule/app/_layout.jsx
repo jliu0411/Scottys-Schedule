@@ -8,15 +8,61 @@ import "expo-router/entry";
 import { AlarmProvider } from "../components/alarms/alarmContext";
 import { BooksProvider } from "../contexts/BooksContext";
 import { Colors } from "../constants/Colors";
-import { useColorScheme, TouchableOpacity, Image } from "react-native";
+import { useColorScheme, TouchableOpacity, Image, LogBox } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { UserProvider } from "../contexts/UserContext";
 import LandingHeader from "../components/landing/landingHeader";
 import AlarmGate from "../components/alarms/AlarmGate";
 import NotificationNavigationHandler from "../components/alarms/NotificationNavigationHandler";
 
-import "@/assets/font/Jersey10-Regular.ttf"
-import 'expo-router/entry'
+import "@/assets/font/Jersey10-Regular.ttf";
+import "expo-router/entry";
+
+if (!console._scottysRealtimePatched) {
+  const suppressedRealtimeMessages = [
+    "Realtime got disconnected",
+    "INVALID_STATE_ERR",
+  ];
+
+  LogBox.ignoreLogs(suppressedRealtimeMessages);
+
+  const originalConsoleError = console.error;
+  const originalConsoleWarn = console.warn;
+
+  const shouldSuppressLog = (entry) => {
+    if (!entry) {
+      return false;
+    }
+
+    if (typeof entry === "string") {
+      return suppressedRealtimeMessages.some((msg) => entry.includes(msg));
+    }
+
+    const message = entry?.message ?? entry?.toString?.();
+    return (
+      typeof message === "string" &&
+      suppressedRealtimeMessages.some((msg) => message.includes(msg))
+    );
+  };
+
+  console.error = (...args) => {
+    if (args.some(shouldSuppressLog)) {
+      return;
+    }
+
+    originalConsoleError(...args);
+  };
+
+  console.warn = (...args) => {
+    if (args.some(shouldSuppressLog)) {
+      return;
+    }
+
+    originalConsoleWarn(...args);
+  };
+
+  console._scottysRealtimePatched = true;
+}
 
 SplashScreen.preventAutoHideAsync();
 

@@ -6,7 +6,7 @@ import { useAlarms } from "./alarmContext";
 
 export default function AlarmGate() {
   const router = useRouter();
-  const { markAlarmAsRinging } = useAlarms();
+  const { alarms, activeRingingAlarmId, markAlarmAsRinging } = useAlarms();
 
   useEffect(() => {
     const checkForRingingAlarm = async () => {
@@ -21,6 +21,15 @@ export default function AlarmGate() {
         if (!alarmNotification) return;
 
         const alarmId = alarmNotification.request.content.data.alarmId;
+
+        if (activeRingingAlarmId === alarmId) {
+          return;
+        }
+
+        const alarmExists = alarms.some((alarm) => alarm.id === alarmId);
+        if (!alarmExists) {
+          return;
+        }
 
         markAlarmAsRinging(alarmId);
 
@@ -42,7 +51,7 @@ export default function AlarmGate() {
     });
 
     return () => sub.remove();
-  }, [router, markAlarmAsRinging]);
+  }, [router, alarms, activeRingingAlarmId, markAlarmAsRinging]);
 
   return null; 
 }

@@ -114,6 +114,12 @@ export const AlarmProvider = ({ children }) => {
 
       setAlarms((prev) => prev.filter((a) => a.id !== id));
     } catch (e) {
+      if (e?.code === 404) {
+        setAlarms((prev) => prev.filter((a) => a.id !== id));
+        console.log("Alarm was already missing remotely; cleaned up local state.");
+        return;
+      }
+
       console.log("Error deleting alarm:", e);
     }
   };

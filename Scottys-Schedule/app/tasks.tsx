@@ -78,10 +78,10 @@ const Tasks = () => {
         </View>
       }
 
-      <View style={styles.alarmContainer}>
+      {/* <View style={styles.alarmContainer}>
           <Text style={styles.nextAlarm}>Next Alarm:</Text>
           <Text style={styles.alarmTime}>6:00 AM</Text>
-      </View>
+      </View> */}
       
       <SafeAreaView style={styles.bottom} edges={[ 'left', 'right', 'bottom']} >
         <Pressable onPress={() => handleDecrement()} style={styles.link}>
@@ -143,21 +143,21 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 32
   },
-  alarmContainer: {
-    backgroundColor: '#FFF',
-    alignItems: 'center',
-    paddingTop: 5,
-    marginHorizontal: 90,
-    marginVertical: 20
-  },
-  nextAlarm: {
-    fontFamily: 'Jersey10',
-    fontSize: 20
-  },
-  alarmTime: {
-    fontFamily: 'Jersey10',
-    fontSize: 64
-  },
+  // alarmContainer: {
+  //   backgroundColor: '#FFF',
+  //   alignItems: 'center',
+  //   paddingTop: 5,
+  //   marginHorizontal: 90,
+  //   marginVertical: 20
+  // },
+  // nextAlarm: {
+  //   fontFamily: 'Jersey10',
+  //   fontSize: 20
+  // },
+  // alarmTime: {
+  //   fontFamily: 'Jersey10',
+  //   fontSize: 64
+  // },
   link: {
     paddingHorizontal: 11
   },

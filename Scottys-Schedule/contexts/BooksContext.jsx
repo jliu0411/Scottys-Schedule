@@ -23,6 +23,77 @@ export function BooksProvider({ children }) {
     const unsubscribeRealtime = useRef(null);
     const responseListener = useRef();
 
+    const parseDateInput = (value) => {
+        if (!value) {
+            return null;
+        }
+
+        if (value instanceof Date) {
+            return new Date(value.getTime());
+        }
+
+        if (typeof value === 'string') {
+            if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+                const [year, month, day] = value.split('-').map(Number);
+                return new Date(year, month - 1, day, 0, 0, 0, 0);
+            }
+
+            const parsed = new Date(value);
+            if (!Number.isNaN(parsed.getTime())) {
+                return parsed;
+            }
+        }
+
+        return null;
+    };
+
+    const parseTime = (rawTime) => {
+        if (typeof rawTime !== 'string' || !rawTime.includes(':')) {
+            return { hours: 0, minutes: 0 };
+        }
+
+        const [hours, minutes] = rawTime.split(':');
+        return {
+            hours: Number(hours) || 0,
+            minutes: Number(minutes) || 0,
+        };
+    };
+
+    const toLocalDate = (value) => {
+        const parsed = parseDateInput(value);
+        if (!parsed) {
+            return null;
+        }
+
+        if (typeof value === 'string' && value.includes('T')) {
+            return new Date(parsed.getTime() + parsed.getTimezoneOffset() * 60000);
+        }
+
+        return parsed;
+    };
+
+    const toDateKey = (value) => {
+        const parsed = parseDateInput(value);
+        if (!parsed) {
+            return null;
+        }
+
+        parsed.setHours(0, 0, 0, 0);
+        return parsed.toISOString();
+    };
+
+    const combineDateAndTime = (dateValue, timeValue) => {
+        const base = toLocalDate(dateValue);
+        if (!base) {
+            return null;
+        }
+
+        const { hours, minutes } = parseTime(timeValue ?? '00:00');
+        const result = new Date(base.getTime());
+        result.setHours(hours, minutes, 0, 0);
+        return result;
+    };
+
     const refreshAllData = async () => {
         if (!user) {
             console.log("Skipping refresh: No user logged in.");
@@ -43,14 +114,8 @@ export function BooksProvider({ children }) {
     };
 
     const sortTasks = (a, b) => {
-        const dateA = new Date(a.date)
-        const dateB = new Date(b.date)
-
-        const [hoursA, minutesA] = a.timeEnds.split(':').map(Number)
-        const [hoursB, minutesB] = b.timeEnds.split(':').map(Number)
-
-        dateA.setHours(hoursA, minutesA)
-        dateB.setHours(hoursB, minutesB)
+        const dateA = combineDateAndTime(a?.date, a?.timeEnds ?? a?.timeStarts) ?? new Date(0)
+        const dateB = combineDateAndTime(b?.date, b?.timeEnds ?? b?.timeStarts) ?? new Date(0)
 
         return dateA.getTime() - dateB.getTime()
     }
@@ -58,8 +123,9 @@ export function BooksProvider({ children }) {
     const getTimeParams = () => {
         const now = new Date();
         const normalizedDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+        const normalizedDateKey = normalizedDate.toISOString();
         const currentTimeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-        return { normalizedDate, currentTimeString };
+        return { normalizedDate, normalizedDateKey, currentTimeString };
     }
 
     async function fetchBooks() {
@@ -71,15 +137,7 @@ export function BooksProvider({ children }) {
                 [Query.equal('userID', user.$id)]
             );
 
-            const sortedTasks = response.documents.sort((a, b) => {
-                const dateA = new Date(a.date);
-                const dateB = new Date(b.date);
-                const [hoursA, minutesA] = a.timeEnds.split(':').map(Number);
-                const [hoursB, minutesB] = b.timeEnds.split(':').map(Number);
-                dateA.setHours(hoursA, minutesA);
-                dateB.setHours(hoursB, minutesB);
-                return dateA.getTime() - dateB.getTime();
-            });
+            const sortedTasks = response.documents.sort(sortTasks);
 
             setBooks(sortedTasks)
         } catch (error) {
@@ -97,12 +155,18 @@ export function BooksProvider({ children }) {
 
     async function fetchTasksByDate(date) {
         try {
+            const dateKey = toDateKey(date);
+            if (!dateKey) {
+                setDailyTasks([]);
+                return;
+            }
+
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
                 [
                     Query.equal('userID', user.$id),
-                    Query.equal('date', date)
+                    Query.equal('date', dateKey)
                 ]
             )
             setDailyTasks(response?.documents ?? []);
@@ -112,14 +176,14 @@ export function BooksProvider({ children }) {
     }
 
     async function fetchPreviousTasks() {
-        const { normalizedDate, currentTimeString } = getTimeParams();
+        const { normalizedDateKey, currentTimeString } = getTimeParams();
         try {
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
                 [
                     Query.equal('userID', user.$id),
-                    Query.equal('date', normalizedDate),
+                    Query.equal('date', normalizedDateKey),
                     Query.lessThan('timeEnds', currentTimeString)
                 ]
             )
@@ -130,14 +194,14 @@ export function BooksProvider({ children }) {
     }
 
     async function fetchCurrentTasks() {
-        const { normalizedDate, currentTimeString } = getTimeParams();
+        const { normalizedDateKey, currentTimeString } = getTimeParams();
         try {
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
                 [
                     Query.equal('userID', user.$id),
-                    Query.equal('date', normalizedDate),
+                    Query.equal('date', normalizedDateKey),
                     Query.greaterThan('timeEnds', currentTimeString),
                     Query.lessThanEqual('timeStarts', currentTimeString),
                     Query.limit(1)
@@ -150,7 +214,7 @@ export function BooksProvider({ children }) {
     }
 
     async function fetchUpcomingTasks() {
-        const { normalizedDate, currentTimeString } = getTimeParams();
+        const { normalizedDateKey, currentTimeString } = getTimeParams();
         try {
             console.log('fetching upcoming tasks');
             const response = await databases.listDocuments(
@@ -158,7 +222,7 @@ export function BooksProvider({ children }) {
                 COLLECTION_ID,
                 [
                     Query.equal('userID', user.$id),
-                    Query.equal('date', normalizedDate),
+                    Query.equal('date', normalizedDateKey),
                     Query.greaterThan('timeStarts', currentTimeString),
                 ]
             )
@@ -170,6 +234,8 @@ export function BooksProvider({ children }) {
 
     async function createBook(data) {
         try {
+            const dateKey = toDateKey(data.date);
+
             const notificationId = await scheduleTaskNotification(
                 data.name,
                 data.date,
@@ -180,7 +246,12 @@ export function BooksProvider({ children }) {
                 DATABASE_ID,
                 COLLECTION_ID,
                 ID.unique(),
-                { ...data, userID: user.$id, notificationId: notificationId || null },
+                {
+                    ...data,
+                    date: dateKey,
+                    userID: user.$id,
+                    notificationId: notificationId || null,
+                },
 
                 [
                     Permission.read(Role.user(user.$id)),
@@ -220,37 +291,53 @@ export function BooksProvider({ children }) {
         try {
             const newStatus = !currentStatus;
 
-            if (newStatus === true) {
-                const task = books.find(b => b.$id === id);
-                if (task && task.notificationId) {
-                    await cancelTaskNotification(task.notificationId);
-                }
+            const targetTask = books.find(b => b.$id === id);
+            if (!targetTask) {
+                return;
             }
+
+            let nextNotificationId = targetTask.notificationId ?? null;
+
+            if (newStatus) {
+                if (nextNotificationId) {
+                    await cancelTaskNotification(nextNotificationId);
+                    nextNotificationId = null;
+                }
+            } else {
+                nextNotificationId =
+                    (await scheduleTaskNotification(
+                        targetTask.name,
+                        targetTask.date,
+                        targetTask.timeStarts
+                    )) || null;
+            }
+
+            setBooks(prevBooks => prevBooks.map(book =>
+                book.$id === id
+                    ? { ...book, isCompleted: newStatus, notificationId: nextNotificationId }
+                    : book
+            ));
 
             await databases.updateDocument(
                 DATABASE_ID,
                 COLLECTION_ID,
                 id,
-                { 'isCompleted': !currentStatus }
+                { isCompleted: newStatus, notificationId: nextNotificationId }
             );
-            await fetchProgress();
-            await fetchPreviousTasks();
-            await fetchUpcomingTasks();
-            await fetchCurrentTasks();
         } catch (error) {
             console.error(error.message)
         }
     }
 
     async function fetchProgress() {
-        const { normalizedDate } = getTimeParams();
+        const { normalizedDateKey } = getTimeParams();
         try {
             const completedTasks = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
                 [
                     Query.equal('userID', user.$id),
-                    Query.equal('date', normalizedDate),
+                    Query.equal('date', normalizedDateKey),
                     Query.equal('isCompleted', true)
                 ]
             );
@@ -261,7 +348,7 @@ export function BooksProvider({ children }) {
                 COLLECTION_ID,
                 [
                     Query.equal('userID', user.$id),
-                    Query.equal('date', normalizedDate)
+                    Query.equal('date', normalizedDateKey)
                 ]
             );
             const total = allTasks.total;
@@ -283,16 +370,25 @@ export function BooksProvider({ children }) {
             const existingBook = books.find(b => b.$id === id);
             let newNotificationId = existingBook?.notificationId;
 
+            const mergedName = data.name ?? existingBook?.name ?? '';
+            const mergedDateKey = toDateKey(data.date ?? existingBook?.date);
+            const mergedDateInput = data.date ?? existingBook?.date;
+            const mergedTimeStarts = data.timeStarts ?? existingBook?.timeStarts ?? '00:00';
+            const mergedTimeEnds = data.timeEnds ?? existingBook?.timeEnds ?? mergedTimeStarts;
+            const mergedDescription = data.description ?? existingBook?.description ?? '';
+            const mergedRepeats = data.repeats ?? existingBook?.repeats ?? [];
+            const mergedIsCompleted = data.isCompleted ?? existingBook?.isCompleted ?? false;
+
             if (existingBook && existingBook.notificationId) {
                 await cancelTaskNotification(existingBook.notificationId);
                 newNotificationId = null;
             }
 
-            if (!data.isCompleted) {
+            if (!mergedIsCompleted && mergedDateKey && mergedTimeStarts) {
                 newNotificationId = await scheduleTaskNotification(
-                    data.name,
-                    data.date,
-                    data.timeStarts
+                    mergedName,
+                    mergedDateInput,
+                    mergedTimeStarts
                 );
             }
 
@@ -300,7 +396,16 @@ export function BooksProvider({ children }) {
                 DATABASE_ID,
                 COLLECTION_ID,
                 id,
-                { ...data, notificationId: newNotificationId || null }
+                {
+                    name: mergedName,
+                    description: mergedDescription,
+                    date: mergedDateKey,
+                    timeStarts: mergedTimeStarts,
+                    timeEnds: mergedTimeEnds,
+                    repeats: mergedRepeats,
+                    isCompleted: mergedIsCompleted,
+                    notificationId: newNotificationId || null,
+                }
             )
             refreshAllData();
         } catch (error) {
@@ -411,10 +516,15 @@ export function BooksProvider({ children }) {
         const checkRepeats = async () => {
             const now = new Date();
             for (const task of books) {
-                const taskDate = new Date(task.date);
-                if (taskDate < now && task.repeats?.length > 0) {
-                    const nextDate = getNextRepeatDate(now, task.repeats, task.timeEnds);
-                    await updateBook(task.$id, { date: nextDate.toISOString() });
+                if (!task?.repeats?.length) {
+                    continue;
+                }
+
+                const taskEnd = combineDateAndTime(task.date, task.timeEnds ?? task.timeStarts);
+
+                if (taskEnd && taskEnd < now) {
+                    const nextDate = getNextRepeatDate(now, task.repeats, task.timeEnds ?? task.timeStarts);
+                    await updateBook(task.$id, { date: nextDate, isCompleted: false });
                 }
             }
         };

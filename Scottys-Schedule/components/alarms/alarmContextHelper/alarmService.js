@@ -15,8 +15,17 @@ export const loadAlarmsFromAppwrite = async (userId) => {
       COLLECTION_ID,
       [Query.equal("userID", userId)]
     );
-    const mapped = res.documents.map(mapDocToAlarm);
-    console.log("Loaded alarms from Appwrite:", res.total);
+    const alarmDocs = res.documents.filter((doc) => doc.timer != null);
+    const mapped = alarmDocs.map(mapDocToAlarm);
+
+    const skipped = res.total - mapped.length;
+    if (skipped > 0) {
+      console.log(
+        `Skipped ${skipped} non-alarm document(s) when loading alarms.`
+      );
+    }
+
+    console.log("Loaded alarms from Appwrite:", mapped.length);
     return mapped;
   } catch (e) {
     console.log("Error loading alarms from Appwrite:", e);

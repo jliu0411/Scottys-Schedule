@@ -35,7 +35,9 @@ const NewTaskForm = () => {
       setTimeStarts(newTime);
       const hours = newTime.getHours();
       const minutes = newTime.getMinutes();
-      const stringTime = `${hours.toString()}:${minutes.toString()}`;
+      const stringTime = `${hours.toString().padStart(2, '0')}:${minutes
+        .toString()
+        .padStart(2, '0')}`;
       setTimeStartsString(stringTime)
     setShowTimeStartsPicker(false) }
   }
