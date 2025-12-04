@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, Text, View, TouchableOpacity } from 'react-native'
+import { StyleSheet, TextInput, Text, View, TouchableOpacity, TouchableWithoutFeedback, Keyboard} from 'react-native'
 import React, { useState } from 'react'
 import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import RepeatsDropdown from '../repeatsDropdown';
@@ -12,7 +12,9 @@ const NewTaskForm = () => {
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date());
   const [timeStarts, setTimeStarts] = useState(new Date());
+  const [timeStartsString, setTimeStartsString] = useState("00:00");
   const [timeEnds, setTimeEnds] = useState(new Date());
+  const [timeEndsString, setTimeEndsString] = useState("00:00");
   const [repeats, setRepeats] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -25,12 +27,26 @@ const NewTaskForm = () => {
 
   const onDateChange = (event : DateTimePickerEvent, newDate?: Date) => {
     if (newDate) { setDate(newDate); }
+    setShowDatePicker(false)
   }
+  
   const onTimeStartsChange = (event : DateTimePickerEvent, newTime?: Date) => {
-    if (newTime) { setTimeStarts(newTime); }
+    if (newTime) { 
+      setTimeStarts(newTime);
+      const hours = newTime.getHours();
+      const minutes = newTime.getMinutes();
+      const stringTime = `${hours.toString()}:${minutes.toString()}`;
+      setTimeStartsString(stringTime)
+    setShowTimeStartsPicker(false) }
   }
   const onTimeEndsChange = (event : DateTimePickerEvent, newTime?: Date) => {
-    if (newTime) { setTimeEnds(newTime); }
+    if (newTime) { 
+      setTimeEnds(newTime);
+      const hours = newTime.getHours();
+      const minutes = newTime.getMinutes();
+      const stringTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      setTimeEndsString(stringTime)
+    setShowTimeEndsPicker(false) }
   }
 
   //TASK CREATION
@@ -42,14 +58,23 @@ const NewTaskForm = () => {
 
     setLoading(true);
 
-    await createBook({name, description, date, timeStarts, timeEnds, repeats})
+    const normalizedDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      0, 0, 0, 0
+    );
+
+    await createBook({name, description, date: normalizedDate.toISOString(), timeStarts: timeStartsString, timeEnds: timeEndsString, repeats})
 
     //reset fields
     setName('');
     setDescription('');
     setDate(new Date());
     setTimeStarts(new Date());
+    setTimeStartsString("00:00");
     setTimeEnds(new Date());
+    setTimeEndsString("00:00");
     setRepeats([]);
 
     // redirect
@@ -60,93 +85,90 @@ const NewTaskForm = () => {
 
     alert('Creating task...');
     
-    // const Task = {
-    //   name, description, date, timeStarts, timeEnds, repeats, isCompleted : false
-    // };
-
-    // //ACTUAL FUNCTIONALITY NEEDED HERE
   }
   return (
-    <View style={styles.container}>
-      <View>
-        <Text style={styles.subheader}> Task Name</Text>
-        <TextInput 
-          placeholder='ex. Wash Dishes'
-          value={name} 
-          multiline
-          numberOfLines={2}
-          maxLength={50}
-          onChangeText={setName} 
-          style={styles.input} >
-        </TextInput>
-      </View>
-      
-        <Text style={styles.subheader}> Description</Text>
-        <TextInput 
-          placeholder='ex. Rinse pots and load dishwasher' 
-          value={description} 
-          multiline
-          numberOfLines={5}
-          maxLength={140}
-          onChangeText={setDescription} 
-          style={styles.input}>
-        </TextInput>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <View>
+          <Text style={styles.subheader}> Task Name</Text>
+          <TextInput 
+            placeholder='ex. Wash Dishes'
+            value={name} 
+            multiline
+            numberOfLines={2}
+            maxLength={50}
+            onChangeText={setName} 
+            style={styles.input} >
+          </TextInput>
+        </View>
+        
+          <Text style={styles.subheader}> Description</Text>
+          <TextInput 
+            placeholder='ex. Rinse pots and load dishwasher' 
+            value={description} 
+            multiline
+            numberOfLines={5}
+            maxLength={140}
+            onChangeText={setDescription} 
+            style={styles.input}>
+          </TextInput>
 
-        {/* DATE */}
-        <Text style={styles.subheader}> Date</Text>
-        <TouchableOpacity 
-          onPress={() => setShowDatePicker(!showDatePicker)}>
-          <Text style={styles.input}>
-            {date.toLocaleDateString()}
-          </Text>
-        </TouchableOpacity>
-
-        {showDatePicker && (
-          <RNDateTimePicker 
-            value={date} 
-            mode={'date'} 
-            minimumDate={new Date(2024, 11, 31)}
-            onChange={onDateChange} />)
-        }
-
-        {/* TIME STARTS */}
-        <Text style={styles.subheader}> Time Task Starts</Text>
-        <TouchableOpacity onPress={() => setShowTimeStartsPicker(!showTimeStartsPicker)}>
-          <Text style={styles.input}>
-            {timeStarts.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
-          </Text>
-          {showTimeStartsPicker && 
-            (<RNDateTimePicker 
-              value={timeStarts} 
-              mode={'time'} 
-              onChange={onTimeStartsChange} />)
-          }
-        </TouchableOpacity>
-
-        {/* TIME ENDS */}
-        <Text style={styles.subheader}>Time Task Ends</Text>
-        <TouchableOpacity onPress={() => setShowTimeEndsPicker(!showTimeEndsPicker)}>
-          <Text style={styles.input}>
-            {timeEnds.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
-          </Text>
-          {showTimeEndsPicker && 
-            (<RNDateTimePicker 
-              value={timeEnds} 
-              mode={'time'} 
-              minimumDate={timeStarts}
-              onChange={onTimeEndsChange} />)
-          }
-        </TouchableOpacity>
-
-        <Text style={styles.subheader}> Repeats</Text>
-        <RepeatsDropdown repeats={repeats}/>
-
-        <TouchableOpacity style={styles.createButton} onPress={handleCreateTask} disabled={loading}>
-          <Text style={styles.createButtonText}>
-            {loading ? "Saving..." : "Create Task"}
+          {/* DATE */}
+          <Text style={styles.subheader}> Date</Text>
+          <TouchableOpacity 
+            onPress={() => setShowDatePicker(!showDatePicker)}>
+            <Text style={styles.input}>
+              {date.toLocaleDateString()}
             </Text>
-        </TouchableOpacity>
-    </View>
+          </TouchableOpacity>
+
+          {showDatePicker && (
+            <RNDateTimePicker 
+              value={date} 
+              mode={'date'} 
+              minimumDate={new Date(2024, 11, 31)}
+              onChange={onDateChange} />)
+          }
+
+          {/* TIME STARTS */}
+          <Text style={styles.subheader}> Time Task Starts</Text>
+          <TouchableOpacity onPress={() => setShowTimeStartsPicker(!showTimeStartsPicker)}>
+            <Text style={styles.input}>
+              {timeStarts.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+            </Text>
+            {showTimeStartsPicker && 
+              (<RNDateTimePicker 
+                value={timeStarts} 
+                mode={'time'} 
+                onChange={onTimeStartsChange} />)
+            }
+          </TouchableOpacity>
+
+          {/* TIME ENDS */}
+          <Text style={styles.subheader}>Time Task Ends</Text>
+          <TouchableOpacity onPress={() => setShowTimeEndsPicker(!showTimeEndsPicker)}>
+            <Text style={styles.input}>
+              {timeEnds.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+            </Text>
+            {showTimeEndsPicker && 
+              (<RNDateTimePicker 
+                value={timeEnds} 
+                mode={'time'} 
+                minimumDate={timeStarts}
+                onChange={onTimeEndsChange} />)
+            }
+          </TouchableOpacity>
+
+          <Text style={styles.subheader}> Repeats</Text>
+          <RepeatsDropdown repeats={repeats} setRepeats={setRepeats} />
+
+          <TouchableOpacity style={styles.createButton} onPress={handleCreateTask} disabled={loading}>
+            <Text style={styles.createButtonText}>
+              {loading ? "Saving..." : "Create Task"}
+              </Text>
+          </TouchableOpacity>
+      </View>
+    </TouchableWithoutFeedback>
   )
 }
 

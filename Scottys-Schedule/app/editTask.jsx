@@ -1,6 +1,6 @@
 import React from 'react'
 import { View } from 'react-native'
-import EditTaskForm from '../components/tasks/editTaskForm'
+import EditTaskForm from './books/[id]'
 
 const EditTask = () => {
   return (

@@ -1,7 +1,8 @@
 import { Text, Keyboard, StyleSheet, TouchableWithoutFeedback } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useUser } from '../../hooks/useUser'
-import { Link, router } from 'expo-router'
-import { useState, useEffect } from 'react'
+import { Link } from 'expo-router'
+import { useState } from 'react'
 
 import Spacer from '../../components/themes/Spacer'
 import ThemedView from '../../components/themes/ThemedView'
@@ -9,22 +10,15 @@ import ThemedText from '../../components/themes/ThemedText'
 import ThemedButton from '../../components/themes/ThemedButton'
 import ThemedTextInput from "../../components/themes/ThemedTextInput"
 
-const login = () => {
+const Login = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState(null)
 
   const { user, login } = useUser()
 
-  useEffect(() => {
-    if (user) {
-      router.replace('/landing') 
-    }
-  }, [user])
-
   const handleSubmit = async () => {
     setError(null)
-
     try {
       await login(email, password)
       console.log('current user is: ', user)
@@ -34,55 +28,73 @@ const login = () => {
   }
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <ThemedView style={styles.container}>
-        <ThemedText style={styles.title}>Log In to Your Account</ThemedText>
-        <Spacer/>
-
-        <ThemedTextInput 
-          style={{ marginBottom: 20, width: "80%" }}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
-        <ThemedTextInput
-          style={{ marginBottom: 20, width: "80%" }}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-
-        <ThemedButton onPress={handleSubmit}>
-          <Text style={{ color: '#f2f2f2', fontFamily: 'Jersey10', fontSize: 20 }}>Log In</Text>
-        </ThemedButton>
-
-        <Spacer/>
-        {error && <Text style={styles.error}>{error}</Text>}
-
-        <Spacer/>
-        <Link href="/register" replace>
-          <ThemedText style={styles.link}>
-            Register Instead
+    <ThemedView style={styles.container}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <KeyboardAwareScrollView 
+          style={styles.scroll}
+          contentContainerStyle={[styles.contentContainer, {paddingBottom: 60}]} 
+          keyboardShouldPersistTaps="handled"
+          enableOnAndroid={true}
+          extraScrollHeight={0}
+        >
+          <ThemedText style={{fontFamily: 'Jersey10', color: '#F5A201', fontSize: 80, textAlign: 'center',
+            textShadow: '#000', textShadowOffset: { width: 4, height: 4 }, textShadowRadius: 8 }}>
+              Scotty's{'\n'}Schedule
           </ThemedText>
-        </Link>
 
-      </ThemedView>
-    </TouchableWithoutFeedback>
+          <ThemedText style={styles.title}>Log In to Your Account</ThemedText>
+          <Spacer/>
+
+          <ThemedTextInput 
+            style={{ marginBottom: 20, width: "80%" }}
+            placeholder="Email"
+            fontFamily='Jersey10'
+            value={email}
+            fontSize={20}
+            placeholderTextColor="#000"
+            backgroundColor="#fff"
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
+          <ThemedTextInput
+            style={{ marginBottom: 20, width: "80%" }}
+            placeholder="Password"
+            fontFamily='Jersey10'
+            fontSize={20}
+            placeholderTextColor="#000"
+            value={password}
+            backgroundColor="#fff"
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+
+          <ThemedView style={styles.press}>
+            <Link href="/register" replace style={{width: 100, paddingVertical: 10, justifyContent: 'center'}}>
+              <ThemedText style={styles.link}>
+                Register
+              </ThemedText>
+            </Link>
+            
+            <ThemedButton onPress={handleSubmit} style={[styles.button, { marginLeft: 20, }]}>
+              <Text style={{ color: '#f2f2f2', fontFamily: 'Jersey10', fontSize: 25 }}>Log In</Text>
+            </ThemedButton>
+          </ThemedView>
+
+          <Spacer/>
+          {error && <Text style={styles.error}>{error}</Text>}
+
+        </KeyboardAwareScrollView>
+      </TouchableWithoutFeedback>
+    </ThemedView>
   )
 }
 
-export default login
+export default Login
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: '#00537A',
-    fontFamily: 'Jersey10', 
-    gap: 2,
   },
   input: {
     backgroundColor: '#fff',
@@ -92,11 +104,45 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'Jersey10',
+    color: '#fff',
     fontSize: 40,
+  },
+  button: {
+    backgroundColor: '#F5A201',
+    fontFamily: 'Jersey10',
+    width: 110,
+    paddingVertical: 10,
+    justifyContent: 'center', 
+    alignItems: 'center',
   },
   link: {
     fontFamily: 'Jersey10', 
-    fontSize: 30,
-    textAlign: 'center'
+    fontSize: 25,
+    textAlign: 'center',
+    color: '#fff',
+    textDecorationLine: 'underline',
+    width: 100,
+  },
+  press: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '80%',
+  },
+  contentContainer: { 
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  error: {
+    color: 'red',
+    marginTop: 10,
+    textAlign: 'center',
+    fontFamily: 'Jersey10',
+    fontSize: 10,
+  },
+  scroll: {
+    flex: 1,
+    backgroundColor: '#00537A'
   }
 })

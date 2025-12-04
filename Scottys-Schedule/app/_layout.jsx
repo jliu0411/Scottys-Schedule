@@ -15,6 +15,9 @@ import LandingHeader from "../components/landing/landingHeader";
 import AlarmGate from "../components/alarms/AlarmGate";
 import NotificationNavigationHandler from "../components/alarms/NotificationNavigationHandler";
 
+import "@/assets/font/Jersey10-Regular.ttf"
+import 'expo-router/entry'
+
 SplashScreen.preventAutoHideAsync();
 
 Notifications.setNotificationHandler({
