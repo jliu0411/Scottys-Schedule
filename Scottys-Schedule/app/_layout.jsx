@@ -68,7 +68,7 @@ export default function RootLayout() {
                 title: "Alarms",
                 headerLeft: () => (
                   <TouchableOpacity
-                    onPress={() => <LandingHeader />}
+                    onPress={() => router.replace("/landing")}
                     style={{ paddingHorizontal: 8 }}
                   >
                     <Image
