@@ -1,9 +1,9 @@
+import React from "react";
 import {
   View,
   Text,
   Modal,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   StyleSheet,
 } from "react-native";
 
@@ -13,102 +13,107 @@ export default function RepeatSelectorSheet({
   selectedDays,
   setSelectedDays,
   onClose,
+  anchor, 
 }) {
+  const toggleDay = (d) => {
+    if (selectedDays.includes(d)) {
+      setSelectedDays(selectedDays.filter((x) => x !== d));
+    } else {
+      setSelectedDays([...selectedDays, d]);
+    }
+  };
+
+  if (!visible) return null;
+
+  const anchoredStyle = anchor
+    ? {
+        position: "absolute",
+        top: anchor.y + (anchor.height ?? 0) + 55,
+        left: anchor.x,
+        width: anchor.width,
+      }
+    : {
+        position: "absolute",
+        left: "7.5%",
+        right: "7.5%",
+        top: "25%",
+      };
+
   return (
-    <Modal visible={visible} transparent animationType="slide">
-      <TouchableOpacity
-        style={styles.overlay}
-        activeOpacity={1}
-        onPress={onClose}
-      >
-        <TouchableWithoutFeedback>
-          <View style={styles.sheet}>
-            <Text style={styles.title}>Repeat</Text>
+    <Modal visible={visible} transparent animationType="fade">
+      <View style={StyleSheet.absoluteFill}>
+        <TouchableOpacity
+          style={styles.overlay}
+          activeOpacity={1}
+          onPress={onClose}
+        />
 
-            {days.map((d) => {
-              const selected = selectedDays.includes(d);
-              return (
-                <TouchableOpacity
-                  key={d}
-                  style={[styles.row, selected && {backgroundColor: "#E6F1FA"}]}
-                  onPress={() =>
-                    selected
-                      ? setSelectedDays(selectedDays.filter((x) => x !== d))
-                      : setSelectedDays([...selectedDays, d])
-                  }
+        <View style={[styles.card, anchoredStyle]}>
+          {days.map((d) => {
+            const selected = selectedDays.includes(d);
+            return (
+              <TouchableOpacity
+                key={d}
+                style={[
+                  styles.row,
+                  selected && styles.rowSelected,
+                ]}
+                onPress={() => toggleDay(d)}
+              >
+                <Text
+                  style={[
+                    styles.text,
+                    selected && styles.textSelected,
+                  ]}
                 >
-                  <Text
-                    style={[
-                      styles.text,
-                      selected && styles.selectedText,
-                    ]}
-                  >
-                    Every {d}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+                  Every {d}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
 
-            <TouchableOpacity style={styles.doneBtn} onPress={onClose}>
-              <Text style={styles.doneText}>Done</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableWithoutFeedback>
-      </TouchableOpacity>
+        </View>
+      </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.35)",
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.4)",
   },
 
-  sheet: {
+  card: {
     backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 20,
-    paddingBottom: 10,
-    width: "100%",
-  },
-
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
-    textAlign: "center",
-    marginBottom: 12,
+    borderRadius: 16,
+    paddingTop: 0,
+    paddingBottom: 8,
+    overflow: "hidden",
+    elevation: 8,
+    maxHeight: "60%",
   },
 
   row: {
-    width: "100%",
-    paddingVertical: 16,
+    paddingVertical: 12,
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+  },
+
+  rowSelected: {
+    backgroundColor: "#E6F1FA",
   },
 
   text: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#000",
+    fontFamily: "Jersey10",
   },
 
-  selectedText: {
+  textSelected: {
     color: "#0A5875",
-    fontWeight: "700",
   },
 
-  doneBtn: {
-    paddingVertical: 14,
-    alignItems: "center",
-    backgroundColor: "#0A5875",
-  },
-  
-  doneText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-  },
 });
+

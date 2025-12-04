@@ -1,55 +1,109 @@
+import React, {
+  useMemo,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Switch,
+  Alert,
 } from "react-native";
-import React, { useState, useRef } from "react";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
+
 import TimePickerSheet from "../components/alarms/TimePickerSheet";
 import RepeatSelectorSheet from "../components/alarms/RepeatSelectorSheet";
 import { formatRepeatDays } from "../components/alarms/formatRepeatDays";
 import { useAlarms } from "../components/alarms/alarmContext.jsx";
 
-export default function NewAlarm() {
+const ALL_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+export default function EditAlarm() {
   const router = useRouter();
-  const { addAlarm } = useAlarms();
+  const { id } = useLocalSearchParams();
+  const alarmId = Array.isArray(id) ? id[0] : id;
+
+  const { alarms, updateAlarm, deleteAlarm } = useAlarms();
+
+  const existingAlarm = useMemo(
+    () => alarms.find((a) => a.id === alarmId),
+    [alarms, alarmId]
+  );
 
   const [time, setTime] = useState(new Date());
-  const [showPicker, setShowPicker] = useState(false);
-
-  const allDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const [repeatDays, setRepeatDays] = useState([]);
-  const [showRepeat, setShowRepeat] = useState(false);
-  const [repeatAnchor, setRepeatAnchor] = useState(null);
-
   const [puzzle, setPuzzle] = useState(false);
 
-  const repeatInputRef = useRef(null);
+  const [showPicker, setShowPicker] = useState(false);
+  const [showRepeat, setShowRepeat] = useState(false);
 
-  const handleOpenRepeat = () => {
-    if (repeatInputRef.current && repeatInputRef.current.measureInWindow) {
+  const repeatInputRef = useRef(null);
+  const [repeatAnchor, setRepeatAnchor] = useState(null);
+
+  useEffect(() => {
+    if (existingAlarm) {
+      setTime(new Date(existingAlarm.time));
+      setRepeatDays(existingAlarm.repeatDays ?? []);
+      setPuzzle(existingAlarm.puzzle ?? false);
+    } else {
+      console.warn("EditAlarm: no alarm found for id", alarmId);
+    }
+  }, [existingAlarm, alarmId]);
+
+  const handleSave = () => {
+    if (!existingAlarm) return;
+
+    updateAlarm(alarmId, {
+      time: time.getTime(),
+      repeatDays,
+      puzzle,
+    });
+
+    router.back();
+  };
+
+  const handleDelete = () => {
+    if (!existingAlarm) return;
+
+    Alert.alert("Delete Alarm", "Are you sure you want to delete this alarm?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          await deleteAlarm(alarmId);
+          router.back();
+        },
+      },
+    ]);
+  };
+
+  const openRepeatDropdown = () => {
+    if (repeatInputRef.current?.measureInWindow) {
       repeatInputRef.current.measureInWindow((x, y, width, height) => {
         setRepeatAnchor({ x, y, width, height });
         setShowRepeat(true);
       });
     } else {
-      setRepeatAnchor(null);
       setShowRepeat(true);
     }
   };
 
-  const handleCreateAlarm = () => {
-    addAlarm({
-      timer: time.getTime(), 
-      repeatDays,
-      puzzle,
-      enabled: true,
-    });
+  if (!existingAlarm) {
+    return (
+      <View style={[styles.fullScreen, { justifyContent: "center" }]}>
+        <Text style={styles.missingText}>
+          Could not find this alarm. Please go back.
+        </Text>
+      </View>
+    );
+  }
 
-    router.back();
-  };
+  const repeatLabel =
+    repeatDays.length === 0 ? "Select Days" : formatRepeatDays(repeatDays);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0A5875" }}>
@@ -74,12 +128,16 @@ export default function NewAlarm() {
           <TouchableOpacity
             ref={repeatInputRef}
             style={styles.inputBox}
-            onPress={handleOpenRepeat}
+            onPress={openRepeatDropdown}
           >
-            <Text style={styles.inputText}>
-              {formatRepeatDays(repeatDays)}
+            <Text
+              style={[
+                styles.inputText,
+                repeatDays.length === 0 && styles.placeholderText,
+              ]}
+            >
+              {repeatLabel}
             </Text>
-
             <Text style={styles.dropdown}>^</Text>
           </TouchableOpacity>
 
@@ -94,8 +152,12 @@ export default function NewAlarm() {
             <Text style={styles.puzzleLabel}>Puzzle?</Text>
           </View>
 
-          <TouchableOpacity style={styles.button} onPress={handleCreateAlarm}>
-            <Text style={styles.buttonText}>Create Alarm</Text>
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveText}>Save Changes</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+            <Text style={styles.deleteText}>Delete Alarm</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -109,7 +171,7 @@ export default function NewAlarm() {
 
       <RepeatSelectorSheet
         visible={showRepeat}
-        days={allDays}
+        days={ALL_DAYS}
         selectedDays={repeatDays}
         setSelectedDays={setRepeatDays}
         onClose={() => setShowRepeat(false)}
@@ -124,14 +186,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    fontFamily: "Jersey10",
   },
 
   card: {
     backgroundColor: "#fff",
     borderRadius: 20,
-    margin: 50,
-    padding: 30,
+    margin: 32,
+    padding: 24,
     width: "90%",
     alignSelf: "center",
   },
@@ -160,6 +221,10 @@ const styles = StyleSheet.create({
     fontFamily: "Jersey10",
   },
 
+  placeholderText: {
+    color: "#bbbbbb",
+  },
+
   dropdown: {
     fontSize: 20,
     marginLeft: 8,
@@ -186,17 +251,40 @@ const styles = StyleSheet.create({
     fontFamily: "Jersey10",
   },
 
-  button: {
+  saveButton: {
     backgroundColor: "#f4a30b",
     paddingVertical: 12,
     borderRadius: 8,
     marginTop: 24,
   },
 
-  buttonText: {
+  saveText: {
     textAlign: "center",
     fontSize: 30,
     color: "#fff",
     fontFamily: "Jersey10",
   },
+
+  deleteButton: {
+    backgroundColor: "#e53935",
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 12,
+  },
+
+  deleteText: {
+    textAlign: "center",
+    fontSize: 30,
+    color: "#fff",
+    fontFamily: "Jersey10",
+  },
+
+  missingText: {
+    textAlign: "center",
+    paddingHorizontal: 24,
+    fontSize: 18,
+    color: "#fff",
+    fontFamily: "Jersey10",
+  },
 });
+

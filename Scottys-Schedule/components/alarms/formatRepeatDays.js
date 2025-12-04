@@ -14,5 +14,10 @@ export function formatRepeatDays(days) {
   if (days.length === 2 && weekends.every((d) => days.includes(d)))
     return "Weekends";
 
-  return days.join(", ");
+  const dayOrder = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const sortedDays = [...days].sort((a, b) => {
+    return dayOrder.indexOf(a) - dayOrder.indexOf(b);
+  });
+
+  return sortedDays.join(", ");
 }

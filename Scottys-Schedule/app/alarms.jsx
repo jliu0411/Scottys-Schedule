@@ -1,12 +1,18 @@
-import { Image, View, Text, StyleSheet, TouchableOpacity, Switch} from "react-native";
-//import TopBar from "../components/topBar.jsx";
-import React from "react";
+import {
+  Image,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Switch,
+  FlatList,
+} from "react-native";
+import React, { useMemo } from "react";
 import { useRouter } from "expo-router";
-import { useAlarms } from "../components/alarms/alarmLocalStorage";
-
+import { useAlarms } from "../components/alarms/alarmContext.jsx";
 
 const formatRepeatDays = (days) => {
-  if (!days || days.length === 0) return "One-time";
+  if (!days || days.length === 0) return "ONE-TIME";
 
   const order = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -27,154 +33,93 @@ const formatRepeatDays = (days) => {
   return str;
 };
 
-
-export default function Alarms(onRightPress, showBack = true) {
+export default function Alarms() {
   const router = useRouter();
-
   const { alarms, toggleAlarm } = useAlarms();
-  console.log("ALARMS >>>", alarms);
+
+  const sortedAlarms = useMemo(() => {
+    const toMinutes = (alarm) => {
+      const d = new Date(alarm.time);
+      return d.getHours() * 60 + d.getMinutes();
+    };
+    return [...alarms].sort((a, b) => toMinutes(a) - toMinutes(b));
+  }, [alarms]);
+
+  const renderAlarm = ({ item: alarm }) => (
+    <View key={alarm.id} style={styles.alarmCard}>
+      <View style={styles.left}>
+        <Text style={styles.alarmTime}>
+          {new Date(alarm.time).toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit",
+          })}
+        </Text>
+
+        <Text style={styles.repeatText}>
+          {formatRepeatDays(alarm.repeatDays)}
+        </Text>
+      </View>
+
+      <Switch
+        value={alarm.enabled ?? true}
+        onValueChange={(nextValue) => toggleAlarm(alarm.id, nextValue)}
+        trackColor={{ false: "#ccc", true: "#0A5875" }}
+        thumbColor="#fff"
+        style={styles.alarmSwitch}
+      />
+
+
+      <TouchableOpacity
+        onPress={() =>
+          router.push({
+            pathname: "/editAlarm",
+            params: { id: alarm.id.toString() },
+          })
+        }
+        style={styles.menuButton}
+      >
+        <Image
+          source={require("../assets/buttons/yellowMenu.png")}
+          style={{ width: 50, height: 50 }}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
-    <View style= {styles.page}>
-      <View style={styles.container}>
-        {showBack ? (
-          <TouchableOpacity onPress={() => router.back()} style={styles.iconBox}>
-            <Image 
-              source = {require("../assets/arrows/leftArrow.png")}
-              style = {{width: 50, height: 50}}
-              resizeMode = "contain"
-            />
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.placeholderBox} />
-        )}
-
-        <Text style={styles.title}> Alarms </Text>
-
-        {onRightPress ? (
-          <TouchableOpacity onPress={() => router.push("/newAlarm")} style={styles.iconBox}>
-            <Image 
-              source = {require("../assets/buttons/addButton.png")}
-              style = {{width: 50, height: 50}}
-              resizeMode = "contain"
-            />
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.placeholderBox} />
-        )}
-      </View>
-
-      <View style={styles.list}>
-        {alarms.map((alarm) => (
-          <View key={alarm.id} style={styles.alarmCard}>
-
-            <View style={styles.left}>
-              <Text style={styles.alarmTime}>
-                {new Date(alarm.time).toLocaleTimeString([], {
-                  hour: "numeric",
-                  minute: "2-digit",
-                })}
-              </Text>
-
-              <Text style={styles.repeatText}>
-                {formatRepeatDays(alarm.repeatDays)}
-              </Text>
-            </View>
-
-            <View style={styles.center}>
-              <Switch
-                value={alarm.enabled ?? true}
-                onValueChange={() => {}}
-                trackColor={{ false: "#ccc", true: "#0A5875" }}
-                thumbColor={"#fff"}
-              />
-            </View>
-
-            {onRightPress ? (
-              <TouchableOpacity onPress={() => router.push("/newAlarm")} style={styles.iconBox}>
-                <Image 
-                  source = {require("../assets/buttons/yellowMenu.png")}
-                  style = {{width: 50, height: 50}}
-                  resizeMode = "contain"
-                />
-              </TouchableOpacity>
-            ) : (
-              <View style={styles.placeholderBox} />
-            )}
-          </View>
-        ))}
-      </View>
-
+    <View style={styles.page}>
+      <FlatList
+        data={sortedAlarms}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={renderAlarm}
+        contentContainerStyle={styles.list}
+      />
     </View>
-
   );
 }
 
-
 const styles = StyleSheet.create({
-  container: {
-    height: 60,
+  page: {
+    flex: 1,
+    backgroundColor: "#275E7E",
+  },
+
+  list: {
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+
+  alarmCard: {
+    width: "90%",
+    backgroundColor: "#ffffff",
+    borderRadius: 4,
+    paddingVertical: 8,
     paddingHorizontal: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#0A5875",
-  },
-  placeholderBox: { 
-    width: 30 
-  },
-  title: {
-    fontSize: 50,
-    fontWeight: "700",
-    color: "#fff",
-    fontFamily: "Jersey10-Regular"
-  },
-  list: {
-  flex: 1,
-  paddingHorizontal: 20,
-  marginTop: 20,
-  gap: 12,
-  },
-
-  alarmBox: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#ddd",
-  },
-
-  timeText: {
-    fontSize: 20,
-    fontWeight: "600",
-  },
-
-  repeatText: {
-    marginTop: 4,
-    fontSize: 14,
-    color: "#666",
-  },
-
-  list: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 14,
-  },
-
-  alarmCard: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+    marginBottom: 20,
   },
 
   left: {
@@ -182,26 +127,27 @@ const styles = StyleSheet.create({
   },
 
   alarmTime: {
-    fontSize: 36,
+    fontSize: 50,
     fontFamily: "Jersey10",
     color: "#000",
   },
 
   repeatText: {
-    fontSize: 12,
-    color: "#555",
-    fontWeight: "600",
-    textTransform: "uppercase",
-    marginTop: -6,
+    fontSize: 25,
+    color: "#8C8C8C",
+    fontFamily: "Jersey10",
   },
 
   center: {
-    marginHorizontal: 12,
+    marginHorizontal: 8,
+  },
+
+  alarmSwitch: {
+    transform: [{ scaleX: 2 }, { scaleY: 2 }], 
+    marginHorizontal: 25,
   },
 
   menuButton: {
-    paddingHorizontal: 6,
-    paddingVertical: 4,
+    paddingLeft: 5,
   },
-
 });
