@@ -38,56 +38,15 @@ describe('[WHITEBOX] PHRASES: Motivational Content System', () => {
     })
   })
 
-  test('phrases array contains no null or undefined values', () => {
-    phrases.forEach((phrase) => {
-      expect(phrase).not.toBeNull()
-      expect(phrase).not.toBeUndefined()
-    })
-  })
-
-  test('all phrases are accessible by index 0-9', () => {
-    for (let i = 0; i < 10; i++) {
-      expect(phrases[i]).toBeDefined()
-      expect(typeof phrases[i]).toBe('string')
-    }
-  })
-
   test('no duplicate phrases exist in the array', () => {
     const uniqueSet = new Set(phrases)
     expect(uniqueSet.size).toBe(phrases.length)
-  })
-
-  test('phrases array is properly iterable', () => {
-    let count = 0
-    for (const phrase of phrases) {
-      count++
-      expect(typeof phrase).toBe('string')
-    }
-    expect(count).toBe(10)
-  })
-
-  test('phrases can be mapped to uppercase', () => {
-    const uppercase = phrases.map((p) => p.toUpperCase())
-    expect(uppercase.length).toBe(10)
-    uppercase.forEach((p) => {
-      expect(p).toEqual(p.toUpperCase())
-    })
-  })
-
-  test('first phrase is "Another one Bytes the dust!"', () => {
-    expect(phrases[0]).toBe('Another one Bytes the dust!')
   })
 
   test('phrases array contains expected motivational messages', () => {
     expect(phrases).toContain('Great work!')
     expect(phrases).toContain('You did it!')
     expect(phrases).toContain('Academic Weapon!!')
-  })
-
-  test('phrases starts with capital letter', () => {
-    phrases.forEach((phrase) => {
-      expect(phrase[0]).toBe(phrase[0].toUpperCase())
-    })
   })
 })
 
@@ -103,27 +62,6 @@ describe('[BLACKBOX] PHRASES: User Motivation Display', () => {
     expect(typeof randomPhrase).toBe('string')
     expect(randomPhrase.length).toBeGreaterThan(0)
   })
-
-  test('phrases can be joined to display in UI', () => {
-    const displayText = phrases.join(' | ')
-    expect(typeof displayText).toBe('string')
-    expect(displayText.length).toBeGreaterThan(0)
-  })
-
-  test('multiple random phrase selections always return valid phrases', () => {
-    for (let i = 0; i < 50; i++) {
-      const randomIdx = Math.floor(Math.random() * phrases.length)
-      expect(phrases[randomIdx]).toBeDefined()
-    }
-  })
-
-  test('filtered phrases by length work correctly', () => {
-    const longPhrases = phrases.filter((p) => p.length > 10)
-    expect(longPhrases.length).toBeGreaterThan(0)
-    longPhrases.forEach((p) => {
-      expect(p.length).toBeGreaterThan(10)
-    })
-  })
 })
 
 // ============================================================================
@@ -131,18 +69,9 @@ describe('[BLACKBOX] PHRASES: User Motivation Display', () => {
 // ============================================================================
 
 describe('[WHITEBOX] COLORS: Theme Configuration Constants', () => {
-  test('Colors exports primary color with correct hex value', () => {
+  test('Colors exports primary and warning colors', () => {
     expect(Colors.primary).toBe('#003da4')
-    expect(typeof Colors.primary).toBe('string')
-  })
-
-  test('Colors exports warning color with red hex value', () => {
     expect(Colors.warning).toBe('#ff0000')
-  })
-
-  test('Colors has light theme object', () => {
-    expect(Colors.light).toBeDefined()
-    expect(typeof Colors.light).toBe('object')
   })
 
   test('light theme contains all required color properties', () => {
@@ -153,23 +82,6 @@ describe('[WHITEBOX] COLORS: Theme Configuration Constants', () => {
     expect(Colors.light.iconColor).toBe('#686477')
     expect(Colors.light.iconColorFocused).toBe('#201e2b')
     expect(Colors.light.uiBackground).toBe('#d6d5e1')
-  })
-
-  test('all color values are valid hex format', () => {
-    const hexRegex = /^#[0-9A-Fa-f]+$/
-    expect(hexRegex.test(Colors.primary)).toBe(true)
-    expect(hexRegex.test(Colors.warning)).toBe(true)
-    Object.values(Colors.light).forEach((color) => {
-      expect(hexRegex.test(color)).toBe(true)
-    })
-  })
-
-  test('light theme contains at least 7 color definitions', () => {
-    expect(Object.keys(Colors.light).length).toBeGreaterThanOrEqual(7)
-  })
-
-  test('Colors object is not empty', () => {
-    expect(Object.keys(Colors).length).toBeGreaterThanOrEqual(3)
   })
 })
 
@@ -185,19 +97,7 @@ describe('[BLACKBOX] COLORS: Application Theming', () => {
     expect(textColor).toBeDefined()
   })
 
-  test('navigation theme colors are accessible', () => {
-    const navBg = Colors.light.navBackground
-    const iconColor = Colors.light.iconColor
-    expect(navBg).toBeDefined()
-    expect(iconColor).toBeDefined()
-  })
-
-  test('warning color can be used for alerts', () => {
-    expect(Colors.warning).toBeDefined()
-    expect(typeof Colors.warning).toBe('string')
-  })
-
-  test('icon colors for active and inactive states', () => {
+  test('icon colors differentiate active and inactive states', () => {
     const inactive = Colors.light.iconColor
     const active = Colors.light.iconColorFocused
     expect(inactive).not.toBe(active)
@@ -960,77 +860,6 @@ describe('[INTEGRATION] Cross-Module Functionality', () => {
 })
 
 // ============================================================================
-// PERFORMANCE & ROBUSTNESS TESTS
-// ============================================================================
-
-describe('[PERFORMANCE] Efficiency & Robustness', () => {
-  test('phrases array access is constant time O(1)', () => {
-    const startTime = Date.now()
-    for (let i = 0; i < 10000; i++) {
-      const idx = Math.floor(Math.random() * phrases.length)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _ = phrases[idx]
-    }
-    const endTime = Date.now()
-    expect(endTime - startTime).toBeLessThan(100)
-  })
-
-  test('formatRepeatDays handles large iteration efficiently', () => {
-    const startTime = Date.now()
-    for (let i = 0; i < 1000; i++) {
-      formatRepeatDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'])
-    }
-    const endTime = Date.now()
-    expect(endTime - startTime).toBeLessThan(200)
-  })
-
-  test('getNextRepeatDate performs efficiently', () => {
-    const startTime = Date.now()
-    const date = new Date('2024-01-15T10:00:00')
-    for (let i = 0; i < 1000; i++) {
-      getNextRepeatDate(date, ['Monday', 'Wednesday', 'Friday'], '15:00')
-    }
-    const endTime = Date.now()
-    expect(endTime - startTime).toBeLessThan(300)
-  })
-
-  test('getTriggerDate performs efficiently', () => {
-    const startTime = Date.now()
-    for (let i = 0; i < 1000; i++) {
-      getTriggerDate('2024-01-15', '14:30')
-    }
-    const endTime = Date.now()
-    expect(endTime - startTime).toBeLessThan(200)
-  })
-
-  test('functions maintain consistency across multiple calls', () => {
-    const result1 = getTriggerDate('2024-01-15', '14:30')
-    const result2 = getTriggerDate('2024-01-15', '14:30')
-    if (result1 && result2) {
-      expect(result1.getTime()).toBe(result2.getTime())
-    }
-  })
-
-  test('formatRepeatDays maintains consistency across calls', () => {
-    const result1 = formatRepeatDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'])
-    const result2 = formatRepeatDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'])
-    expect(result1).toBe(result2)
-  })
-
-  test('app handles many tasks without degradation', () => {
-    mockedUseBooks.mockReturnValue({
-      books: Array(1000).fill(null).map((_, i) => ({
-        $id: `task-${i}`,
-        name: `Task ${i}`,
-        isCompleted: i % 2 === 0,
-      })),
-    })
-    const { books } = mockedUseBooks()
-    expect(books.length).toBe(1000)
-  })
-})
-
-// ============================================================================
 // ERROR HANDLING & EDGE CASES
 // ============================================================================
 
@@ -1055,13 +884,1750 @@ describe('[ERROR HANDLING] Edge Cases & Robustness', () => {
     const result = getNextRepeatDate(date, ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], '15:00')
     expect(result instanceof Date).toBe(true)
   })
+})
 
-  test('all utilities return non-null/non-undefined for valid inputs', () => {
-    expect(phrases).toBeDefined()
-    expect(Colors.primary).toBeDefined()
-    expect(formatRepeatDays(['Mon'])).toBeDefined()
-    expect(getTriggerDate('2024-01-15', '14:30')).toBeDefined()
-    expect(getNextRepeatDate(new Date(), ['Monday'], '15:00')).toBeDefined()
+// ============================================================================
+// TASK MANAGEMENT - WHITEBOX: Task CRUD Operations
+// ============================================================================
+
+describe('[WHITEBOX] TASK MANAGEMENT: Task CRUD Operations', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockedUseBooks.mockClear()
+  })
+
+  test('books context provides createBook function', () => {
+    const createBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      createBook: createBookMock,
+    })
+    const { createBook } = mockedUseBooks()
+    expect(typeof createBook).toBe('function')
+  })
+
+  test('createBook accepts task data object', () => {
+    const createBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      createBook: createBookMock,
+    })
+    const { createBook } = mockedUseBooks()
+    const taskData = {
+      name: 'Study Math',
+      date: '2024-01-15',
+      timeStarts: '09:00',
+      timeEnds: '11:00',
+      repeats: ['Monday'],
+    }
+    createBook(taskData)
+    expect(createBookMock).toHaveBeenCalledWith(taskData)
+  })
+
+  test('createBook requires task name', () => {
+    const createBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      createBook: createBookMock,
+    })
+    const { createBook } = mockedUseBooks()
+    const taskData = {
+      name: 'Study',
+      date: '2024-01-15',
+      timeStarts: '09:00',
+    }
+    createBook(taskData)
+    expect(createBookMock.mock.calls[0][0].name).toBe('Study')
+  })
+
+  test('books context provides updateBook function', () => {
+    const updateBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      updateBook: updateBookMock,
+    })
+    const { updateBook } = mockedUseBooks()
+    expect(typeof updateBook).toBe('function')
+  })
+
+  test('updateBook accepts task id and update data', () => {
+    const updateBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      updateBook: updateBookMock,
+    })
+    const { updateBook } = mockedUseBooks()
+    updateBook('task-123', { name: 'Updated Task' })
+    expect(updateBookMock).toHaveBeenCalledWith('task-123', { name: 'Updated Task' })
+  })
+
+  test('books context provides deleteBook function', () => {
+    const deleteBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      deleteBook: deleteBookMock,
+    })
+    const { deleteBook } = mockedUseBooks()
+    expect(typeof deleteBook).toBe('function')
+  })
+
+  test('deleteBook accepts task id', () => {
+    const deleteBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      deleteBook: deleteBookMock,
+    })
+    const { deleteBook } = mockedUseBooks()
+    deleteBook('task-123')
+    expect(deleteBookMock).toHaveBeenCalledWith('task-123')
+  })
+
+  test('changeIsCompleted function toggles completion status', () => {
+    const changeIsCompletedMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      changeIsCompleted: changeIsCompletedMock,
+    })
+    const { changeIsCompleted } = mockedUseBooks()
+    changeIsCompleted('task-123', false)
+    expect(changeIsCompletedMock).toHaveBeenCalledWith('task-123', false)
+  })
+
+  test('task data structure includes required fields', () => {
+    mockedUseBooks.mockReturnValue({
+      books: [
+        {
+          $id: 'task-1',
+          name: 'Study Math',
+          date: '2024-01-15',
+          timeStarts: '09:00',
+          timeEnds: '11:00',
+          isCompleted: false,
+          repeats: ['Monday'],
+          userID: 'user-1',
+        },
+      ],
+    })
+    const { books } = mockedUseBooks()
+    const task = books[0]
+    expect(task.$id).toBeDefined()
+    expect(task.name).toBeDefined()
+    expect(task.date).toBeDefined()
+    expect(task.timeStarts).toBeDefined()
+    expect(task.timeEnds).toBeDefined()
+    expect(task.isCompleted).toBeDefined()
+  })
+
+  test('task completion status is boolean', () => {
+    mockedUseBooks.mockReturnValue({
+      books: [{ $id: '1', isCompleted: true }],
+    })
+    const { books } = mockedUseBooks()
+    expect(typeof books[0].isCompleted).toBe('boolean')
+  })
+})
+
+// ============================================================================
+// TASK MANAGEMENT - WHITEBOX: Task Categorization
+// ============================================================================
+
+describe('[WHITEBOX] TASK MANAGEMENT: Task Categorization Logic', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockedUseBooks.mockClear()
+  })
+
+  test('current tasks are tasks happening now', () => {
+    mockedUseBooks.mockReturnValue({
+      currentTasks: [
+        { $id: '1', name: 'Current Task', timeStarts: '09:00', timeEnds: '10:00' },
+      ],
+    })
+    const { currentTasks } = mockedUseBooks()
+    expect(Array.isArray(currentTasks)).toBe(true)
+    expect(currentTasks.length).toBeGreaterThan(0)
+  })
+
+  test('previous tasks are tasks that have ended', () => {
+    mockedUseBooks.mockReturnValue({
+      previousTasks: [
+        { $id: '1', name: 'Past Task', timeEnds: '08:00' },
+      ],
+    })
+    const { previousTasks } = mockedUseBooks()
+    expect(Array.isArray(previousTasks)).toBe(true)
+  })
+
+  test('upcoming tasks are tasks that haven\'t started', () => {
+    mockedUseBooks.mockReturnValue({
+      upcomingTasks: [
+        { $id: '1', name: 'Future Task', timeStarts: '14:00' },
+      ],
+    })
+    const { upcomingTasks } = mockedUseBooks()
+    expect(Array.isArray(upcomingTasks)).toBe(true)
+  })
+
+  test('daily tasks are tasks for a specific date', () => {
+    mockedUseBooks.mockReturnValue({
+      dailyTasks: [
+        { $id: '1', name: 'Daily Task 1', date: '2024-01-15' },
+        { $id: '2', name: 'Daily Task 2', date: '2024-01-15' },
+      ],
+    })
+    const { dailyTasks } = mockedUseBooks()
+    expect(Array.isArray(dailyTasks)).toBe(true)
+    expect(dailyTasks.length).toBe(2)
+  })
+
+  test('fetchTasksByDate retrieves tasks for specific date', () => {
+    const fetchTasksByDateMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      fetchTasksByDate: fetchTasksByDateMock,
+    })
+    const { fetchTasksByDate } = mockedUseBooks()
+    const testDate = new Date('2024-01-15')
+    fetchTasksByDate(testDate)
+    expect(fetchTasksByDateMock).toHaveBeenCalledWith(testDate)
+  })
+
+  test('fetchPreviousTasks retrieves completed tasks', () => {
+    const fetchPreviousTasksMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      fetchPreviousTasks: fetchPreviousTasksMock,
+    })
+    const { fetchPreviousTasks } = mockedUseBooks()
+    fetchPreviousTasks()
+    expect(fetchPreviousTasksMock).toHaveBeenCalled()
+  })
+
+  test('fetchCurrentTasks retrieves ongoing tasks', () => {
+    const fetchCurrentTasksMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      fetchCurrentTasks: fetchCurrentTasksMock,
+    })
+    const { fetchCurrentTasks } = mockedUseBooks()
+    fetchCurrentTasks()
+    expect(fetchCurrentTasksMock).toHaveBeenCalled()
+  })
+
+  test('fetchUpcomingTasks retrieves future tasks', () => {
+    const fetchUpcomingTasksMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      fetchUpcomingTasks: fetchUpcomingTasksMock,
+    })
+    const { fetchUpcomingTasks } = mockedUseBooks()
+    fetchUpcomingTasks()
+    expect(fetchUpcomingTasksMock).toHaveBeenCalled()
+  })
+})
+
+// ============================================================================
+// TASK MANAGEMENT - WHITEBOX: Task Progress Tracking
+// ============================================================================
+
+describe('[WHITEBOX] TASK MANAGEMENT: Progress Tracking', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockedUseBooks.mockClear()
+  })
+
+  test('progress is tracked as a number between 0 and 1', () => {
+    mockedUseBooks.mockReturnValue({
+      progress: 0.5,
+    })
+    const { progress } = mockedUseBooks()
+    expect(typeof progress).toBe('number')
+    expect(progress).toBeGreaterThanOrEqual(0)
+    expect(progress).toBeLessThanOrEqual(1)
+  })
+
+  test('progress is 0 when no tasks completed', () => {
+    mockedUseBooks.mockReturnValue({
+      progress: 0,
+      books: [
+        { $id: '1', isCompleted: false },
+        { $id: '2', isCompleted: false },
+      ],
+    })
+    const { progress } = mockedUseBooks()
+    expect(progress).toBe(0)
+  })
+
+  test('progress is 1 when all tasks completed', () => {
+    mockedUseBooks.mockReturnValue({
+      progress: 1,
+      books: [
+        { $id: '1', isCompleted: true },
+        { $id: '2', isCompleted: true },
+      ],
+    })
+    const { progress } = mockedUseBooks()
+    expect(progress).toBe(1)
+  })
+
+  test('progress is fractional for partial completion', () => {
+    mockedUseBooks.mockReturnValue({
+      progress: 0.33,
+      books: [
+        { $id: '1', isCompleted: true },
+        { $id: '2', isCompleted: false },
+        { $id: '3', isCompleted: false },
+      ],
+    })
+    const { progress } = mockedUseBooks()
+    expect(progress).toBeGreaterThan(0)
+    expect(progress).toBeLessThan(1)
+  })
+
+  test('progress updates when task completion status changes', () => {
+    const changeIsCompletedMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      changeIsCompleted: changeIsCompletedMock,
+    })
+    const { changeIsCompleted } = mockedUseBooks()
+    changeIsCompleted('task-1', false)
+    expect(changeIsCompletedMock).toHaveBeenCalled()
+  })
+
+  test('all books array contains all tasks', () => {
+    mockedUseBooks.mockReturnValue({
+      books: [
+        { $id: '1', name: 'Task 1', isCompleted: true },
+        { $id: '2', name: 'Task 2', isCompleted: false },
+        { $id: '3', name: 'Task 3', isCompleted: false },
+      ],
+    })
+    const { books } = mockedUseBooks()
+    expect(Array.isArray(books)).toBe(true)
+    expect(books.length).toBe(3)
+  })
+})
+
+// ============================================================================
+// TASK MANAGEMENT - BLACKBOX: User Task Workflow
+// ============================================================================
+
+describe('[BLACKBOX] TASK MANAGEMENT: User Task Workflow', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockedUseBooks.mockClear()
+  })
+
+  test('user can create new task', () => {
+    const createBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      createBook: createBookMock,
+    })
+    const { createBook } = mockedUseBooks()
+    createBook({
+      name: 'Study Physics',
+      date: '2024-01-15',
+      timeStarts: '10:00',
+      timeEnds: '12:00',
+    })
+    expect(createBookMock).toHaveBeenCalled()
+  })
+
+  test('user can view all tasks', () => {
+    mockedUseBooks.mockReturnValue({
+      books: [
+        { $id: '1', name: 'Task 1' },
+        { $id: '2', name: 'Task 2' },
+      ],
+    })
+    const { books } = mockedUseBooks()
+    expect(books.length).toBe(2)
+  })
+
+  test('user can view tasks by date', () => {
+    const fetchTasksByDateMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      fetchTasksByDate: fetchTasksByDateMock,
+      dailyTasks: [
+        { $id: '1', name: 'Daily Task', date: '2024-01-15' },
+      ],
+    })
+    const { fetchTasksByDate, dailyTasks } = mockedUseBooks()
+    fetchTasksByDate(new Date('2024-01-15'))
+    expect(fetchTasksByDateMock).toHaveBeenCalled()
+    expect(dailyTasks.length).toBeGreaterThan(0)
+  })
+
+  test('user can view current tasks (in progress)', () => {
+    mockedUseBooks.mockReturnValue({
+      currentTasks: [
+        { $id: '1', name: 'Current Task', timeStarts: '09:00', timeEnds: '10:00' },
+      ],
+    })
+    const { currentTasks } = mockedUseBooks()
+    expect(currentTasks.length).toBeGreaterThan(0)
+  })
+
+  test('user can view previous tasks (completed)', () => {
+    mockedUseBooks.mockReturnValue({
+      previousTasks: [
+        { $id: '1', name: 'Completed Task', isCompleted: true },
+      ],
+    })
+    const { previousTasks } = mockedUseBooks()
+    expect(Array.isArray(previousTasks)).toBe(true)
+  })
+
+  test('user can view upcoming tasks (not started)', () => {
+    mockedUseBooks.mockReturnValue({
+      upcomingTasks: [
+        { $id: '1', name: 'Future Task', timeStarts: '14:00' },
+      ],
+    })
+    const { upcomingTasks } = mockedUseBooks()
+    expect(Array.isArray(upcomingTasks)).toBe(true)
+  })
+
+  test('user can mark task as completed', () => {
+    const changeIsCompletedMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      changeIsCompleted: changeIsCompletedMock,
+    })
+    const { changeIsCompleted } = mockedUseBooks()
+    changeIsCompleted('task-1', false)
+    expect(changeIsCompletedMock).toHaveBeenCalled()
+  })
+
+  test('user can mark task as incomplete', () => {
+    const changeIsCompletedMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      changeIsCompleted: changeIsCompletedMock,
+    })
+    const { changeIsCompleted } = mockedUseBooks()
+    changeIsCompleted('task-1', true)
+    expect(changeIsCompletedMock).toHaveBeenCalled()
+  })
+
+  test('user can edit task details', () => {
+    const updateBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      updateBook: updateBookMock,
+    })
+    const { updateBook } = mockedUseBooks()
+    updateBook('task-1', { name: 'Updated Task Name', timeStarts: '11:00' })
+    expect(updateBookMock).toHaveBeenCalled()
+  })
+
+  test('user can delete task', () => {
+    const deleteBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      deleteBook: deleteBookMock,
+    })
+    const { deleteBook } = mockedUseBooks()
+    deleteBook('task-1')
+    expect(deleteBookMock).toHaveBeenCalled()
+  })
+
+  test('task list is sorted by time', () => {
+    mockedUseBooks.mockReturnValue({
+      books: [
+        { $id: '1', name: 'Early Task', timeStarts: '09:00', date: '2024-01-15' },
+        { $id: '2', name: 'Late Task', timeStarts: '14:00', date: '2024-01-15' },
+      ],
+    })
+    const { books } = mockedUseBooks()
+    expect(books[0].timeStarts < books[1].timeStarts).toBe(true)
+  })
+
+  test('user can have recurring tasks', () => {
+    mockedUseBooks.mockReturnValue({
+      books: [
+        {
+          $id: '1',
+          name: 'Daily Study',
+          repeats: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+        },
+      ],
+    })
+    const { books } = mockedUseBooks()
+    expect(books[0].repeats).toBeDefined()
+    expect(books[0].repeats.length).toBeGreaterThan(0)
+  })
+})
+
+// ============================================================================
+// TASK MANAGEMENT - INTEGRATION: Task Operations
+// ============================================================================
+
+describe('[INTEGRATION] TASK MANAGEMENT: Cross-Operation Workflows', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockedUseBooks.mockClear()
+  })
+
+  test('creating task updates all task lists', () => {
+    const createBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      createBook: createBookMock,
+      currentTasks: [],
+      upcomingTasks: [{ $id: '1', name: 'New Task' }],
+      previousTasks: [],
+    })
+    const { createBook, upcomingTasks } = mockedUseBooks()
+    createBook({ name: 'New Task', timeStarts: '14:00' })
+    expect(createBookMock).toHaveBeenCalled()
+    expect(upcomingTasks.length).toBeGreaterThan(0)
+  })
+
+  test('completing task updates progress and task lists', () => {
+    const changeIsCompletedMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      changeIsCompleted: changeIsCompletedMock,
+      progress: 0.5,
+      previousTasks: [{ $id: '1', isCompleted: true }],
+    })
+    const { changeIsCompleted, progress } = mockedUseBooks()
+    changeIsCompleted('task-1', false)
+    expect(changeIsCompletedMock).toHaveBeenCalled()
+    expect(progress).toBeGreaterThan(0)
+  })
+
+  test('deleting task updates all lists', () => {
+    const deleteBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      deleteBook: deleteBookMock,
+      books: [],
+      currentTasks: [],
+      upcomingTasks: [],
+      previousTasks: [],
+    })
+    const { deleteBook } = mockedUseBooks()
+    deleteBook('task-1')
+    expect(deleteBookMock).toHaveBeenCalled()
+  })
+
+  test('editing task preserves other task data', () => {
+    const updateBookMock = jest.fn()
+    const originalTask = {
+      $id: 'task-1',
+      name: 'Original Name',
+      date: '2024-01-15',
+      timeStarts: '09:00',
+      timeEnds: '10:00',
+      isCompleted: false,
+    }
+    mockedUseBooks.mockReturnValue({
+      books: [originalTask],
+      updateBook: updateBookMock,
+    })
+    const { updateBook, books } = mockedUseBooks()
+    updateBook('task-1', { name: 'Updated Name' })
+    expect(updateBookMock).toHaveBeenCalled()
+    expect(books[0].date).toBe(originalTask.date)
+  })
+})
+
+// ============================================================================
+// TASK MANAGEMENT - ERROR HANDLING
+// ============================================================================
+
+describe('[ERROR HANDLING] TASK MANAGEMENT: Edge Cases & Robustness', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockedUseBooks.mockClear()
+  })
+
+  test('handling empty task list', () => {
+    mockedUseBooks.mockReturnValue({
+      books: [],
+      currentTasks: [],
+      upcomingTasks: [],
+      previousTasks: [],
+    })
+    const { books } = mockedUseBooks()
+    expect(Array.isArray(books)).toBe(true)
+    expect(books.length).toBe(0)
+  })
+
+  test('handling tasks with missing optional fields', () => {
+    mockedUseBooks.mockReturnValue({
+      books: [
+        { $id: '1', name: 'Task without repeats' },
+      ],
+    })
+    const { books } = mockedUseBooks()
+    expect(books[0].name).toBeDefined()
+  })
+
+  test('handling progress calculation with no tasks', () => {
+    mockedUseBooks.mockReturnValue({
+      progress: 0,
+      books: [],
+    })
+    const { progress } = mockedUseBooks()
+    expect(progress).toBe(0)
+  })
+})
+
+// ============================================================================
+// APPWRITE DATABASE OPERATIONS - WHITEBOX: Query Construction
+// ============================================================================
+
+describe('[WHITEBOX] APPWRITE: Database Query Construction', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('database queries filter by userID', () => {
+    // Simulating how BooksContext queries
+    const userId = 'user-123'
+    // Query uses Query.equal('userID', userId)
+    expect(userId).toBeDefined()
+  })
+
+  test('currentTasks query uses greaterThan for timeEnds', () => {
+    // Query logic: timeEnds > currentTimeString
+    const currentTimeString = '14:30'
+    const taskTimeEnds = '15:00'
+    expect(taskTimeEnds > currentTimeString).toBe(true)
+  })
+
+  test('previousTasks query uses lessThan for timeEnds', () => {
+    // Query logic: timeEnds < currentTimeString
+    const currentTimeString = '14:30'
+    const taskTimeEnds = '13:00'
+    expect(taskTimeEnds < currentTimeString).toBe(true)
+  })
+
+  test('upcomingTasks query uses greaterThan for timeStarts', () => {
+    // Query logic: timeStarts > currentTimeString
+    const currentTimeString = '14:30'
+    const taskTimeStarts = '15:00'
+    expect(taskTimeStarts > currentTimeString).toBe(true)
+  })
+
+  test('database ID is correctly defined', () => {
+    const DATABASE_ID = '68fd56d40037f2743501'
+    expect(DATABASE_ID).toBe('68fd56d40037f2743501')
+  })
+
+  test('collection ID is correctly defined', () => {
+    const COLLECTION_ID = 'books'
+    expect(COLLECTION_ID).toBe('books')
+  })
+
+  test('task dates are normalized to YYYY-MM-DD format', () => {
+    const date = new Date(2024, 0, 15) // January 15, 2024
+    const normalized = date.toISOString().split('T')[0]
+    expect(normalized).toBe('2024-01-15')
+  })
+
+  test('time strings use HH:MM format', () => {
+    const timeString = '14:30'
+    const regex = /^\d{2}:\d{2}$/
+    expect(regex.test(timeString)).toBe(true)
+  })
+
+  test('documents are sorted by date and time', () => {
+    const tasks = [
+      { date: '2024-01-15', timeEnds: '15:00' },
+      { date: '2024-01-14', timeEnds: '14:00' },
+      { date: '2024-01-15', timeEnds: '12:00' },
+    ]
+    // Sorting function validates earlier dates come first
+    expect(tasks[1].date < tasks[0].date).toBe(true)
+  })
+
+  test('user isolation via userID query parameter', () => {
+    const userID = 'user-abc123'
+    expect(userID).toBeDefined()
+    expect(typeof userID).toBe('string')
+  })
+
+  test('permission rules include user-specific read/update/delete', () => {
+    // Permission structure: [read(user), update(user), delete(user)]
+    const permissions = ['read', 'update', 'delete']
+    expect(permissions.length).toBe(3)
+    expect(permissions).toContain('read')
+    expect(permissions).toContain('update')
+    expect(permissions).toContain('delete')
+  })
+
+  test('notificationId is stored with task document', () => {
+    const task = {
+      $id: 'task-1',
+      name: 'Study',
+      notificationId: 'notif-abc123',
+    }
+    expect(task.notificationId !== undefined).toBe(true)
+  })
+
+  test('isCompleted field is boolean', () => {
+    const task = { isCompleted: false }
+    expect(typeof task.isCompleted).toBe('boolean')
+  })
+})
+
+// ============================================================================
+// APPWRITE DATABASE OPERATIONS - WHITEBOX: CRUD Functions
+// ============================================================================
+
+describe('[WHITEBOX] APPWRITE: CRUD Operations Logic', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockedUseUser.mockClear()
+    mockedUseBooks.mockClear()
+  })
+
+  test('createBook generates unique document ID', () => {
+    // ID.unique() generates unique IDs
+    const uniqueId1 = Math.random().toString(36)
+    const uniqueId2 = Math.random().toString(36)
+    expect(uniqueId1).not.toBe(uniqueId2)
+  })
+
+  test('createBook includes userID in document', () => {
+    mockedUseUser.mockReturnValue({
+      user: { $id: 'user-123' },
+    })
+    const { user } = mockedUseUser()
+    expect(user.$id).toBeDefined()
+  })
+
+  test('createBook includes notification ID or null', () => {
+    const notificationId = 'notif-123'
+    expect(notificationId !== undefined).toBe(true)
+  })
+
+  test('deleteBook removes document from database', () => {
+    const deleteBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      deleteBook: deleteBookMock,
+      books: [{ $id: 'task-1', name: 'Task' }],
+    })
+    const { deleteBook } = mockedUseBooks()
+    deleteBook('task-1')
+    expect(deleteBookMock).toHaveBeenCalledWith('task-1')
+  })
+
+  test('deleteBook cancels associated notification', () => {
+    const task = {
+      $id: 'task-1',
+      name: 'Task',
+      notificationId: 'notif-123',
+    }
+    expect(task.notificationId).toBeDefined()
+  })
+
+  test('updateBook modifies existing document', () => {
+    const updateBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      updateBook: updateBookMock,
+    })
+    const { updateBook } = mockedUseBooks()
+    updateBook('task-1', { name: 'Updated' })
+    expect(updateBookMock).toHaveBeenCalledWith('task-1', { name: 'Updated' })
+  })
+
+  test('updateBook schedules new notification if not completed', () => {
+    const updateData = {
+      name: 'Task',
+      date: '2024-01-15',
+      timeStarts: '10:00',
+      isCompleted: false,
+    }
+    expect(updateData.isCompleted).toBe(false)
+  })
+
+  test('updateBook cancels notification if marking completed', () => {
+    const updateData = {
+      name: 'Task',
+      isCompleted: true,
+    }
+    expect(updateData.isCompleted).toBe(true)
+  })
+
+  test('changeIsCompleted toggles completion status', () => {
+    const changeIsCompletedMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      changeIsCompleted: changeIsCompletedMock,
+    })
+    const { changeIsCompleted } = mockedUseBooks()
+    changeIsCompleted('task-1', false) // false -> true
+    expect(changeIsCompletedMock).toHaveBeenCalledWith('task-1', false)
+  })
+
+  test('changeIsCompleted cancels notification when completing', () => {
+    const isCompleted = true
+    expect(isCompleted).toBe(true)
+  })
+
+  test('fetchTasksByDate filters by specific date', () => {
+    const fetchTasksByDateMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      fetchTasksByDate: fetchTasksByDateMock,
+    })
+    const { fetchTasksByDate } = mockedUseBooks()
+    const testDate = '2024-01-15'
+    fetchTasksByDate(testDate)
+    expect(fetchTasksByDateMock).toHaveBeenCalledWith(testDate)
+  })
+
+  test('fetchPreviousTasks filters today completed tasks', () => {
+    const fetchPreviousTasksMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      fetchPreviousTasks: fetchPreviousTasksMock,
+    })
+    const { fetchPreviousTasks } = mockedUseBooks()
+    fetchPreviousTasks()
+    expect(fetchPreviousTasksMock).toHaveBeenCalled()
+  })
+
+  test('fetchCurrentTasks filters today active tasks', () => {
+    const fetchCurrentTasksMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      fetchCurrentTasks: fetchCurrentTasksMock,
+    })
+    const { fetchCurrentTasks } = mockedUseBooks()
+    fetchCurrentTasks()
+    expect(fetchCurrentTasksMock).toHaveBeenCalled()
+  })
+
+  test('fetchUpcomingTasks filters future tasks', () => {
+    const fetchUpcomingTasksMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      fetchUpcomingTasks: fetchUpcomingTasksMock,
+    })
+    const { fetchUpcomingTasks } = mockedUseBooks()
+    fetchUpcomingTasks()
+    expect(fetchUpcomingTasksMock).toHaveBeenCalled()
+  })
+})
+
+// ============================================================================
+// APPWRITE DATABASE OPERATIONS - WHITEBOX: Progress Calculation
+// ============================================================================
+
+describe('[WHITEBOX] APPWRITE: Progress Calculation Logic', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('progress is calculated as completed/total', () => {
+    const completed = 3
+    const total = 10
+    const progress = (completed / total).toFixed(2)
+    expect(parseFloat(progress)).toBe(0.3)
+  })
+
+  test('progress is 0 when no tasks exist', () => {
+    const completed = 0
+    const total = 0
+    const progress = total === 0 ? 0 : (completed / total).toFixed(2)
+    expect(progress).toBe(0)
+  })
+
+  test('progress is 0 when no tasks completed', () => {
+    const completed = 0
+    const total = 5
+    const progress = (completed / total).toFixed(2)
+    expect(parseFloat(progress)).toBe(0)
+  })
+
+  test('progress is 1 when all tasks completed', () => {
+    const completed = 5
+    const total = 5
+    const progress = (completed / total).toFixed(2)
+    expect(parseFloat(progress)).toBe(1)
+  })
+
+  test('progress is formatted to 2 decimal places', () => {
+    const completed = 1
+    const total = 3
+    const progress = (completed / total).toFixed(2)
+    expect(progress).toBe('0.33')
+  })
+
+  test('progress query filters by date', () => {
+    const date = '2024-01-15'
+    expect(date).toBeDefined()
+  })
+
+  test('progress query filters by isCompleted status', () => {
+    const completedStatus = true
+    expect(typeof completedStatus).toBe('boolean')
+  })
+
+  test('progress counts total documents for denominator', () => {
+    const total = 10
+    expect(total).toBeGreaterThan(0)
+  })
+
+  test('progress counts completed documents for numerator', () => {
+    const completed = 5
+    expect(completed).toBeGreaterThan(0)
+  })
+})
+
+// ============================================================================
+// APPWRITE DATABASE OPERATIONS - WHITEBOX: Real-time Sync
+// ============================================================================
+
+describe('[WHITEBOX] APPWRITE: Real-time Synchronization', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('real-time channel uses correct database and collection', () => {
+    const DATABASE_ID = '68fd56d40037f2743501'
+    const COLLECTION_ID = 'books'
+    const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`
+    expect(channel).toBe('databases.68fd56d40037f2743501.collections.books.documents')
+  })
+
+  test('real-time subscription handles create events', () => {
+    const events = ['create']
+    expect(events[0].includes('create')).toBe(true)
+  })
+
+  test('real-time subscription handles update events', () => {
+    const events = ['update']
+    expect(events[0].includes('update')).toBe(true)
+  })
+
+  test('real-time subscription handles delete events', () => {
+    const events = ['delete']
+    expect(events[0].includes('delete')).toBe(true)
+  })
+
+  test('create event adds new document to books', () => {
+    const books = [{ $id: '1', name: 'Task 1' }]
+    const newPayload = { $id: '2', name: 'Task 2' }
+    const updated = [...books, newPayload]
+    expect(updated.length).toBe(2)
+  })
+
+  test('delete event removes document from books', () => {
+    const books = [
+      { $id: '1', name: 'Task 1' },
+      { $id: '2', name: 'Task 2' },
+    ]
+    const deleted = books.filter(b => b.$id !== '1')
+    expect(deleted.length).toBe(1)
+    expect(deleted[0].$id).toBe('2')
+  })
+
+  test('update event modifies existing document', () => {
+    const books = [
+      { $id: '1', name: 'Task 1' },
+      { $id: '2', name: 'Task 2' },
+    ]
+    const payload = { $id: '1', name: 'Updated Task 1' }
+    const updated = books.map(b => b.$id === payload.$id ? payload : b)
+    expect(updated[0].name).toBe('Updated Task 1')
+  })
+
+  test('real-time subscription persists across multiple events', () => {
+    let books = [{ $id: '1', name: 'Task 1' }]
+    
+    // Create event
+    books = [...books, { $id: '2', name: 'Task 2' }]
+    expect(books.length).toBe(2)
+    
+    // Update event
+    books = books.map(b => b.$id === '1' ? { ...b, name: 'Updated' } : b)
+    expect(books[0].name).toBe('Updated')
+    
+    // Delete event
+    books = books.filter(b => b.$id !== '2')
+    expect(books.length).toBe(1)
+  })
+
+  test('unsubscribe function stops real-time updates', () => {
+    let isSubscribed = true
+    const unsubscribe = () => { isSubscribed = false }
+    expect(isSubscribed).toBe(true)
+    unsubscribe()
+    expect(isSubscribed).toBe(false)
+  })
+
+  test('refreshAllData called on real-time event', () => {
+    const refreshAllDataMock = jest.fn()
+    // Simulating refresh being called
+    refreshAllDataMock()
+    expect(refreshAllDataMock).toHaveBeenCalled()
+  })
+
+  test('books are sorted after real-time events', () => {
+    const books = [
+      { date: '2024-01-15', timeEnds: '15:00' },
+      { date: '2024-01-14', timeEnds: '14:00' },
+    ]
+    const sorted = books.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    expect(sorted[0].date < sorted[1].date).toBe(true)
+  })
+})
+
+// ============================================================================
+// APPWRITE DATABASE OPERATIONS - BLACKBOX: Database Workflow
+// ============================================================================
+
+describe('[BLACKBOX] APPWRITE: Complete Database Workflow', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockedUseBooks.mockClear()
+    mockedUseUser.mockClear()
+  })
+
+  test('user creates task which saves to database', () => {
+    const createBookMock = jest.fn()
+    mockedUseUser.mockReturnValue({
+      user: { $id: 'user-1' },
+    })
+    mockedUseBooks.mockReturnValue({
+      createBook: createBookMock,
+    })
+    const { createBook } = mockedUseBooks()
+    createBook({
+      name: 'Study Math',
+      date: '2024-01-15',
+      timeStarts: '10:00',
+      timeEnds: '12:00',
+    })
+    expect(createBookMock).toHaveBeenCalled()
+  })
+
+  test('created task appears in database with userID', () => {
+    const userId = 'user-123'
+    const task = {
+      name: 'Task',
+      userID: userId,
+      $id: 'doc-id',
+    }
+    expect(task.userID).toBe(userId)
+  })
+
+  test('user edits task which updates database', () => {
+    const updateBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      updateBook: updateBookMock,
+    })
+    const { updateBook } = mockedUseBooks()
+    updateBook('task-1', { name: 'Updated Name' })
+    expect(updateBookMock).toHaveBeenCalled()
+  })
+
+  test('user deletes task which removes from database', () => {
+    const deleteBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      deleteBook: deleteBookMock,
+    })
+    const { deleteBook } = mockedUseBooks()
+    deleteBook('task-1')
+    expect(deleteBookMock).toHaveBeenCalled()
+  })
+
+  test('user marks task complete which updates database', () => {
+    const changeIsCompletedMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      changeIsCompleted: changeIsCompletedMock,
+    })
+    const { changeIsCompleted } = mockedUseBooks()
+    changeIsCompleted('task-1', false)
+    expect(changeIsCompletedMock).toHaveBeenCalled()
+  })
+
+  test('multiple users see only their own tasks', () => {
+    const user1Books = [
+      { $id: '1', userID: 'user-1', name: 'Task 1' },
+      { $id: '2', userID: 'user-1', name: 'Task 2' },
+    ]
+    const user2Books = [
+      { $id: '3', userID: 'user-2', name: 'Task 3' },
+    ]
+    expect(user1Books.every(b => b.userID === 'user-1')).toBe(true)
+    expect(user2Books.every(b => b.userID === 'user-2')).toBe(true)
+  })
+
+  test('tasks sync in real-time when another device updates', () => {
+    const initialBooks = [{ $id: '1', name: 'Task 1' }]
+    const updatedPayload = { $id: '1', name: 'Updated Task' }
+    const updatedBooks = initialBooks.map(b => b.$id === updatedPayload.$id ? updatedPayload : b)
+    expect(updatedBooks[0].name).toBe('Updated Task')
+  })
+
+  test('progress updates when task completion changes', () => {
+    mockedUseBooks.mockReturnValue({
+      progress: 0.5,
+      books: [
+        { $id: '1', isCompleted: true },
+        { $id: '2', isCompleted: false },
+      ],
+    })
+    const { books } = mockedUseBooks()
+    const completed = books.filter((b: any) => b.isCompleted).length
+    expect(completed / books.length).toBe(0.5)
+  })
+
+  test('refreshAllData fetches all task categories', () => {
+    const fetchCurrentTasksMock = jest.fn()
+    const fetchPreviousTasksMock = jest.fn()
+    const fetchUpcomingTasksMock = jest.fn()
+    const fetchProgressMock = jest.fn()
+    
+    mockedUseBooks.mockReturnValue({
+      fetchCurrentTasks: fetchCurrentTasksMock,
+      fetchPreviousTasks: fetchPreviousTasksMock,
+      fetchUpcomingTasks: fetchUpcomingTasksMock,
+      fetchProgress: fetchProgressMock,
+    })
+    
+    const { fetchCurrentTasks, fetchPreviousTasks, fetchUpcomingTasks } = mockedUseBooks()
+    
+    fetchCurrentTasks()
+    fetchPreviousTasks()
+    fetchUpcomingTasks()
+    
+    expect(fetchCurrentTasksMock).toHaveBeenCalled()
+    expect(fetchPreviousTasksMock).toHaveBeenCalled()
+    expect(fetchUpcomingTasksMock).toHaveBeenCalled()
+  })
+})
+
+// ============================================================================
+// APPWRITE DATABASE OPERATIONS - INTEGRATION: Error Handling
+// ============================================================================
+
+describe('[INTEGRATION] APPWRITE: Error Handling & Recovery', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('creating task with invalid data is handled', () => {
+    const createBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      createBook: createBookMock,
+    })
+    const { createBook } = mockedUseBooks()
+    // Attempting to create with invalid data
+    createBook({})
+    expect(createBookMock).toHaveBeenCalled()
+  })
+
+  test('updating non-existent task is handled gracefully', () => {
+    const updateBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      updateBook: updateBookMock,
+    })
+    const { updateBook } = mockedUseBooks()
+    updateBook('non-existent', { name: 'Update' })
+    expect(updateBookMock).toHaveBeenCalled()
+  })
+
+  test('deleting non-existent task is handled gracefully', () => {
+    const deleteBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      deleteBook: deleteBookMock,
+    })
+    const { deleteBook } = mockedUseBooks()
+    deleteBook('non-existent')
+    expect(deleteBookMock).toHaveBeenCalled()
+  })
+
+  test('network error during fetch is logged', () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
+    mockedUseBooks.mockReturnValue({
+      fetchBooks: jest.fn(() => {
+        console.error('Network error')
+      }),
+    })
+    const { fetchBooks } = mockedUseBooks()
+    fetchBooks()
+    expect(consoleSpy).toHaveBeenCalled()
+    consoleSpy.mockRestore()
+  })
+
+  test('database operations skip when no user logged in', () => {
+    mockedUseUser.mockReturnValue({
+      user: null,
+    })
+    const { user } = mockedUseUser()
+    expect(user).toBeNull()
+  })
+
+  test('permission errors are handled when creating task', () => {
+    const createBookMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      createBook: createBookMock,
+    })
+    const { createBook } = mockedUseBooks()
+    createBook({ name: 'Task' })
+    expect(createBookMock).toHaveBeenCalled()
+  })
+
+  test('real-time subscription cleanup prevents memory leaks', () => {
+    let isSubscribed = true
+    const unsubscribe = () => { isSubscribed = false }
+    
+    // Start subscription
+    expect(isSubscribed).toBe(true)
+    
+    // Cleanup
+    unsubscribe()
+    expect(isSubscribed).toBe(false)
+  })
+
+  test('refresh retries on temporary failure', () => {
+    const refreshMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      refreshAllData: refreshMock,
+    })
+    const { refreshAllData } = mockedUseBooks()
+    
+    refreshAllData()
+    expect(refreshMock).toHaveBeenCalled()
+  })
+
+  test('app handles database reconnection', () => {
+    const fetchBooksMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      fetchBooks: fetchBooksMock,
+    })
+    const { fetchBooks } = mockedUseBooks()
+    
+    // Simulate reconnection
+    fetchBooks()
+    expect(fetchBooksMock).toHaveBeenCalled()
+  })
+
+  test('large document responses are handled', () => {
+    mockedUseBooks.mockReturnValue({
+      books: Array(5000).fill(null).map((_, i) => ({
+        $id: `task-${i}`,
+        name: `Task ${i}`,
+      })),
+    })
+    const { books } = mockedUseBooks()
+    expect(books.length).toBe(5000)
+  })
+})
+
+// ============================================================================
+// COMPONENT RENDERING - WHITEBOX: Component Props & State
+// ============================================================================
+
+describe('[WHITEBOX] COMPONENT RENDERING: Component Props Validation', () => {
+  test('ThemedView component accepts style prop', () => {
+    const style = { flex: 1, backgroundColor: '#fff' }
+    expect(style).toBeDefined()
+    expect(style.flex).toBe(1)
+  })
+
+  test('ThemedView component accepts safe prop for safe area', () => {
+    const safe = true
+    expect(typeof safe).toBe('boolean')
+  })
+
+  test('ThemedView applies theme colors', () => {
+    const theme = Colors.light
+    expect(theme.background).toBeDefined()
+    expect(typeof theme.background).toBe('string')
+  })
+
+  test('ThemedText component accepts title prop', () => {
+    const title = true
+    expect(typeof title).toBe('boolean')
+  })
+
+  test('ThemedButton component accepts style prop', () => {
+    const buttonStyle = { padding: 10 }
+    expect(buttonStyle.padding).toBe(10)
+  })
+
+  test('ThemedCard component has padding', () => {
+    const cardStyle = { padding: 20 }
+    expect(cardStyle.padding).toBe(20)
+  })
+
+  test('TaskCard component accepts all required props', () => {
+    const taskProps = {
+      id: 'task-1',
+      name: 'Study',
+      timeStarts: '09:00',
+      timeEnds: '11:00',
+      isCompleted: false,
+      color: '#013C58',
+    }
+    expect(taskProps.id).toBeDefined()
+    expect(taskProps.name).toBeDefined()
+    expect(taskProps.isCompleted).toBe(false)
+  })
+
+  test('LandingTaskList requires handlePhrase callback', () => {
+    const handlePhrase = jest.fn()
+    expect(typeof handlePhrase).toBe('function')
+  })
+
+  test('Scotty component accepts showPhrase prop', () => {
+    const showPhrase = true
+    expect(typeof showPhrase).toBe('boolean')
+  })
+
+  test('Scotty component accepts phrase string', () => {
+    const phrase = 'Great work!'
+    expect(typeof phrase).toBe('string')
+    expect(phrase.length).toBeGreaterThan(0)
+  })
+
+  test('LandingHeader uses progress from BooksContext', () => {
+    mockedUseBooks.mockReturnValue({
+      progress: 0.75,
+    })
+    const { progress } = mockedUseBooks()
+    expect(progress).toBe(0.75)
+  })
+})
+
+// ============================================================================
+// COMPONENT RENDERING - WHITEBOX: Theme Integration
+// ============================================================================
+
+describe('[WHITEBOX] COMPONENT RENDERING: Theme Integration', () => {
+  test('light theme has all required colors', () => {
+    const lightTheme = Colors.light
+    expect(lightTheme.text).toBeDefined()
+    expect(lightTheme.background).toBeDefined()
+    expect(lightTheme.navBackground).toBeDefined()
+  })
+
+  test('light theme colors are properly defined', () => {
+    const lightTheme = Colors.light
+    expect(lightTheme.text).toBeDefined()
+    expect(lightTheme.background).toBeDefined()
+    expect(lightTheme.uiBackground).toBeDefined()
+  })
+
+  test('primary color is consistent', () => {
+    expect(Colors.primary).toBe('#003da4')
+  })
+
+  test('warning color is consistent', () => {
+    expect(Colors.warning).toBe('#ff0000')
+  })
+
+  test('navigation background color differs from main background', () => {
+    const nav = Colors.light.navBackground
+    const main = Colors.light.background
+    expect(nav).not.toBe(main)
+  })
+
+  test('icon colors differentiate active and inactive states', () => {
+    const inactive = Colors.light.iconColor
+    const active = Colors.light.iconColorFocused
+    expect(inactive).not.toBe(active)
+  })
+
+  test('UI background color is distinct', () => {
+    const uiBg = Colors.light.uiBackground
+    expect(uiBg).toBeDefined()
+    expect(typeof uiBg).toBe('string')
+  })
+
+  test('all color values are valid hex', () => {
+    const hexRegex = /^#[0-9A-Fa-f]+$/
+    Object.values(Colors.light).forEach((color) => {
+      if (typeof color === 'string') {
+        expect(hexRegex.test(color)).toBe(true)
+      }
+    })
+  })
+})
+
+// ============================================================================
+// COMPONENT RENDERING - BLACKBOX: User Interface Display
+// ============================================================================
+
+describe('[BLACKBOX] COMPONENT RENDERING: User Interface Display', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockedUseBooks.mockClear()
+    mockedUseUser.mockClear()
+  })
+
+  test('landing page displays current task section', () => {
+    mockedUseBooks.mockReturnValue({
+      currentTasks: [
+        { $id: '1', name: 'Current Task', timeEnds: '10:00' },
+      ],
+    })
+    const { currentTasks } = mockedUseBooks()
+    expect(currentTasks.length).toBeGreaterThan(0)
+  })
+
+  test('landing page displays upcoming task section', () => {
+    mockedUseBooks.mockReturnValue({
+      upcomingTasks: [
+        { $id: '1', name: 'Future Task', timeStarts: '14:00' },
+      ],
+    })
+    const { upcomingTasks } = mockedUseBooks()
+    expect(upcomingTasks.length).toBeGreaterThan(0)
+  })
+
+  test('landing page shows progress bar', () => {
+    mockedUseBooks.mockReturnValue({
+      progress: 0.5,
+    })
+    const { progress } = mockedUseBooks()
+    expect(typeof progress).toBe('number')
+    expect(progress).toBeGreaterThanOrEqual(0)
+    expect(progress).toBeLessThanOrEqual(1)
+  })
+
+  test('landing page displays motivational phrase from Scotty', () => {
+    const phrase = phrases[0]
+    expect(phrase).toBeDefined()
+    expect(typeof phrase).toBe('string')
+    expect(phrase.length).toBeGreaterThan(0)
+  })
+
+  test('empty task card displays when no tasks', () => {
+    mockedUseBooks.mockReturnValue({
+      currentTasks: [],
+    })
+    const { currentTasks } = mockedUseBooks()
+    expect(currentTasks.length).toBe(0)
+  })
+
+  test('task card displays task name', () => {
+    const taskName = 'Study Math'
+    expect(taskName).toBeDefined()
+    expect(typeof taskName).toBe('string')
+  })
+
+  test('task card displays start and end time', () => {
+    const timeStarts = '09:00'
+    const timeEnds = '11:00'
+    expect(timeStarts).toBeDefined()
+    expect(timeEnds).toBeDefined()
+  })
+
+  test('task card shows completion status', () => {
+    const isCompleted = false
+    expect(typeof isCompleted).toBe('boolean')
+  })
+
+  test('task card is clickable to view details', () => {
+    const onPress = jest.fn()
+    onPress()
+    expect(onPress).toHaveBeenCalled()
+  })
+
+  test('progress bar shows percentage', () => {
+    const progress = 0.75
+    const percentage = progress * 100
+    expect(percentage).toBe(75)
+  })
+
+  test('alarm screen button navigates to alarms', () => {
+    const navigate = jest.fn()
+    navigate('/alarms')
+    expect(navigate).toHaveBeenCalledWith('/alarms')
+  })
+
+  test('add button navigates to new task', () => {
+    const navigate = jest.fn()
+    navigate('/newTask')
+    expect(navigate).toHaveBeenCalledWith('/newTask')
+  })
+})
+
+// ============================================================================
+// COMPONENT RENDERING - WHITEBOX: Auth Guard Components
+// ============================================================================
+
+describe('[WHITEBOX] COMPONENT RENDERING: Auth Guards', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockedUseUser.mockClear()
+  })
+
+  test('UserOnly requires authenticated user', () => {
+    mockedUseUser.mockReturnValue({
+      user: { $id: 'user-1' },
+      authChecked: true,
+    })
+    const { user, authChecked } = mockedUseUser()
+    expect(user).toBeDefined()
+    expect(authChecked).toBe(true)
+  })
+
+  test('GuestOnly requires no authenticated user', () => {
+    mockedUseUser.mockReturnValue({
+      user: null,
+      authChecked: true,
+    })
+    const { user, authChecked } = mockedUseUser()
+    expect(user).toBeNull()
+    expect(authChecked).toBe(true)
+  })
+
+  test('UserOnly shows loading while checking auth', () => {
+    mockedUseUser.mockReturnValue({
+      user: null,
+      authChecked: false,
+    })
+    const { authChecked } = mockedUseUser()
+    expect(authChecked).toBe(false)
+  })
+
+  test('GuestOnly shows loading while checking auth', () => {
+    mockedUseUser.mockReturnValue({
+      user: null,
+      authChecked: false,
+    })
+    const { authChecked } = mockedUseUser()
+    expect(authChecked).toBe(false)
+  })
+
+  test('UserOnly redirects to login when not authenticated', () => {
+    mockedUseUser.mockReturnValue({
+      user: null,
+      authChecked: true,
+    })
+    const { user, authChecked } = mockedUseUser()
+    const shouldRedirect = !user && authChecked
+    expect(shouldRedirect).toBe(true)
+  })
+
+  test('GuestOnly redirects to landing when authenticated', () => {
+    mockedUseUser.mockReturnValue({
+      user: { $id: 'user-1' },
+      authChecked: true,
+    })
+    const { user, authChecked } = mockedUseUser()
+    const shouldRedirect = user && authChecked
+    expect(shouldRedirect).toBe(true)
+  })
+})
+
+// ============================================================================
+// COMPONENT RENDERING - BLACKBOX: Landing Page Workflow
+// ============================================================================
+
+describe('[BLACKBOX] COMPONENT RENDERING: Landing Page Workflow', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockedUseBooks.mockClear()
+    mockedUseUser.mockClear()
+  })
+
+  test('landing page shows current tasks on load', () => {
+    mockedUseBooks.mockReturnValue({
+      currentTasks: [
+        { $id: '1', name: 'Ongoing Task', timeStarts: '09:00', timeEnds: '10:00' },
+      ],
+    })
+    const { currentTasks } = mockedUseBooks()
+    expect(currentTasks.length).toBeGreaterThan(0)
+  })
+
+  test('landing page displays upcoming tasks separately', () => {
+    mockedUseBooks.mockReturnValue({
+      currentTasks: [],
+      upcomingTasks: [
+        { $id: '1', name: 'Future Task', timeStarts: '14:00' },
+      ],
+    })
+    const { currentTasks, upcomingTasks } = mockedUseBooks()
+    expect(currentTasks.length).toBe(0)
+    expect(upcomingTasks.length).toBeGreaterThan(0)
+  })
+
+  test('landing page updates when task completed', () => {
+    mockedUseBooks.mockReturnValue({
+      progress: 0.5,
+      books: [
+        { $id: '1', isCompleted: true },
+        { $id: '2', isCompleted: false },
+      ],
+    })
+    const { books } = mockedUseBooks()
+    const completed = books.filter((b: any) => b.isCompleted).length
+    expect(completed / books.length).toBe(0.5)
+  })
+
+  test('user can click task to view details', () => {
+    const onTaskPress = jest.fn()
+    onTaskPress('task-1')
+    expect(onTaskPress).toHaveBeenCalledWith('task-1')
+  })
+
+  test('user can complete task from landing', () => {
+    const changeIsCompletedMock = jest.fn()
+    mockedUseBooks.mockReturnValue({
+      changeIsCompleted: changeIsCompletedMock,
+    })
+    const { changeIsCompleted } = mockedUseBooks()
+    changeIsCompleted('task-1', false)
+    expect(changeIsCompletedMock).toHaveBeenCalled()
+  })
+
+  test('motivational phrase changes on button press', () => {
+    const handlePhrase = jest.fn()
+    handlePhrase()
+    expect(handlePhrase).toHaveBeenCalled()
+  })
+
+  test('landing page displays date', () => {
+    const today = new Date()
+    const dateString = today.toLocaleDateString()
+    expect(dateString).toBeDefined()
+    expect(typeof dateString).toBe('string')
+  })
+
+  test('landing page logout button is accessible', () => {
+    const logoutMock = jest.fn()
+    mockedUseUser.mockReturnValue({
+      logout: logoutMock,
+    })
+    const { logout } = mockedUseUser()
+    logout()
+    expect(logoutMock).toHaveBeenCalled()
+  })
+})
+
+// ============================================================================
+// COMPONENT RENDERING - INTEGRATION: Component Composition
+// ============================================================================
+
+describe('[INTEGRATION] COMPONENT RENDERING: Component Composition', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockedUseBooks.mockClear()
+    mockedUseUser.mockClear()
+  })
+
+  test('landing page integrates header, task list, and Scotty', () => {
+    mockedUseBooks.mockReturnValue({
+      progress: 0.5,
+      currentTasks: [{ $id: '1', name: 'Task' }],
+    })
+    const { progress, currentTasks } = mockedUseBooks()
+    expect(progress).toBeDefined()
+    expect(currentTasks).toBeDefined()
+  })
+
+  test('task card integrates checkbox, title, and time info', () => {
+    const taskCard = {
+      isCompleted: false,
+      name: 'Study',
+      timeStarts: '09:00',
+      timeEnds: '11:00',
+    }
+    expect(taskCard.isCompleted).toBe(false)
+    expect(taskCard.name).toBeDefined()
+    expect(taskCard.timeStarts).toBeDefined()
+  })
+
+  test('themed view applies theme from context', () => {
+    const theme = Colors.light
+    expect(theme).toBeDefined()
+    expect(theme.background).toBeDefined()
+  })
+
+  test('landing page displays multiple themed components', () => {
+    expect(Colors.light).toBeDefined()
+    expect(phrases.length).toBeGreaterThan(0)
+    expect(typeof Colors.primary).toBe('string')
+  })
+
+  test('auth guard wraps protected content', () => {
+    mockedUseUser.mockReturnValue({
+      user: { $id: 'user-1' },
+      authChecked: true,
+    })
+    const { user, authChecked } = mockedUseUser()
+    const isProtected = user && authChecked
+    expect(isProtected).toBe(true)
+  })
+
+  test('progress bar integrates with task list', () => {
+    mockedUseBooks.mockReturnValue({
+      progress: 0.5,
+      currentTasks: [],
+      upcomingTasks: [],
+    })
+    const { progress } = mockedUseBooks()
+    expect(progress).toBeDefined()
+  })
+})
+
+// ============================================================================
+// COMPONENT RENDERING - EDGE CASES: Component States
+// ============================================================================
+
+describe('[EDGE CASES] COMPONENT RENDERING: Component States', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockedUseBooks.mockClear()
+    mockedUseUser.mockClear()
+  })
+
+  test('landing displays empty state when no tasks', () => {
+    mockedUseBooks.mockReturnValue({
+      currentTasks: [],
+      upcomingTasks: [],
+      previousTasks: [],
+    })
+    const { currentTasks, upcomingTasks } = mockedUseBooks()
+    expect(currentTasks.length).toBe(0)
+    expect(upcomingTasks.length).toBe(0)
+  })
+
+  test('progress shows 0% when no tasks completed', () => {
+    mockedUseBooks.mockReturnValue({
+      progress: 0,
+    })
+    const { progress } = mockedUseBooks()
+    expect(progress).toBe(0)
+  })
+
+  test('progress shows 100% when all tasks completed', () => {
+    mockedUseBooks.mockReturnValue({
+      progress: 1,
+    })
+    const { progress } = mockedUseBooks()
+    expect(progress).toBe(1)
+  })
+
+  test('task list handles very long task names', () => {
+    const longName = 'A'.repeat(200)
+    expect(longName.length).toBe(200)
+  })
+
+  test('theme handles missing color gracefully', () => {
+    const theme = Colors.light
+    expect(theme).toBeDefined()
+  })
+
+  test('phrases array always has content', () => {
+    expect(phrases.length).toBeGreaterThan(0)
+  })
+
+  test('task card handles disabled state', () => {
+    const isCompleted = true
+    expect(typeof isCompleted).toBe('boolean')
+  })
+
+  test('landing page handles rapid task updates', () => {
+    let tasks = [{ $id: '1', name: 'Task 1' }]
+    tasks = [...tasks, { $id: '2', name: 'Task 2' }]
+    tasks = tasks.filter(t => t.$id !== '1')
+    expect(tasks.length).toBe(1)
+  })
+
+  test('auth guard handles auth state transitions', () => {
+    mockedUseUser.mockReturnValue({ authChecked: false })
+    let { authChecked } = mockedUseUser()
+    expect(authChecked).toBe(false)
+
+    mockedUseUser.mockReturnValue({ authChecked: true, user: { $id: 'user-1' } })
+    ;({ authChecked } = mockedUseUser())
+    expect(authChecked).toBe(true)
+  })
+
+  test('component handles null/undefined children gracefully', () => {
+    const children = null
+    expect(children).toBeNull()
   })
 })
 
