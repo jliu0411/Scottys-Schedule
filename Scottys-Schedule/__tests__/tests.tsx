@@ -2518,7 +2518,7 @@ describe('[WHITEBOX] ALARM MANAGEMENT: Alarm CRUD Operations', () => {
     expect(enabledAlarms.length).toBe(2)
   })
 })
-
+ 
 // ============================================================================
 // ALARM MANAGEMENT - WHITEBOX: Alarm Scheduling Logic
 // ============================================================================
