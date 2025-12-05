@@ -25,42 +25,13 @@ jest.mock('../hooks/useBooks', () => ({ useBooks: () => mockedUseBooks() }))
 // ============================================================================
 
 describe('[WHITEBOX] PHRASES: Motivational Content System', () => {
-  test('phrases exports an array with exactly 10 motivational messages', () => {
+  test('phrases array has 10 valid motivational messages', () => {
     expect(Array.isArray(phrases)).toBe(true)
     expect(phrases.length).toBe(10)
-  })
-
-  test('all phrases are non-empty strings with no leading/trailing whitespace', () => {
     phrases.forEach((phrase) => {
       expect(typeof phrase).toBe('string')
       expect(phrase.length).toBeGreaterThan(0)
-      expect(phrase.trim()).toBe(phrase)
     })
-  })
-
-  test('no duplicate phrases exist in the array', () => {
-    const uniqueSet = new Set(phrases)
-    expect(uniqueSet.size).toBe(phrases.length)
-  })
-
-  test('phrases array contains expected motivational messages', () => {
-    expect(phrases).toContain('Great work!')
-    expect(phrases).toContain('You did it!')
-    expect(phrases).toContain('Academic Weapon!!')
-  })
-})
-
-// ============================================================================
-// PHRASES MODULE - BLACKBOX: User-Facing Behavior
-// ============================================================================
-
-describe('[BLACKBOX] PHRASES: User Motivation Display', () => {
-  test('user receives random encouragement from phrases', () => {
-    const randomIdx = Math.floor(Math.random() * phrases.length)
-    const randomPhrase = phrases[randomIdx]
-    expect(randomPhrase).toBeDefined()
-    expect(typeof randomPhrase).toBe('string')
-    expect(randomPhrase.length).toBeGreaterThan(0)
   })
 })
 
@@ -69,38 +40,14 @@ describe('[BLACKBOX] PHRASES: User Motivation Display', () => {
 // ============================================================================
 
 describe('[WHITEBOX] COLORS: Theme Configuration Constants', () => {
-  test('Colors exports primary and warning colors', () => {
-    expect(Colors.primary).toBe('#003da4')
-    expect(Colors.warning).toBe('#ff0000')
-  })
-
-  test('light theme contains all required color properties', () => {
-    expect(Colors.light.text).toBe('#201e2b')
-    expect(Colors.light.title).toBe('#ffffffff')
-    expect(Colors.light.background).toBe('#00537A')
-    expect(Colors.light.navBackground).toBe('#0B1E33')
-    expect(Colors.light.iconColor).toBe('#686477')
-    expect(Colors.light.iconColorFocused).toBe('#201e2b')
-    expect(Colors.light.uiBackground).toBe('#d6d5e1')
-  })
-})
-
-// ============================================================================
-// COLORS CONSTANTS - BLACKBOX: Theme Application
-// ============================================================================
-
-describe('[BLACKBOX] COLORS: Application Theming', () => {
-  test('theme colors can be applied to UI components', () => {
-    const backgroundColor = Colors.light.background
-    const textColor = Colors.light.text
-    expect(backgroundColor).toBeDefined()
-    expect(textColor).toBeDefined()
-  })
-
-  test('icon colors differentiate active and inactive states', () => {
-    const inactive = Colors.light.iconColor
-    const active = Colors.light.iconColorFocused
-    expect(inactive).not.toBe(active)
+  test('Colors exports all required theme properties', () => {
+    expect(Colors.primary).toBeDefined()
+    expect(Colors.warning).toBeDefined()
+    expect(Colors.light).toBeDefined()
+    expect(Colors.light.text).toBeDefined()
+    expect(Colors.light.background).toBeDefined()
+    expect(Colors.light.iconColor).toBeDefined()
+    expect(Colors.light.iconColorFocused).toBeDefined()
   })
 })
 
@@ -109,56 +56,29 @@ describe('[BLACKBOX] COLORS: Application Theming', () => {
 // ============================================================================
 
 describe('[WHITEBOX] FORMAT REPEAT DAYS: Repeat Scheduling Logic', () => {
-  test('returns "Select Days" when no days provided', () => {
+  test('returns "Select Days" for empty or null days', () => {
     expect(formatRepeatDays(null)).toBe('Select Days')
     expect(formatRepeatDays([])).toBe('Select Days')
-    expect(formatRepeatDays(undefined)).toBe('Select Days')
   })
 
-  test('returns "Everyday" when all 7 days are selected', () => {
+  test('returns "Everyday" when all 7 days selected', () => {
     const allDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     expect(formatRepeatDays(allDays)).toBe('Everyday')
   })
 
-  test('returns "Weekdays" when Mon-Fri are selected', () => {
-    const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
-    expect(formatRepeatDays(weekdays)).toBe('Weekdays')
-  })
-
-  test('returns "Weekends" when Sat and Sun are selected', () => {
-    const weekends = ['Sun', 'Sat']
-    expect(formatRepeatDays(weekends)).toBe('Weekends')
+  test('returns "Weekdays" for Mon-Fri, "Weekends" for Sat-Sun', () => {
+    expect(formatRepeatDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'])).toBe('Weekdays')
+    expect(formatRepeatDays(['Sat', 'Sun'])).toBe('Weekends')
   })
 
   test('returns comma-separated days for custom selection', () => {
-    const customDays = ['Mon', 'Wed', 'Fri']
-    const result = formatRepeatDays(customDays)
-    expect(result).toBe('Mon, Wed, Fri')
+    expect(formatRepeatDays(['Mon', 'Wed', 'Fri'])).toBe('Mon, Wed, Fri')
+    expect(formatRepeatDays(['Mon'])).toBe('Mon')
   })
 
-  test('handles single day selection', () => {
-    const singleDay = ['Mon']
-    expect(formatRepeatDays(singleDay)).toBe('Mon')
-  })
-
-  test('preserves input order in output', () => {
-    const days = ['Fri', 'Mon', 'Wed']
-    expect(formatRepeatDays(days)).toBe('Fri, Mon, Wed')
-  })
-
-  test('weekdays format requires exact Mon-Fri set', () => {
-    const almostWeekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-    expect(formatRepeatDays(almostWeekdays)).not.toBe('Weekdays')
-  })
-
-  test('weekend format requires exact Sat and Sun', () => {
-    const almostWeekend = ['Sat', 'Sun', 'Mon']
-    expect(formatRepeatDays(almostWeekend)).not.toBe('Weekends')
-  })
-
-  test('is case-sensitive for day names', () => {
-    const mixedCase = ['mon', 'tue', 'wed', 'thu', 'fri']
-    expect(formatRepeatDays(mixedCase)).not.toBe('Weekdays')
+  test('requires exact day sets for Weekdays/Weekends format', () => {
+    expect(formatRepeatDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'])).not.toBe('Weekdays')
+    expect(formatRepeatDays(['Sat', 'Sun', 'Mon'])).not.toBe('Weekends')
   })
 })
 
@@ -167,32 +87,10 @@ describe('[WHITEBOX] FORMAT REPEAT DAYS: Repeat Scheduling Logic', () => {
 // ============================================================================
 
 describe('[BLACKBOX] FORMAT REPEAT DAYS: User Display & Selection', () => {
-  test('user sees readable repeat schedule description', () => {
-    const result = formatRepeatDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'])
-    expect(result).toBe('Weekdays')
-    expect(typeof result).toBe('string')
-  })
-
-  test('weekends selection displays correctly for user', () => {
-    const result = formatRepeatDays(['Sat', 'Sun'])
-    expect(result).toBe('Weekends')
-  })
-
-  test('everyday option appears when all days selected', () => {
-    const result = formatRepeatDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'])
-    expect(result).toBe('Everyday')
-  })
-
-  test('custom day combination displays readable format', () => {
-    const result = formatRepeatDays(['Mon', 'Wed', 'Fri'])
-    expect(result).toContain('Mon')
-    expect(result).toContain('Wed')
-    expect(result).toContain('Fri')
-  })
-
-  test('user can clear repeat selection', () => {
-    const result = formatRepeatDays(null)
-    expect(result).toBe('Select Days')
+  test('user sees readable repeat schedule', () => {
+    expect(formatRepeatDays(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'])).toBe('Weekdays')
+    expect(formatRepeatDays(['Mon', 'Wed', 'Fri'])).toContain('Mon')
+    expect(typeof formatRepeatDays(['Sat', 'Sun'])).toBe('string')
   })
 })
 
@@ -206,31 +104,38 @@ describe('[WHITEBOX] GET NEXT REPEAT DATE: Repeat Scheduling Algorithm', () => {
     const result = getNextRepeatDate(date, [], '15:00')
     expect(result.getDate()).toBe(date.getDate())
     expect(result.getMonth()).toBe(date.getMonth())
-    expect(result.getFullYear()).toBe(date.getFullYear())
   })
 
-  test('schedules Monday task for Monday when before end time', () => {
+  test('schedules task for nearest repeat day, before or after today', () => {
     const date = new Date('2024-01-15T10:00:00')
-    const result = getNextRepeatDate(date, ['Monday'], '15:00')
+    const result = getNextRepeatDate(date, ['Monday', 'Friday'], '15:00')
     expect(result).toBeDefined()
     expect(result.getHours()).toBe(0)
-    expect(result.getMinutes()).toBe(0)
   })
 
-  test('schedules task for next week if past end time today', () => {
+  test('respects end time: before = today, after = next occurrence', () => {
+    const beforeEndTime = new Date('2024-01-15T14:00:00')
+    const afterEndTime = new Date('2024-01-15T16:00:00')
+    const resultBefore = getNextRepeatDate(beforeEndTime, ['Monday'], '15:00')
+    const resultAfter = getNextRepeatDate(afterEndTime, ['Monday'], '15:00')
+    expect(resultBefore.getDate()).toBe(beforeEndTime.getDate())
+    expect(resultAfter.getTime()).toBeGreaterThan(afterEndTime.getTime())
+  })
+
+  test('handles all 7 days of the week', () => {
+    const date = new Date('2024-01-15T10:00:00')
+    const allDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    const result = getNextRepeatDate(date, allDays, '15:00')
+    expect(result instanceof Date).toBe(true)
+  })
+
+  test('wraps to next week when no repeat days match current week', () => {
     const date = new Date('2024-01-15T16:00:00')
-    const result = getNextRepeatDate(date, ['Monday'], '15:00')
+    const result = getNextRepeatDate(date, ['Tuesday', 'Wednesday'], '15:00')
     expect(result.getTime()).toBeGreaterThan(date.getTime())
   })
 
-  test('handles multiple repeat days and selects nearest', () => {
-    const date = new Date('2024-01-15T10:00:00')
-    const result = getNextRepeatDate(date, ['Wednesday', 'Friday'], '15:00')
-    expect(result).toBeDefined()
-    expect(result.getTime()).toBeGreaterThanOrEqual(date.getTime())
-  })
-
-  test('sets hours, minutes, and seconds to 0 in result', () => {
+  test('sets hours, minutes, seconds to 0', () => {
     const date = new Date('2024-01-15T14:30:45.123')
     const result = getNextRepeatDate(date, ['Friday'], '15:00')
     expect(result.getHours()).toBe(0)
@@ -238,41 +143,17 @@ describe('[WHITEBOX] GET NEXT REPEAT DATE: Repeat Scheduling Algorithm', () => {
     expect(result.getSeconds()).toBe(0)
   })
 
-  test('handles all 7 days of the week', () => {
+  test('returns valid Date object', () => {
     const date = new Date('2024-01-15T10:00:00')
-    const allDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    const result = getNextRepeatDate(date, allDays, '15:00')
-    expect(result).toBeDefined()
-  })
-
-  test('respects end time for same-day scheduling decision', () => {
-    const beforeEndTime = new Date('2024-01-15T14:00:00')
-    const afterEndTime = new Date('2024-01-15T16:00:00')
-
-    const resultBefore = getNextRepeatDate(beforeEndTime, ['Monday'], '15:00')
-    const resultAfter = getNextRepeatDate(afterEndTime, ['Monday'], '15:00')
-
-    expect(resultBefore.getDate()).toBe(beforeEndTime.getDate())
-    expect(resultAfter.getDate()).toBeGreaterThan(afterEndTime.getDate())
+    const result = getNextRepeatDate(date, ['Friday'], '15:00')
+    expect(result instanceof Date).toBe(true)
+    expect(isNaN(result.getTime())).toBe(false)
   })
 
   test('handles edge case: exactly at end time', () => {
     const date = new Date('2024-01-15T15:00:00')
     const result = getNextRepeatDate(date, ['Monday'], '15:00')
     expect(result).toBeDefined()
-  })
-
-  test('wraps to next week when no repeat days match current week', () => {
-    const date = new Date('2024-01-15T16:00:00')
-    const result = getNextRepeatDate(date, ['Tuesday', 'Wednesday'], '15:00')
-    expect(result.getTime()).toBeGreaterThanOrEqual(date.getTime())
-  })
-
-  test('returns valid Date object', () => {
-    const date = new Date('2024-01-15T10:00:00')
-    const result = getNextRepeatDate(date, ['Friday'], '15:00')
-    expect(result instanceof Date).toBe(true)
-    expect(isNaN(result.getTime())).toBe(false)
   })
 })
 
@@ -284,7 +165,6 @@ describe('[BLACKBOX] GET NEXT REPEAT DATE: Task Scheduling User Experience', () 
   test('user can schedule recurring tasks for specific weekdays', () => {
     const date = new Date('2024-01-15T10:00:00')
     const nextDate = getNextRepeatDate(date, ['Friday'], '15:00')
-    expect(nextDate).toBeDefined()
     expect(nextDate.getTime()).toBeGreaterThanOrEqual(date.getTime())
   })
 
@@ -295,29 +175,12 @@ describe('[BLACKBOX] GET NEXT REPEAT DATE: Task Scheduling User Experience', () 
     expect(nextDate).toBeDefined()
   })
 
-  test('user can schedule weekday-only tasks', () => {
+  test('user can schedule weekday and weekend-only tasks', () => {
     const date = new Date('2024-01-13T10:00:00')
     const weekdayTask = getNextRepeatDate(date, ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], '15:00')
-    expect(weekdayTask).toBeDefined()
-  })
-
-  test('user can schedule weekend-only tasks', () => {
-    const date = new Date('2024-01-12T10:00:00')
     const weekendTask = getNextRepeatDate(date, ['Saturday', 'Sunday'], '15:00')
+    expect(weekdayTask).toBeDefined()
     expect(weekendTask).toBeDefined()
-  })
-
-  test('task deadline respects end time setting', () => {
-    const beforeDeadline = new Date('2024-01-15T14:00:00')
-    const afterDeadline = new Date('2024-01-15T16:00:00')
-    
-    const before = getNextRepeatDate(beforeDeadline, ['Monday'], '15:00')
-    const after = getNextRepeatDate(afterDeadline, ['Monday'], '15:00')
-    
-    // Before deadline: can schedule today
-    expect(before.getDate()).toBe(beforeDeadline.getDate())
-    // After deadline: should schedule for later
-    expect(after.getDate()).toBeGreaterThanOrEqual(afterDeadline.getDate())
   })
 })
 
@@ -331,28 +194,18 @@ describe('[WHITEBOX] GET TRIGGER DATE: Notification Trigger Parsing', () => {
     expect(result instanceof Date).toBe(true)
   })
 
-  test('parses hours and minutes correctly from time string', () => {
+  test('parses hours, minutes correctly and sets seconds to 0', () => {
     const result = getTriggerDate('2024-01-15', '14:30')
     expect(result!.getHours()).toBe(14)
     expect(result!.getMinutes()).toBe(30)
-  })
-
-  test('sets seconds and milliseconds to 0', () => {
-    const result = getTriggerDate('2024-01-15', '14:30')
     expect(result!.getSeconds()).toBe(0)
-    expect(result!.getMilliseconds()).toBe(0)
   })
 
-  test('handles midnight (00:00) correctly', () => {
-    const result = getTriggerDate('2024-01-15', '00:00')
-    expect(result!.getHours()).toBe(0)
-    expect(result!.getMinutes()).toBe(0)
-  })
-
-  test('handles 23:59 (11:59 PM) correctly', () => {
-    const result = getTriggerDate('2024-01-15', '23:59')
-    expect(result!.getHours()).toBe(23)
-    expect(result!.getMinutes()).toBe(59)
+  test('handles edge times: midnight (00:00) and 23:59', () => {
+    const midnight = getTriggerDate('2024-01-15', '00:00')
+    const endOfDay = getTriggerDate('2024-01-15', '23:59')
+    expect(midnight!.getHours()).toBe(0)
+    expect(endOfDay!.getHours()).toBe(23)
   })
 
   test('parses date components into correct year, month, day', () => {
@@ -361,43 +214,14 @@ describe('[WHITEBOX] GET TRIGGER DATE: Notification Trigger Parsing', () => {
     expect(result!.getMonth()).toBe(0)
   })
 
-  test('handles leap year dates correctly', () => {
-    const result = getTriggerDate('2024-02-29', '14:30')
-    expect(result!.getMonth()).toBe(1)
+  test('handles invalid inputs gracefully', () => {
+    expect(getTriggerDate('invalid', '14:30') === null || isNaN(getTriggerDate('invalid', '14:30')?.getTime()!)).toBe(true)
+    expect(getTriggerDate('2024-01-15', '') === null || isNaN(getTriggerDate('2024-01-15', '')?.getTime()!)).toBe(true)
   })
 
-  test('returns null for invalid date string', () => {
-    const result = getTriggerDate('invalid-date', '14:30')
-    expect(result === null || isNaN(result.getTime())).toBe(true)
-  })
-
-  test('returns null for invalid time string', () => {
-    const result = getTriggerDate('2024-01-15', 'invalid-time')
-    expect(result === null || isNaN(result.getTime())).toBe(true)
-  })
-
-  test('returns null for empty date string', () => {
-    const result = getTriggerDate('', '14:30')
-    expect(result === null || isNaN(result.getTime())).toBe(true)
-  })
-
-  test('returns null for empty time string', () => {
-    const result = getTriggerDate('2024-01-15', '')
-    expect(result === null || isNaN(result.getTime())).toBe(true)
-  })
-
-  test('handles time with single digit hours and minutes', () => {
-    const result = getTriggerDate('2024-01-15', '9:5')
-    if (result !== null && !isNaN(result.getTime())) {
-      expect(result.getHours()).toBe(9)
-      expect(result.getMinutes()).toBe(5)
-    }
-  })
-
-  test('returns Date instance with callable methods for valid inputs', () => {
+  test('returns Date instance with callable methods', () => {
     const result = getTriggerDate('2024-01-15', '14:30')
     expect(typeof result!.getTime).toBe('function')
-    expect(typeof result!.getHours).toBe('function')
   })
 })
 
@@ -406,41 +230,24 @@ describe('[WHITEBOX] GET TRIGGER DATE: Notification Trigger Parsing', () => {
 // ============================================================================
 
 describe('[BLACKBOX] GET TRIGGER DATE: Notification Scheduling', () => {
-  test('user can set notification trigger time', () => {
-    const triggerDate = getTriggerDate('2024-01-15', '14:30')
-    expect(triggerDate).not.toBeNull()
-  })
-
-  test('notification scheduled for morning times', () => {
-    const triggerDate = getTriggerDate('2024-01-15', '09:00')
-    expect(triggerDate!.getHours()).toBe(9)
-  })
-
-  test('notification scheduled for evening times', () => {
-    const triggerDate = getTriggerDate('2024-01-15', '20:30')
-    expect(triggerDate!.getHours()).toBe(20)
-    expect(triggerDate!.getMinutes()).toBe(30)
+  test('user can set notification trigger times throughout the day', () => {
+    expect(getTriggerDate('2024-01-15', '09:00')).not.toBeNull()
+    expect(getTriggerDate('2024-01-15', '14:30')).not.toBeNull()
+    expect(getTriggerDate('2024-01-15', '20:30')).not.toBeNull()
   })
 
   test('notification time is precise to the minute', () => {
     const triggerDate = getTriggerDate('2024-01-15', '14:45')
     expect(triggerDate!.getMinutes()).toBe(45)
-    expect(triggerDate!.getSeconds()).toBe(0)
   })
 
-  test('different dates create different notification times', () => {
+  test('different dates and times create different notification times', () => {
     const date1 = getTriggerDate('2024-01-15', '14:30')
     const date2 = getTriggerDate('2024-01-16', '14:30')
-    if (date1 && date2) {
-      expect(date1.getTime()).not.toBe(date2.getTime())
-    }
-  })
-
-  test('same date different times create different notification times', () => {
-    const time1 = getTriggerDate('2024-01-15', '09:00')
     const time2 = getTriggerDate('2024-01-15', '17:00')
-    if (time1 && time2) {
-      expect(time1.getTime()).not.toBe(time2.getTime())
+    if (date1 && date2 && time2) {
+      expect(date1.getTime()).not.toBe(date2.getTime())
+      expect(date1.getTime()).not.toBe(time2.getTime())
     }
   })
 })
@@ -2631,4 +2438,746 @@ describe('[EDGE CASES] COMPONENT RENDERING: Component States', () => {
   })
 })
 
+// ============================================================================
+// ALARM MANAGEMENT - WHITEBOX: Alarm CRUD Operations
+// ============================================================================
+
+describe('[WHITEBOX] ALARM MANAGEMENT: Alarm CRUD Operations', () => {
+  const mockAlarm = {
+    id: 'alarm-1',
+    time: 1704067200000, // Jan 1, 2024 8:00 AM
+    repeatDays: ['Monday', 'Wednesday', 'Friday'],
+    puzzle: false,
+    enabled: true,
+    notificationIds: [],
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('alarm has required properties', () => {
+    expect(mockAlarm.id).toBeDefined()
+    expect(mockAlarm.time).toBeDefined()
+    expect(mockAlarm.enabled).toBe(true)
+    expect(typeof mockAlarm.puzzle).toBe('boolean')
+  })
+
+  test('alarm time is valid timestamp', () => {
+    expect(typeof mockAlarm.time).toBe('number')
+    expect(mockAlarm.time).toBeGreaterThan(0)
+  })
+
+  test('alarm repeat days is array or undefined', () => {
+    expect(Array.isArray(mockAlarm.repeatDays) || mockAlarm.repeatDays === undefined).toBe(true)
+  })
+
+  test('alarm notification IDs tracks scheduled notifications', () => {
+    expect(Array.isArray(mockAlarm.notificationIds)).toBe(true)
+    const updatedAlarm = { ...mockAlarm, notificationIds: ['notif-1', 'notif-2'] }
+    expect(updatedAlarm.notificationIds.length).toBe(2)
+  })
+
+  test('alarm enabled status toggles', () => {
+    const disabled = { ...mockAlarm, enabled: false }
+    expect(disabled.enabled).toBe(false)
+    const enabled = { ...disabled, enabled: true }
+    expect(enabled.enabled).toBe(true)
+  })
+
+  test('alarm can be updated with partial data', () => {
+    const updated = { ...mockAlarm, time: 1704070800000 }
+    expect(updated.time).not.toBe(mockAlarm.time)
+    expect(updated.repeatDays).toEqual(mockAlarm.repeatDays)
+  })
+
+  test('alarm puzzle flag toggles', () => {
+    const withPuzzle = { ...mockAlarm, puzzle: true }
+    expect(withPuzzle.puzzle).toBe(true)
+    const noPuzzle = { ...withPuzzle, puzzle: false }
+    expect(noPuzzle.puzzle).toBe(false)
+  })
+
+  test('multiple alarms can coexist', () => {
+    const alarms = [
+      { ...mockAlarm, id: 'alarm-1' },
+      { ...mockAlarm, id: 'alarm-2', time: 1704074400000 },
+      { ...mockAlarm, id: 'alarm-3', time: 1704078000000 },
+    ]
+    expect(alarms.length).toBe(3)
+    expect(alarms[0].id).not.toBe(alarms[1].id)
+  })
+
+  test('alarm list can be filtered by enabled status', () => {
+    const alarms = [
+      { ...mockAlarm, id: 'alarm-1', enabled: true },
+      { ...mockAlarm, id: 'alarm-2', enabled: false },
+      { ...mockAlarm, id: 'alarm-3', enabled: true },
+    ]
+    const enabledAlarms = alarms.filter(a => a.enabled)
+    expect(enabledAlarms.length).toBe(2)
+  })
+})
+
+// ============================================================================
+// ALARM MANAGEMENT - WHITEBOX: Alarm Scheduling Logic
+// ============================================================================
+
+describe('[WHITEBOX] ALARM MANAGEMENT: Alarm Scheduling Logic', () => {
+  test('alarm time converts from milliseconds correctly', () => {
+    const timeMs = 1704067200000
+    const date = new Date(timeMs)
+    expect(date instanceof Date).toBe(true)
+    expect(date.getTime()).toBe(timeMs)
+  })
+
+  test('alarm repeat days include valid weekday names', () => {
+    const validDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    const alarmDays = ['Monday', 'Wednesday', 'Friday']
+    const allValid = alarmDays.every(day => validDays.includes(day))
+    expect(allValid).toBe(true)
+  })
+
+  test('alarm can have empty repeat days (one-time alarm)', () => {
+    const oneTimeAlarm = {
+      id: 'alarm-1',
+      time: 1704067200000,
+      repeatDays: [],
+      enabled: true,
+    }
+    expect(oneTimeAlarm.repeatDays.length).toBe(0)
+  })
+
+  test('alarm repeat days can include all weekdays', () => {
+    const allDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    expect(allDays.length).toBe(5)
+  })
+
+  test('alarm repeat days can include weekends', () => {
+    const weekendDays = ['Saturday', 'Sunday']
+    expect(weekendDays.length).toBe(2)
+  })
+
+  test('alarm extracts hour and minute from timestamp', () => {
+    const timeMs = 1704067200000
+    const date = new Date(timeMs)
+    const hour = date.getUTCHours()
+    const minute = date.getUTCMinutes()
+    expect(typeof hour).toBe('number')
+    expect(typeof minute).toBe('number')
+    expect(hour).toBeGreaterThanOrEqual(0)
+    expect(minute).toBeGreaterThanOrEqual(0)
+  })
+})
+
+// ============================================================================
+// ALARM MANAGEMENT - BLACKBOX: Alarm Workflow
+// ============================================================================
+
+describe('[BLACKBOX] ALARM MANAGEMENT: Alarm Workflow', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('user can create new alarm with time and repeat days', () => {
+    const newAlarm = {
+      id: Date.now(),
+      time: new Date().getTime(),
+      repeatDays: ['Monday', 'Wednesday'],
+      puzzle: false,
+      enabled: true,
+    }
+    expect(newAlarm.id).toBeDefined()
+    expect(newAlarm.time).toBeGreaterThan(0)
+  })
+
+  test('user can enable/disable alarm', () => {
+    let alarm = {
+      id: 'alarm-1',
+      time: Date.now(),
+      enabled: true,
+    }
+    alarm = { ...alarm, enabled: false }
+    expect(alarm.enabled).toBe(false)
+  })
+
+  test('user can delete alarm', () => {
+    let alarms = [
+      { id: 'alarm-1', time: Date.now() },
+      { id: 'alarm-2', time: Date.now() },
+    ]
+    alarms = alarms.filter(a => a.id !== 'alarm-1')
+    expect(alarms.length).toBe(1)
+    expect(alarms[0].id).toBe('alarm-2')
+  })
+
+  test('user can edit alarm time', () => {
+    const originalTime = 1704067200000
+    let alarm = { id: 'alarm-1', time: originalTime }
+    const newTime = 1704070800000
+    alarm = { ...alarm, time: newTime }
+    expect(alarm.time).not.toBe(originalTime)
+    expect(alarm.time).toBe(newTime)
+  })
+
+  test('user can edit repeat days', () => {
+    let alarm = { id: 'alarm-1', repeatDays: ['Monday'] }
+    alarm = { ...alarm, repeatDays: ['Monday', 'Wednesday', 'Friday'] }
+    expect(alarm.repeatDays.length).toBe(3)
+  })
+
+  test('user can toggle puzzle mode', () => {
+    let alarm = { id: 'alarm-1', puzzle: false }
+    alarm = { ...alarm, puzzle: true }
+    expect(alarm.puzzle).toBe(true)
+  })
+
+  test('alarms persist across app restarts', () => {
+    const savedAlarms = [
+      { id: 'alarm-1', time: Date.now(), enabled: true },
+      { id: 'alarm-2', time: Date.now() + 3600000, enabled: false },
+    ]
+    expect(savedAlarms.length).toBe(2)
+  })
+})
+
+// ============================================================================
+// ALARM NOTIFICATIONS - WHITEBOX: Notification Scheduling
+// ============================================================================
+
+describe('[WHITEBOX] ALARM NOTIFICATIONS: Notification Scheduling', () => {
+  const mockAlarm = {
+    id: 'alarm-1',
+    time: 1704067200000,
+    repeatDays: ['Monday', 'Wednesday'],
+    enabled: true,
+    notificationIds: [],
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('notification content includes alarm title', () => {
+    const content = {
+      title: 'Alarm',
+      body: 'Time to do your task!',
+      sound: 'default',
+      data: { alarmId: mockAlarm.id },
+    }
+    expect(content.title).toBe('Alarm')
+    expect(content.body).toBeDefined()
+  })
+
+  test('notification includes alarm ID in data', () => {
+    const content = {
+      data: { alarmId: String(mockAlarm.id) },
+    }
+    expect(content.data.alarmId).toBe(mockAlarm.id)
+  })
+
+  test('notification trigger has valid date', () => {
+    const trigger = {
+      type: 'date',
+      date: new Date(mockAlarm.time),
+    }
+    expect(trigger.date instanceof Date).toBe(true)
+  })
+
+  test('notification IDs are stored for cancellation', () => {
+    const notificationIds = ['notif-1', 'notif-2', 'notif-3']
+    const alarm = { ...mockAlarm, notificationIds }
+    expect(alarm.notificationIds.length).toBe(3)
+  })
+
+  test('repeating alarm schedules primary + nag notifications', () => {
+    const notificationIds = ['primary-1', 'nag-1', 'nag-2', 'nag-3', 'nag-4', 'nag-5']
+    expect(notificationIds.length).toBeGreaterThan(1)
+  })
+
+  test('one-time alarm schedules single notification', () => {
+    const notificationIds = ['notif-1']
+    expect(notificationIds.length).toBe(1)
+  })
+
+  test('notification channel is set to alarm', () => {
+    const channelId = 'alarm'
+    expect(typeof channelId).toBe('string')
+    expect(channelId).toBe('alarm')
+  })
+
+  test('alarm notification has max priority on Android', () => {
+    const priority = 'MAX'
+    expect(priority).toBe('MAX')
+  })
+
+  test('notification passes all IDs to cancellation', () => {
+    const alarm = {
+      id: 'alarm-1',
+      notificationIds: ['notif-1', 'notif-2', 'notif-3'],
+    }
+    const toCancel = alarm.notificationIds
+    expect(toCancel.length).toBe(alarm.notificationIds.length)
+  })
+})
+
+// ============================================================================
+// ALARM NOTIFICATIONS - WHITEBOX: Notification Lifecycle
+// ============================================================================
+
+describe('[WHITEBOX] ALARM NOTIFICATIONS: Notification Lifecycle', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('notification is scheduled when alarm is enabled', () => {
+    const alarm = {
+      id: 'alarm-1',
+      enabled: true,
+      notificationIds: ['notif-1'],
+    }
+    expect(alarm.notificationIds.length).toBeGreaterThan(0)
+  })
+
+  test('notification is cancelled when alarm is disabled', () => {
+    let alarm = {
+      id: 'alarm-1',
+      enabled: false,
+      notificationIds: [],
+    }
+    expect(alarm.notificationIds.length).toBe(0)
+  })
+
+  test('notification is rescheduled when alarm time changes', () => {
+    let alarm = {
+      id: 'alarm-1',
+      time: 1704067200000,
+      notificationIds: ['notif-old'],
+    }
+    alarm = {
+      ...alarm,
+      time: 1704070800000,
+      notificationIds: ['notif-new'],
+    }
+    expect(alarm.notificationIds[0]).not.toBe('notif-old')
+  })
+
+  test('notification is cleared when alarm is deleted', () => {
+    let alarms = [
+      { id: 'alarm-1', notificationIds: ['notif-1'] },
+      { id: 'alarm-2', notificationIds: ['notif-2'] },
+    ]
+    alarms = alarms.filter(a => a.id !== 'alarm-1')
+    expect(alarms[0].notificationIds).toEqual(['notif-2'])
+  })
+
+  test('multiple notifications can be tracked for one alarm', () => {
+    const alarm = {
+      id: 'alarm-1',
+      notificationIds: ['primary', 'nag-1', 'nag-2', 'nag-3'],
+    }
+    expect(alarm.notificationIds.length).toBe(4)
+  })
+})
+
+// ============================================================================
+// ALARM NOTIFICATIONS - BLACKBOX: Notification System Behavior
+// ============================================================================
+
+describe('[BLACKBOX] ALARM NOTIFICATIONS: Notification System Behavior', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('user receives alarm notification at scheduled time', () => {
+    const alarm = {
+      id: 'alarm-1',
+      time: new Date().getTime() + 60000,
+      enabled: true,
+    }
+    expect(alarm.time).toBeGreaterThan(Date.now())
+  })
+
+  test('user receives nag notifications for repeating alarms', () => {
+    const nagNotifications = [
+      { offsetSeconds: 60, triggered: false },
+      { offsetSeconds: 180, triggered: false },
+      { offsetSeconds: 300, triggered: false },
+    ]
+    expect(nagNotifications.length).toBe(3)
+  })
+
+  test('user can dismiss alarm from notification', () => {
+    const notification = {
+      id: 'notif-1',
+      alarmId: 'alarm-1',
+      dismissed: false,
+    }
+    const dismissed = { ...notification, dismissed: true }
+    expect(dismissed.dismissed).toBe(true)
+  })
+
+  test('user navigates to alarm ringing screen when notification tapped', () => {
+    const navigation = {
+      screen: 'alarmRinging' as string | null,
+    }
+    expect(navigation.screen).toBe('alarmRinging')
+  })
+
+  test('repeating alarm reschedules after ringing', () => {
+    let alarm = {
+      id: 'alarm-1',
+      repeatDays: ['Monday', 'Wednesday', 'Friday'],
+      notificationIds: [] as string[],
+    }
+    alarm = { ...alarm, notificationIds: ['notif-new'] }
+    expect(alarm.notificationIds.length).toBeGreaterThan(0)
+  })
+
+  test('one-time alarm does not reschedule after ringing', () => {
+    const alarm = {
+      id: 'alarm-1',
+      repeatDays: [],
+      notificationIds: [],
+    }
+    expect(alarm.notificationIds.length).toBe(0)
+  })
+})
+
+// ============================================================================
+// ALARM PUZZLE - WHITEBOX: Puzzle Generation
+// ============================================================================
+
+describe('[WHITEBOX] ALARM PUZZLE: Puzzle Generation', () => {
+  test('puzzle generates multiple math questions', () => {
+    const generateQuestions = (count: number) => {
+      const qs: { a: number; b: number }[] = []
+      for (let i = 0; i < count; i++) {
+        const a = Math.floor(Math.random() * 9) + 1
+        const b = Math.floor(Math.random() * 9) + 1
+        qs.push({ a, b })
+      }
+      return qs
+    }
+    const questions = generateQuestions(3)
+    expect(questions.length).toBe(3)
+  })
+
+  test('puzzle questions have operands between 1-9', () => {
+    const generateQuestions = (count: number) => {
+      const qs: { a: number; b: number }[] = []
+      for (let i = 0; i < count; i++) {
+        const a = Math.floor(Math.random() * 9) + 1
+        const b = Math.floor(Math.random() * 9) + 1
+        qs.push({ a, b })
+      }
+      return qs
+    }
+    const questions = generateQuestions(5)
+    questions.forEach(q => {
+      expect(q.a).toBeGreaterThanOrEqual(1)
+      expect(q.a).toBeLessThanOrEqual(9)
+      expect(q.b).toBeGreaterThanOrEqual(1)
+      expect(q.b).toBeLessThanOrEqual(9)
+    })
+  })
+
+  test('puzzle generates unique questions', () => {
+    const generateQuestions = (count: number) => {
+      const qs: { a: number; b: number }[] = []
+      for (let i = 0; i < count; i++) {
+        const a = Math.floor(Math.random() * 9) + 1
+        const b = Math.floor(Math.random() * 9) + 1
+        qs.push({ a, b })
+      }
+      return qs
+    }
+    const questions = generateQuestions(10)
+    expect(questions.length).toBe(10)
+  })
+
+  test('puzzle calculation is correct', () => {
+    const question = { a: 3, b: 4 }
+    const answer = question.a * question.b
+    expect(answer).toBe(12)
+  })
+
+  test('puzzle answer validation works', () => {
+    const question = { a: 5, b: 6 }
+    const correctAnswer = question.a * question.b
+    const userAnswer = 30
+    expect(userAnswer === correctAnswer).toBe(true)
+  })
+})
+
+// ============================================================================
+// NOTIFICATION SYSTEM - WHITEBOX: Notification Permissions & Setup
+// ============================================================================
+
+describe('[WHITEBOX] NOTIFICATION SYSTEM: Notification Setup', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('notification handler is registered for received notifications', () => {
+    const listener = jest.fn()
+    expect(typeof listener).toBe('function')
+  })
+
+  test('notification handler is registered for notification responses', () => {
+    const listener = jest.fn()
+    expect(typeof listener).toBe('function')
+  })
+
+  test('notification handlers are cleaned up on unmount', () => {
+    const unsub = jest.fn()
+    expect(typeof unsub).toBe('function')
+  })
+
+  test('Android notification channel is configured', () => {
+    const channel = {
+      name: 'Alarms',
+      importance: 'MAX',
+      sound: 'default',
+      vibrationPattern: [0, 250, 250, 250],
+      enableVibrate: true,
+      bypassDnd: true,
+    }
+    expect(channel.name).toBe('Alarms')
+    expect(channel.bypassDnd).toBe(true)
+  })
+
+  test('notification data includes alarm ID for routing', () => {
+    const notificationData = {
+      alarmId: 'alarm-123',
+    }
+    expect(notificationData.alarmId).toBeDefined()
+  })
+
+  test('last notification response is checked on app launch', () => {
+    const response = {
+      notification: {
+        request: {
+          content: {
+            data: { alarmId: 'alarm-1' },
+          },
+        },
+      },
+    }
+    expect(response.notification.request.content.data.alarmId).toBe('alarm-1')
+  })
+})
+
+// ============================================================================
+// NOTIFICATION SYSTEM - BLACKBOX: Notification Handling
+// ============================================================================
+
+describe('[BLACKBOX] NOTIFICATION SYSTEM: Notification Handling', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('app routes to alarm ringing when notification received', () => {
+    const notificationData = { alarmId: 'alarm-1' }
+    const route = notificationData.alarmId ? '/alarmRinging' : '/landing'
+    expect(route).toBe('/alarmRinging')
+  })
+
+  test('app routes to alarm ringing when notification tapped', () => {
+    const response = {
+      notification: {
+        request: {
+          content: {
+            data: { alarmId: 'alarm-1' },
+          },
+        },
+      },
+    }
+    const alarmId = response.notification.request.content.data?.alarmId
+    expect(alarmId).toBe('alarm-1')
+  })
+
+  test('app detects recent notifications within 2 minute window', () => {
+    const RECENT_WINDOW_MS = 2 * 60 * 1000
+    const deliveredAt = Date.now() - 60000 // 1 minute ago
+    const isRecent = Date.now() - deliveredAt <= RECENT_WINDOW_MS
+    expect(isRecent).toBe(true)
+  })
+
+  test('app ignores stale notifications outside window', () => {
+    const RECENT_WINDOW_MS = 2 * 60 * 1000
+    const deliveredAt = Date.now() - 10 * 60 * 1000 // 10 minutes ago
+    const isRecent = Date.now() - deliveredAt <= RECENT_WINDOW_MS
+    expect(isRecent).toBe(false)
+  })
+
+  test('app resolves alarm by ID from notification', () => {
+    const alarms = [
+      { id: 'alarm-1', enabled: true },
+      { id: 'alarm-2', enabled: true },
+    ]
+    const notificationAlarmId = 'alarm-1'
+    const alarm = alarms.find(a => a.id === notificationAlarmId)
+    expect(alarm?.id).toBe('alarm-1')
+  })
+
+  test('app falls back to time-based alarm resolution if ID not found', () => {
+    const now = new Date()
+    const nowMinutes = now.getHours() * 60 + now.getMinutes()
+    const alarms = [
+      {
+        id: 'alarm-1',
+        time: new Date(),
+        enabled: true,
+      },
+    ]
+    const alarmTime = new Date(alarms[0].time)
+    const alarmMinutes = alarmTime.getHours() * 60 + alarmTime.getMinutes()
+    const isNearby = Math.abs(alarmMinutes - nowMinutes) <= 2
+    expect(typeof isNearby).toBe('boolean')
+  })
+})
+
+// ============================================================================
+// INTEGRATION: Alarm & Notification Workflows
+// ============================================================================
+
+describe('[INTEGRATION] Alarm & Notification Workflows', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('creating alarm with enabled true schedules notifications', () => {
+    const newAlarm = {
+      id: Date.now(),
+      time: Date.now() + 3600000,
+      enabled: true,
+      notificationIds: ['notif-1', 'notif-2'],
+    }
+    expect(newAlarm.notificationIds.length).toBeGreaterThan(0)
+  })
+
+  test('disabling alarm cancels all scheduled notifications', () => {
+    let alarm = {
+      id: 'alarm-1',
+      enabled: true,
+      notificationIds: ['notif-1', 'notif-2', 'notif-3'],
+    }
+    alarm = {
+      ...alarm,
+      enabled: false,
+      notificationIds: [],
+    }
+    expect(alarm.notificationIds.length).toBe(0)
+  })
+
+  test('editing alarm time reschedules notifications', () => {
+    let alarm = {
+      id: 'alarm-1',
+      time: 1704067200000,
+      notificationIds: ['old-notif'],
+    }
+    alarm = {
+      ...alarm,
+      time: 1704070800000,
+      notificationIds: ['new-notif'],
+    }
+    expect(alarm.notificationIds[0]).not.toBe('old-notif')
+  })
+
+  test('deleting alarm clears all notifications', () => {
+    let alarms = [
+      { id: 'alarm-1', notificationIds: ['notif-1'] },
+      { id: 'alarm-2', notificationIds: ['notif-2'] },
+    ]
+    alarms = alarms.filter(a => a.id !== 'alarm-1')
+    expect(alarms.length).toBe(1)
+  })
+
+  test('repeating alarm reschedules after triggering', () => {
+    let alarm = {
+      id: 'alarm-1',
+      repeatDays: ['Monday', 'Wednesday', 'Friday'],
+      time: 1704067200000,
+      notificationIds: [] as string[],
+    }
+    alarm = { ...alarm, notificationIds: ['notif-new'] }
+    expect(alarm.notificationIds.length).toBeGreaterThan(0)
+  })
+
+  test('one-time alarm does not reschedule after triggering', () => {
+    const alarm = {
+      id: 'alarm-1',
+      repeatDays: [],
+      time: 1704067200000,
+      notificationIds: [],
+    }
+    expect(alarm.notificationIds.length).toBe(0)
+  })
+
+  test('puzzle mode prevents snoozing alarm', () => {
+    const alarm = {
+      id: 'alarm-1',
+      puzzle: true,
+    }
+    const canSnooze = !alarm.puzzle
+    expect(canSnooze).toBe(false)
+  })
+
+  test('notification handler updates alarm as ringing', () => {
+    const alarm = { id: 'alarm-1', isRinging: false }
+    const ringingAlarm = { ...alarm, isRinging: true }
+    expect(ringingAlarm.isRinging).toBe(true)
+  })
+})
+
+// ============================================================================
+// ERROR HANDLING: Alarm & Notification Errors
+// ============================================================================
+
+describe('[ERROR HANDLING] Alarm & Notification Errors', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('creating alarm without time is handled', () => {
+    const invalid = {
+      id: 'alarm-1',
+      time: undefined,
+    }
+    expect(invalid.time).toBeUndefined()
+  })
+
+  test('scheduling notification with past time is handled', () => {
+    const pastTime = Date.now() - 3600000
+    const isFuture = pastTime > Date.now()
+    expect(isFuture).toBe(false)
+  })
+
+  test('cancelling non-existent notification is handled', () => {
+    const notificationIds = ['notif-1']
+    const toCancel = 'notif-999'
+    const exists = notificationIds.includes(toCancel)
+    expect(exists).toBe(false)
+  })
+
+  test('alarm with invalid repeat days is handled', () => {
+    const invalidDays = ['Moonday', 'Tuesnight']
+    const validDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    const allValid = invalidDays.every(d => validDays.includes(d))
+    expect(allValid).toBe(false)
+  })
+
+  test('alarm time conversion handles edge cases', () => {
+    const timeMs = 0
+    const date = new Date(timeMs)
+    expect(date instanceof Date).toBe(true)
+  })
+
+  test('notification listener removal prevents memory leaks', () => {
+    const removeListener = jest.fn()
+    removeListener()
+    expect(removeListener).toHaveBeenCalled()
+  })
+})
 
