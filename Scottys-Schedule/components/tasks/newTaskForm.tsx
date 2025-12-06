@@ -1,9 +1,11 @@
-import { StyleSheet, TextInput, Text, View, TouchableOpacity, TouchableWithoutFeedback, Keyboard} from 'react-native'
+import { StyleSheet, TextInput, Text, View, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Image, Pressable} from 'react-native'
 import React, { useState } from 'react'
 import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import RepeatsDropdown from '../repeatsDropdown';
-import { useRouter } from 'expo-router'
+import { useRouter, Stack } from 'expo-router'
 import { useBooks } from "../../hooks/useBooks"
+
+import LeftArrow from '../../assets/arrows/leftArrow.png';
 
 const NewTaskForm = () => {
   const [name, setName] = useState('');
@@ -78,6 +80,16 @@ const NewTaskForm = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
+        <Stack.Screen 
+            options={{
+                headerTitle: "New Task",
+                headerLeft: () => (
+                    <Pressable onPress={() => router.back()} style={{ marginRight: 10 }}>
+                         <Image source={LeftArrow} style={{ width: 50, height: 50, resizeMode: 'contain' }}/>
+                    </Pressable>
+                ),
+            }}
+        />
         <View>
           <Text style={styles.subheader}> Task Name</Text>
           <TextInput 

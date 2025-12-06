@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { useLocalSearchParams, useRouter, Stack } from "expo-router"
-import { StyleSheet, Text, View, TextInput, Pressable } from 'react-native'
+import { StyleSheet, Text, View, TextInput, Pressable, Image } from 'react-native'
 import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker'
 import RepeatsDropdown from '../../components/repeatsDropdown'
 import { useBooks } from "../../hooks/useBooks"
 import { getNextRepeatDate } from '@/contexts/repeats'
+
+import LeftArrow from '../../assets/arrows/leftArrow.png';
 
 type taskData = {
     $id: string
@@ -105,7 +107,16 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
 
   return (
     <View style={styles.screen}>
-        <Stack.Screen options={{headerTitle: "Edit Task"}}/>
+        <Stack.Screen 
+            options={{
+                headerTitle: "Edit Task",
+                headerLeft: () => (
+                    <Pressable onPress={() => router.back()} style={{ marginRight: 10 }}>
+                        <Image source={LeftArrow} style={{ width: 50, height: 50, resizeMode: 'contain' }}/>
+                    </Pressable>
+                ),
+            }}
+        />
         
         <View style={styles.container}>
         <Text style={styles.subheader}> Task Name</Text>
