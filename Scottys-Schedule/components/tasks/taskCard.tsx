@@ -34,11 +34,11 @@ const TaskCard = ({id, name, description, timeStarts, timeEnds, isCompleted, col
   return (
     <View style={[styles.container, {borderColor: color}]}>
       <BouncyCheckbox 
-        onPress={() => {
-          if (handlePhrase) {
+        onPress={(isChecked: boolean) => {
+          if (handlePhrase && !isCompleted) { 
             handlePhrase();
           }
-          changeIsCompleted(id, isCompleted);
+          changeIsCompleted(id, !isCompleted);
         }}
         fillColor={color}
         iconStyle={{borderRadius: 0}}

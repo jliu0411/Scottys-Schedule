@@ -7,6 +7,7 @@ export const mapDocToAlarm = (doc) => ({
   puzzle: doc.puzzle ?? false,
   enabled: doc.enabled ?? true,
   notificationIds: [],
+  nextTriggerMs: null,
 });
 
 export const getNextTriggerTimeMs = (

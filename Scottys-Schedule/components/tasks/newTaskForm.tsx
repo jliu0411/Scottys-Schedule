@@ -1,11 +1,11 @@
-import { StyleSheet, TextInput, Text, View, TouchableOpacity, TouchableWithoutFeedback, Keyboard} from 'react-native'
+import { StyleSheet, TextInput, Text, View, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Image, Pressable} from 'react-native'
 import React, { useState } from 'react'
 import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import RepeatsDropdown from '../repeatsDropdown';
-import { useRouter } from 'expo-router'
+import { useRouter, Stack } from 'expo-router'
 import { useBooks } from "../../hooks/useBooks"
 
-
+import LeftArrow from '../../assets/arrows/leftArrow.png';
 
 const NewTaskForm = () => {
   const now = new Date();
@@ -134,6 +134,16 @@ const NewTaskForm = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
+        <Stack.Screen 
+            options={{
+                headerTitle: "New Task",
+                headerLeft: () => (
+                    <Pressable onPress={() => router.back()} style={{ marginRight: 10 }}>
+                         <Image source={LeftArrow} style={{ width: 50, height: 50, resizeMode: 'contain' }}/>
+                    </Pressable>
+                ),
+            }}
+        />
         <View>
           <Text style={styles.subheader}> Task Name</Text>
           <TextInput 
@@ -158,7 +168,6 @@ const NewTaskForm = () => {
             style={styles.input}>
           </TextInput>
 
-          {/* DATE */}
           <Text style={styles.subheader}> Date</Text>
           <TouchableOpacity 
             onPress={() => setShowDatePicker(!showDatePicker)}>
@@ -175,7 +184,6 @@ const NewTaskForm = () => {
               onChange={onDateChange} />)
           }
 
-          {/* TIME STARTS */}
           <Text style={styles.subheader}> Time Task Starts</Text>
           <TouchableOpacity onPress={() => setShowTimeStartsPicker(!showTimeStartsPicker)}>
             <Text style={styles.input}>
@@ -189,7 +197,6 @@ const NewTaskForm = () => {
             }
           </TouchableOpacity>
 
-          {/* TIME ENDS */}
           <Text style={styles.subheader}>Time Task Ends</Text>
           <TouchableOpacity onPress={() => setShowTimeEndsPicker(!showTimeEndsPicker)}>
             <Text style={styles.input}>

@@ -62,13 +62,17 @@ export const AlarmProvider = ({ children }) => {
       });
       //user.$id
       let notificationIds = [];
+      let nextTriggerMs = null;
       if (baseAlarm.enabled) {
-        notificationIds = await scheduleNotificationsForAlarm(baseAlarm);
+        const schedule = await scheduleNotificationsForAlarm(baseAlarm);
+        notificationIds = schedule.notificationIds;
+        nextTriggerMs = schedule.nextTriggerMs;
       }
 
       const alarmWithNotifications = {
         ...baseAlarm,
         notificationIds,
+        nextTriggerMs,
       };
 
       setAlarms((prev) => [...prev, alarmWithNotifications]);
@@ -88,10 +92,14 @@ export const AlarmProvider = ({ children }) => {
       const updatedAlarm = { ...existing, ...updates };
 
       let notificationIds = [];
+      let nextTriggerMs = null;
       if (updatedAlarm.enabled) {
-        notificationIds = await scheduleNotificationsForAlarm(updatedAlarm);
+        const schedule = await scheduleNotificationsForAlarm(updatedAlarm);
+        notificationIds = schedule.notificationIds;
+        nextTriggerMs = schedule.nextTriggerMs;
       }
       updatedAlarm.notificationIds = notificationIds;
+      updatedAlarm.nextTriggerMs = nextTriggerMs;
 
       await updateAlarmInAppwrite(id, updatedAlarm);
 
@@ -134,7 +142,7 @@ export const AlarmProvider = ({ children }) => {
 
     await cancelNotificationsForAlarm(alarm);
 
-    const cleared = { ...alarm, notificationIds: [] };
+    const cleared = { ...alarm, notificationIds: [], nextTriggerMs: null };
 
     setAlarms((prev) =>
       prev.map((a) => (a.id === id ? cleared : a))

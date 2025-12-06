@@ -54,9 +54,7 @@ export const scheduleNotificationsForAlarm = async (alarm) => {
   const buildContent = (extraData = {}) => ({
     title: "Alarm",
     body: "Time to do your task!",
-    sound: "default",
-    priority: Notifications.AndroidNotificationPriority.MAX,
-    sticky: true,
+    sound: true,
     data: {
       alarmId: String(alarm.id),
       ...extraData,
@@ -66,11 +64,14 @@ export const scheduleNotificationsForAlarm = async (alarm) => {
   const ids = [];
 
   const scheduleDateNotification = async (date, extraData = {}) => {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+      return;
+    }
+
     const trigger = {
       channelId: "alarm",
       type: "date",
       date,
-      allowWhileIdle: true,
     };
 
     const notificationId = await Notifications.scheduleNotificationAsync({
@@ -98,7 +99,10 @@ export const scheduleNotificationsForAlarm = async (alarm) => {
     });
   }
 
-  return ids;
+  return {
+    notificationIds: ids,
+    nextTriggerMs: firstMs,
+  };
 };
 
 export const cancelNotificationsForAlarm = async (alarm) => {

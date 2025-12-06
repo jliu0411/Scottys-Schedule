@@ -64,12 +64,18 @@ const Tasks = () => {
       }
 
       {!isToday && 
-        <View>
-          {(currentDate.valueOf() < today.valueOf()) ?
-            <DailyTaskList currentDate={currentDate} today={today} type='Previous' color='#595959'/> 
-            :
-            <DailyTaskList currentDate={currentDate} today={today} type='Upcoming' color='#013C58'/> 
-          }
+        <View style={{ flex: 1, marginBottom: '45%' }}> 
+          {(currentDate.valueOf() < today.valueOf()) ? (
+            <>
+               <Text style={[styles.header, {backgroundColor: '#595959'}]}>Previous Tasks</Text>
+               <DailyTaskList currentDate={currentDate} today={today} type='Previous' color='#595959'/> 
+            </>
+          ) : (
+            <>
+               <Text style={[styles.header, {backgroundColor: '#013C58'}]}>Upcoming Tasks</Text>
+               <DailyTaskList currentDate={currentDate} today={today} type='Upcoming' color='#013C58'/> 
+            </>
+          )}
         </View>
       }
 
