@@ -104,89 +104,97 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
 
 
   return (
-    <View style={styles.container}>
-      <Stack.Screen options={{headerTitle: "Edit Task"}}/>
-      <Text style={styles.subheader}> Task Name</Text>
-      <TextInput
-        placeholder={'Current Task Name'} 
-        defaultValue={book.name} 
-        multiline
-        numberOfLines={2}
-        maxLength={50}
-        onChangeText={input => (book.name = input)} 
-        style={styles.input} >
-      </TextInput>
+    <View style={styles.screen}>
+        <Stack.Screen options={{headerTitle: "Edit Task"}}/>
+        
+        <View style={styles.container}>
+        <Text style={styles.subheader}> Task Name</Text>
+        <TextInput
+            placeholder={'Current Task Name'} 
+            defaultValue={book.name} 
+            multiline
+            numberOfLines={2}
+            maxLength={50}
+            onChangeText={input => (book.name = input)} 
+            style={styles.input} >
+        </TextInput>
 
-      <Text style={styles.subheader}> Description</Text>
-      <TextInput 
-        placeholder={'Current Description'} 
-        defaultValue={book.description} 
-        multiline
-        numberOfLines={5}
-        maxLength={140}
-        onChangeText={input => (book.description = input)} 
-        style={styles.input}>
-      </TextInput>
+        <Text style={styles.subheader}> Description</Text>
+        <TextInput 
+            placeholder={'Current Description'} 
+            defaultValue={book.description} 
+            multiline
+            numberOfLines={5}
+            maxLength={140}
+            onChangeText={input => (book.description = input)} 
+            style={styles.input}>
+        </TextInput>
 
-      <Text style={styles.subheader}> Date</Text>
-      <Pressable onPress={() => setShowDatePicker(!showDatePicker)}>
-        <Text style={styles.input}>
-          {new Date(book.date).toLocaleDateString()}
-        </Text>
-      </Pressable>
-      {showDatePicker && (
-          <RNDateTimePicker 
-            value={book.date ? new Date(book.date) : new Date()} 
-            mode={'date'} 
-            minimumDate={new Date(2024, 11, 31)}
-            onChange={onDateChange} />)
-        }
+        <Text style={styles.subheader}> Date</Text>
+        <Pressable onPress={() => setShowDatePicker(!showDatePicker)}>
+            <Text style={styles.input}>
+            {new Date(book.date).toLocaleDateString()}
+            </Text>
+        </Pressable>
+        {showDatePicker && (
+            <RNDateTimePicker 
+                value={book.date ? new Date(book.date) : new Date()} 
+                mode={'date'} 
+                minimumDate={new Date(2024, 11, 31)}
+                onChange={onDateChange} />)
+            }
 
-      <Text style={styles.subheader}> Time Task Starts</Text>
-      <Pressable onPress={() => setShowTimeStartsPicker(!showTimeStartsPicker)}>
-        <Text style={styles.input}>
-          {formatTime(book.timeStarts)}
-        </Text>
-        {showTimeStartsPicker && 
-          (<RNDateTimePicker 
-            value={book.timeStarts ? new Date(`1970-01-01T${book.timeStarts}`) : new Date()} 
-            mode={'time'} 
-            onChange={onTimeStartsChange} />)
-        }
-      </Pressable>
-
-      <Text style={styles.subheader}>Time Task Ends</Text>
-        <Pressable onPress={() => setShowTimeEndsPicker(!showTimeEndsPicker)}>
-          <Text style={styles.input}>
-            {formatTime(book.timeEnds)}
-          </Text>
-          {showTimeEndsPicker && 
+        <Text style={styles.subheader}> Time Task Starts</Text>
+        <Pressable onPress={() => setShowTimeStartsPicker(!showTimeStartsPicker)}>
+            <Text style={styles.input}>
+            {formatTime(book.timeStarts)}
+            </Text>
+            {showTimeStartsPicker && 
             (<RNDateTimePicker 
-              value={book.timeEnds ? new Date(`1970-01-01T${book.timeEnds}`) : new Date()} 
-              mode={'time'} 
-              minimumDate={book.timeStarts ? new Date(`1970-01-01T${book.timeStarts}`) : undefined}
-              onChange={onTimeEndsChange} />)
-          }
+                value={book.timeStarts ? new Date(`1970-01-01T${book.timeStarts}`) : new Date()} 
+                mode={'time'} 
+                onChange={onTimeStartsChange} />)
+            }
         </Pressable>
 
-        <Text style={styles.subheader}> Repeats</Text>
-        <Text style={styles.selectedTextStyle}>{taskRepeats.length === 0 ? 'N/A' : book.repeats?.join(', ')}</Text>
-        <RepeatsDropdown repeats={taskRepeats} setRepeats={(days) => setTaskRepeats(days)}/>
+        <Text style={styles.subheader}>Time Task Ends</Text>
+            <Pressable onPress={() => setShowTimeEndsPicker(!showTimeEndsPicker)}>
+            <Text style={styles.input}>
+                {formatTime(book.timeEnds)}
+            </Text>
+            {showTimeEndsPicker && 
+                (<RNDateTimePicker 
+                value={book.timeEnds ? new Date(`1970-01-01T${book.timeEnds}`) : new Date()} 
+                mode={'time'} 
+                minimumDate={book.timeStarts ? new Date(`1970-01-01T${book.timeStarts}`) : undefined}
+                onChange={onTimeEndsChange} />)
+            }
+            </Pressable>
 
-        <Pressable onPress={handleSave} style={styles.createButton} >
-          <Text style={styles.createButtonText}>Save Changes</Text>
-        </Pressable>
+            <Text style={styles.subheader}> Repeats</Text>
+            <Text style={styles.selectedTextStyle}>{taskRepeats.length === 0 ? 'N/A' : book.repeats?.join(', ')}</Text>
+            <RepeatsDropdown repeats={taskRepeats} setRepeats={(days) => setTaskRepeats(days)}/>
 
-        <Pressable onPress={handleDelete} style={styles.deleteButton} >
-          <Text style={styles.createButtonText}>Delete</Text>
-        </Pressable>
+            <Pressable onPress={handleSave} style={styles.createButton} >
+            <Text style={styles.createButtonText}>Save Changes</Text>
+            </Pressable>
+
+            <Pressable onPress={handleDelete} style={styles.deleteButton} >
+            <Text style={styles.createButtonText}>Delete</Text>
+            </Pressable>
+        </View>
     </View>
+    // FIX END: Closing the "screen" View
   )
 }
 
 export default EditTaskForm
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#00537A',
+  },
   container: {
     backgroundColor: '#FFFF',
     marginHorizontal: 35,
