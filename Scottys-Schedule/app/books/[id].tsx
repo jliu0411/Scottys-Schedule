@@ -66,15 +66,70 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
     if (!book.name.trim()) {
       alert('Please enter a task name!');
       return;
-    } 
+    }
 
-      let newDate = new Date(book.date);
-      if (taskRepeats.length > 0) {
-        const now = new Date();
-        if (newDate < now) {
-          newDate = getNextRepeatDate(now, taskRepeats, book.timeEnds); 
-        }
+    const timeToMinutes = (t?: string): number => {
+      if (!t || typeof t !== "string") return NaN;
+      const parts = t.split(":");
+      if (parts.length !== 2) return NaN;
+      const h = Number(parts[0]);
+      const m = Number(parts[1]);
+      return h * 60 + m;
+    };
+
+    const startMin = timeToMinutes(book.timeStarts);
+    const endMin = timeToMinutes(book.timeEnds);
+
+    if (isNaN(startMin) || isNaN(endMin)) {
+      alert("Please set valid start and end times.");
+      return;
+    }
+
+    if (endMin <= startMin) {
+      alert("End time must be AFTER start time.");
+      return;
+    }
+
+    let newDate = new Date(book.date);
+    if (isNaN(newDate.getTime())) {
+      alert("Invalid date. Please select a valid date.");
+      return;
+    }
+
+    if (taskRepeats.length > 0) {
+      const now = new Date();
+      if (newDate < now) {
+        newDate = getNextRepeatDate(now, taskRepeats, book.timeEnds);
       }
+    }
+
+    const normalizedIso = new Date(
+      newDate.getFullYear(),
+      newDate.getMonth(),
+      newDate.getDate()
+    )
+      .toISOString()
+      .split("T")[0];
+
+    const conflicts = (books || []).some((b: any) => {
+      if (!b || b.$id === book.$id) return false; 
+
+      if (!b.date) return false;
+      const dateObj = new Date(b.date);
+
+      const bDateIso = dateObj.toISOString().split("T")[0];
+      if (bDateIso !== normalizedIso) return false;
+
+      const bStart = timeToMinutes(b.timeStarts);
+      const bEnd = timeToMinutes(b.timeEnds);
+
+      return startMin < bEnd && endMin > bStart;
+    });
+
+    if (conflicts) {
+      alert("This time conflicts with another task on this date.");
+      return;
+    }
 
     await updateBook(book.$id, {
       name: book.name,
@@ -84,9 +139,9 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
       timeEnds: book.timeEnds,
       repeats: taskRepeats,
       isCompleted: book.isCompleted
-    })
+    });
 
-    router.replace('/landing')
+    router.replace("/landing");
   }
 
   const formatTime = (t?: string | Date) => {
