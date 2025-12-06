@@ -20,7 +20,7 @@ type taskData = {
 
 const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isCompleted, repeats} : taskData) => {
   const { id } = useLocalSearchParams()
-  const realId = Array.isArray(id) ? id[0] : id; // safe
+  const realId = Array.isArray(id) ? id[0] : id;
   const { deleteBook, updateBook, books } = useBooks()
   const router = useRouter()
   const book = books?.find((b: taskData) => b.$id === realId);
@@ -28,7 +28,7 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimeStartsPicker, setShowTimeStartsPicker] = useState(false);
   const [showTimeEndsPicker, setShowTimeEndsPicker] = useState(false);
-  const [taskRepeats, setTaskRepeats] = useState<string[]>(book?.repeats || []); // initialize with current data
+  const [taskRepeats, setTaskRepeats] = useState<string[]>(book?.repeats || []);
   const [isDeleting, setIsDeleting] = useState(false);
   
   if (isDeleting) return null; 
