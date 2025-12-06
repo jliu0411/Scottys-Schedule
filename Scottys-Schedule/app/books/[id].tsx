@@ -195,7 +195,6 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
             </Pressable>
         </View>
     </View>
-    // FIX END: Closing the "screen" View
   )
 }
 
