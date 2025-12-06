@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
 import { useAlarms } from "./alarmContext";
@@ -15,11 +15,24 @@ export default function NotificationNavigationHandler() {
     updateAlarm,
   } = useAlarms();
 
+  const pendingNotificationRef = useRef(null);
+  const lastHandledAlarmRef = useRef(null);
+  const navigationLockRef = useRef(false);
+  const handledNotificationIdsRef = useRef(new Set());
+
   const resolveAlarmFromNotification = useCallback(
-    (alarmId) => {
+    async (alarmId, notificationId) => {
       if (alarmId) {
         const byId = alarms.find((alarm) => alarm.id === alarmId);
         if (byId?.enabled) {
+          if (notificationId) {
+            try {
+              await Notifications.dismissNotificationAsync(notificationId);
+            } catch (error) {
+              console.log("[NotificationHandler] Failed to dismiss notification", error);
+              handledNotificationIdsRef.current.add(notificationId);
+            }
+          }
           return byId;
         }
       }
@@ -41,15 +54,53 @@ export default function NotificationNavigationHandler() {
   );
 
   const handleAlarmNotification = useCallback(
-    async (rawAlarmId) => {
-      const alarm = resolveAlarmFromNotification(rawAlarmId);
+    async ({ alarmId: rawAlarmId, notificationId }) => {
+      if (notificationId && handledNotificationIdsRef.current.has(notificationId)) {
+        console.log("[NotificationHandler] Notification already handled, skipping", notificationId);
+        return;
+      }
+
+      const alarm = await resolveAlarmFromNotification(rawAlarmId, notificationId);
 
       if (!alarm) {
         console.log("[NotificationHandler] No matching alarm for notification", rawAlarmId);
+        pendingNotificationRef.current = {
+          alarmId: rawAlarmId,
+          notificationId,
+          deliveredAt: Date.now(),
+        };
         return;
       }
 
       if (activeRingingAlarmId === alarm.id) {
+        return;
+      }
+
+      if (navigationLockRef.current) {
+        console.log("[NotificationHandler] Navigation already in progress, skipping", alarm.id);
+        return;
+      }
+
+      if (alarm?.nextTriggerMs && Date.now() + 15 * 1000 < alarm.nextTriggerMs) {
+        console.log(
+          "[NotificationHandler] Ignoring premature trigger for",
+          alarm.id,
+          "expected at",
+          new Date(alarm.nextTriggerMs).toISOString()
+        );
+        return;
+      }
+
+      const lastHandled = lastHandledAlarmRef.current;
+      if (
+        lastHandled &&
+        lastHandled.alarmId === alarm.id &&
+        Date.now() - lastHandled.handledAt <= RECENT_WINDOW_MS
+      ) {
+        console.log(
+          "[NotificationHandler] Alarm already handled recently, skipping",
+          alarm.id
+        );
         return;
       }
 
@@ -62,6 +113,11 @@ export default function NotificationNavigationHandler() {
       }
 
       markAlarmAsRinging(alarm.id);
+      lastHandledAlarmRef.current = {
+        alarmId: alarm.id,
+        handledAt: Date.now(),
+      };
+      navigationLockRef.current = true;
       router.push({
         pathname: "/alarmRinging",
         params: { id: String(alarm.id) },
@@ -84,7 +140,10 @@ export default function NotificationNavigationHandler() {
         const isRecent = Date.now() - deliveredAt <= RECENT_WINDOW_MS;
 
         if (isRecent) {
-          handleAlarmNotification(alarmId);
+          handleAlarmNotification({
+            alarmId,
+            notificationId: notification.request.identifier,
+          });
         }
       }
     );
@@ -92,7 +151,10 @@ export default function NotificationNavigationHandler() {
     const responseSub =
       Notifications.addNotificationResponseReceivedListener((response) => {
         const alarmId = response.notification.request.content.data?.alarmId;
-        handleAlarmNotification(alarmId);
+        handleAlarmNotification({
+          alarmId,
+          notificationId: response.notification.request.identifier,
+        });
       });
 
     return () => {
@@ -118,7 +180,10 @@ export default function NotificationNavigationHandler() {
       const isRecent = Date.now() - deliveredAt <= RECENT_WINDOW_MS;
 
       if (isRecent) {
-        handleAlarmNotification(alarmId);
+        handleAlarmNotification({
+          alarmId,
+          notificationId: response.notification.request.identifier,
+        });
       }
     });
 
@@ -126,6 +191,37 @@ export default function NotificationNavigationHandler() {
       isMounted = false;
     };
   }, [handleAlarmNotification]);
+
+  useEffect(() => {
+    const pending = pendingNotificationRef.current;
+    if (!pending) {
+      return;
+    }
+
+    if (!alarms || alarms.length === 0) {
+      return;
+    }
+
+    const isRecent = Date.now() - pending.deliveredAt <= RECENT_WINDOW_MS;
+    if (!isRecent) {
+      pendingNotificationRef.current = null;
+      return;
+    }
+
+    handleAlarmNotification({
+      alarmId: pending.alarmId,
+      notificationId: pending.notificationId,
+    });
+    pendingNotificationRef.current = null;
+  }, [alarms, handleAlarmNotification]);
+
+  useEffect(() => {
+    if (!activeRingingAlarmId) {
+      navigationLockRef.current = false;
+      lastHandledAlarmRef.current = null;
+      handledNotificationIdsRef.current.clear();
+    }
+  }, [activeRingingAlarmId]);
 
   return null;
 }
