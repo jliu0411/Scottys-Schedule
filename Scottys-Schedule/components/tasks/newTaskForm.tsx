@@ -8,17 +8,20 @@ import { useBooks } from "../../hooks/useBooks"
 import LeftArrow from '../../assets/arrows/leftArrow.png';
 
 const NewTaskForm = () => {
+  const now = new Date();
+  const pad = (num: number) => num.toString().padStart(2, "0");
+
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date());
-  const [timeStarts, setTimeStarts] = useState(new Date());
-  const [timeStartsString, setTimeStartsString] = useState("00:00");
-  const [timeEnds, setTimeEnds] = useState(new Date());
-  const [timeEndsString, setTimeEndsString] = useState("00:00");
+  const [timeStarts, setTimeStarts] = useState(now);
+  const [timeStartsString, setTimeStartsString] = useState(`${pad(now.getHours())}:${pad(now.getMinutes())}`);
+  const [timeEnds, setTimeEnds] = useState(now);
+  const [timeEndsString, setTimeEndsString] = useState(`${pad(now.getHours())}:${pad(now.getMinutes())}`);
   const [repeats, setRepeats] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const { createBook } = useBooks();
+  const { books, createBook } = useBooks();
   const router = useRouter();
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -35,9 +38,7 @@ const NewTaskForm = () => {
       setTimeStarts(newTime);
       const hours = newTime.getHours();
       const minutes = newTime.getMinutes();
-      const stringTime = `${hours.toString().padStart(2, '0')}:${minutes
-        .toString()
-        .padStart(2, '0')}`;
+      const stringTime = `${hours.toString()}:${minutes.toString()}`;
       setTimeStartsString(stringTime)
     setShowTimeStartsPicker(false) }
   }
@@ -59,8 +60,59 @@ const NewTaskForm = () => {
 
     setLoading(true);
 
-    await createBook({name, description, date: date.toISOString(), timeStarts: timeStartsString, timeEnds: timeEndsString, repeats})
+  const timeToMinutes = (t?: string): number => {
+    if (!t || typeof t !== "string") return NaN;
+    const parts = t.split(":");
+    if (parts.length !== 2) return NaN;
+    const h = Number(parts[0]);
+    const m = Number(parts[1]);
+    return h * 60 + m;
+  };
 
+  const startMin = timeToMinutes(timeStartsString);
+  const endMin = timeToMinutes(timeEndsString);
+
+  if (isNaN(startMin) || isNaN(endMin)) {
+    setLoading(false);
+    alert("Please set valid start and end times.");
+    return;
+  }
+
+  if (endMin <= startMin) {
+    setLoading(false);
+    alert("End time must be AFTER start time.");
+    return;
+  }
+
+  const normalizedDate = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  ).toISOString().split("T")[0]; 
+
+  const overlap = (books || []).some((b: any) => {
+    if (!b) return false;
+
+    const bDateIso = new Date(b.date).toISOString().split("T")[0];
+    if (bDateIso !== normalizedDate) return false;
+
+    const bStart = timeToMinutes(b.timeStarts);
+    const bEnd = timeToMinutes(b.timeEnds);
+    if (isNaN(bStart) || isNaN(bEnd)) return false;
+
+    return startMin < bEnd && endMin > bStart;
+  });
+
+  if (overlap) {
+    setLoading(false);
+    alert("This task overlaps with an existing task on this date.");
+    return;
+  }
+
+
+    await createBook({name, description, date: normalizedDate, timeStarts: timeStartsString, timeEnds: timeEndsString, repeats})
+
+    //reset fields
     setName('');
     setDescription('');
     setDate(new Date());
@@ -69,11 +121,13 @@ const NewTaskForm = () => {
     setTimeEnds(new Date());
     setTimeEndsString("00:00");
     setRepeats([]);
-
-    router.replace('/');
-
+    
+    //reset loading state
     setLoading(false);
-
+    
+    // redirect
+    router.replace('/');
+    
     alert('Creating task...');
     
   }
