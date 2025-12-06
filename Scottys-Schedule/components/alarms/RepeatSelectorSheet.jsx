@@ -5,6 +5,8 @@ import {
   Modal,
   TouchableOpacity,
   StyleSheet,
+  Platform,
+  StatusBar,
 } from "react-native";
 
 export default function RepeatSelectorSheet({
@@ -25,10 +27,13 @@ export default function RepeatSelectorSheet({
 
   if (!visible) return null;
 
+  const statusBarOffset = Platform.OS === "android" ? StatusBar.currentHeight ?? 0 : 0;
+  const dropdownSpacing = 55;
+
   const anchoredStyle = anchor
     ? {
         position: "absolute",
-        top: anchor.y + (anchor.height ?? 0) + 55,
+        top: anchor.y - statusBarOffset + (anchor.height ?? 0) + dropdownSpacing,
         left: anchor.x,
         width: anchor.width,
       }
