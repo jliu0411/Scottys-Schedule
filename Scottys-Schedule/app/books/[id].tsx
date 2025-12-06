@@ -87,7 +87,7 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
       isCompleted: book.isCompleted
     })
 
-    router.replace('/landing')
+    router.back();
   }
 
   const formatTime = (t?: string | Date) => {
