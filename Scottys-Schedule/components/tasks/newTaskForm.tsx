@@ -5,8 +5,6 @@ import RepeatsDropdown from '../repeatsDropdown';
 import { useRouter } from 'expo-router'
 import { useBooks } from "../../hooks/useBooks"
 
-
-
 const NewTaskForm = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -51,7 +49,6 @@ const NewTaskForm = () => {
     setShowTimeEndsPicker(false) }
   }
 
-  //TASK CREATION
   const handleCreateTask = async () => {
     if (!name.trim()) {
       alert('Please enter a task name!');
@@ -60,16 +57,8 @@ const NewTaskForm = () => {
 
     setLoading(true);
 
-    const normalizedDate = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      0, 0, 0, 0
-    );
+    await createBook({name, description, date: date.toISOString(), timeStarts: timeStartsString, timeEnds: timeEndsString, repeats})
 
-    await createBook({name, description, date: normalizedDate.toISOString(), timeStarts: timeStartsString, timeEnds: timeEndsString, repeats})
-
-    //reset fields
     setName('');
     setDescription('');
     setDate(new Date());
@@ -79,10 +68,8 @@ const NewTaskForm = () => {
     setTimeEndsString("00:00");
     setRepeats([]);
 
-    // redirect
     router.replace('/');
 
-    //reset loading state
     setLoading(false);
 
     alert('Creating task...');
@@ -115,7 +102,6 @@ const NewTaskForm = () => {
             style={styles.input}>
           </TextInput>
 
-          {/* DATE */}
           <Text style={styles.subheader}> Date</Text>
           <TouchableOpacity 
             onPress={() => setShowDatePicker(!showDatePicker)}>
@@ -132,7 +118,6 @@ const NewTaskForm = () => {
               onChange={onDateChange} />)
           }
 
-          {/* TIME STARTS */}
           <Text style={styles.subheader}> Time Task Starts</Text>
           <TouchableOpacity onPress={() => setShowTimeStartsPicker(!showTimeStartsPicker)}>
             <Text style={styles.input}>
@@ -146,7 +131,6 @@ const NewTaskForm = () => {
             }
           </TouchableOpacity>
 
-          {/* TIME ENDS */}
           <Text style={styles.subheader}>Time Task Ends</Text>
           <TouchableOpacity onPress={() => setShowTimeEndsPicker(!showTimeEndsPicker)}>
             <Text style={styles.input}>

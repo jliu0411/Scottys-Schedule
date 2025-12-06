@@ -4,6 +4,17 @@ import TaskCard from './taskCard'
 import EmptyTaskCard from './emptyTaskCard'
 import { useBooks } from '../../hooks/useBooks'
 
+type TaskData = {
+    $id: string,
+    name: string,
+    description?: string,
+    date: Date | string,
+    timeStarts: string,
+    timeEnds: string,
+    isCompleted: boolean,
+    repeats: string[],
+}
+
 type DailyListProps = {
     type: string,
     color: string,
@@ -11,16 +22,25 @@ type DailyListProps = {
     today?: Date,
 }
 
-const DailyTaskList = ({ type, color }: DailyListProps) => {
-    const { dailyTasks } = useBooks();
+const DailyTaskList = ({ type, color, currentDate }: DailyListProps) => {
+    const { books } = useBooks();
+
+    const filteredBooks = books.filter((task: TaskData) => {
+        if (!currentDate) return true;
+        
+        const taskDate = new Date(task.date);
+        const targetDate = new Date(currentDate);
+
+        return taskDate.toDateString() === targetDate.toDateString();
+    });
 
     return (
         <View style={styles.container}>
-            {dailyTasks.length === 0 ? (
+            {filteredBooks.length === 0 ? (
                 <EmptyTaskCard type={type} color={color}/>
             ) : (
                 <FlatList 
-                    data={dailyTasks}
+                    data={filteredBooks}
                     keyExtractor={(item) => item.$id}
                     renderItem={({ item }) => (
                         <Pressable>

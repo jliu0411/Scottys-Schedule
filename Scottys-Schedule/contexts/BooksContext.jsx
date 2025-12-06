@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, useRef, useMemo } from 'react'
+import { createContext, useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import { AppState } from 'react-native'
 import { databases, client } from '../lib/appwrite'
 import { ID, Permission, Query, Role } from 'react-native-appwrite'
@@ -21,6 +21,51 @@ const sortTasks = (a, b) => {
     return getMinutes(a.timeStarts) - getMinutes(b.timeStarts);
 }
 
+const parseDateInput = (value) => {
+    if (!value) return null;
+    if (value instanceof Date) return new Date(value.getTime());
+    if (typeof value === 'string') {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+            const [year, month, day] = value.split('-').map(Number);
+            return new Date(year, month - 1, day, 0, 0, 0, 0);
+        }
+        const parsed = new Date(value);
+        if (!Number.isNaN(parsed.getTime())) return parsed;
+    }
+    return null;
+};
+
+const parseTime = (rawTime) => {
+    if (typeof rawTime !== 'string' || !rawTime.includes(':')) return { hours: 0, minutes: 0 };
+    const [hours, minutes] = rawTime.split(':');
+    return { hours: Number(hours) || 0, minutes: Number(minutes) || 0 };
+};
+
+const toLocalDate = (value) => {
+    const parsed = parseDateInput(value);
+    if (!parsed) return null;
+    if (typeof value === 'string' && value.includes('T')) {
+        return new Date(parsed.getTime() + parsed.getTimezoneOffset() * 60000);
+    }
+    return parsed;
+};
+
+const toDateKey = (value) => {
+    const parsed = parseDateInput(value);
+    if (!parsed) return null;
+    parsed.setHours(0, 0, 0, 0);
+    return parsed.toISOString();
+};
+
+const combineDateAndTime = (dateValue, timeValue) => {
+    const base = toLocalDate(dateValue);
+    if (!base) return null;
+    const { hours, minutes } = parseTime(timeValue ?? '00:00');
+    const result = new Date(base.getTime());
+    result.setHours(hours, minutes, 0, 0);
+    return result;
+};
+
 export const BooksContext = createContext()
 
 export function BooksProvider({ children }) {
@@ -35,51 +80,6 @@ export function BooksProvider({ children }) {
     const completedCount = dailyTasks ? dailyTasks.filter(t => t.isCompleted).length : 0;
     const totalCount = dailyTasks ? dailyTasks.length : 0;
     const progress = totalCount === 0 ? 0 : (completedCount / totalCount).toFixed(2);
-
-    const parseDateInput = (value) => {
-        if (!value) return null;
-        if (value instanceof Date) return new Date(value.getTime());
-        if (typeof value === 'string') {
-            if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-                const [year, month, day] = value.split('-').map(Number);
-                return new Date(year, month - 1, day, 0, 0, 0, 0);
-            }
-            const parsed = new Date(value);
-            if (!Number.isNaN(parsed.getTime())) return parsed;
-        }
-        return null;
-    };
-
-    const parseTime = (rawTime) => {
-        if (typeof rawTime !== 'string' || !rawTime.includes(':')) return { hours: 0, minutes: 0 };
-        const [hours, minutes] = rawTime.split(':');
-        return { hours: Number(hours) || 0, minutes: Number(minutes) || 0 };
-    };
-
-    const toLocalDate = (value) => {
-        const parsed = parseDateInput(value);
-        if (!parsed) return null;
-        if (typeof value === 'string' && value.includes('T')) {
-            return new Date(parsed.getTime() + parsed.getTimezoneOffset() * 60000);
-        }
-        return parsed;
-    };
-
-    const toDateKey = (value) => {
-        const parsed = parseDateInput(value);
-        if (!parsed) return null;
-        parsed.setHours(0, 0, 0, 0);
-        return parsed.toISOString();
-    };
-
-    const combineDateAndTime = (dateValue, timeValue) => {
-        const base = toLocalDate(dateValue);
-        if (!base) return null;
-        const { hours, minutes } = parseTime(timeValue ?? '00:00');
-        const result = new Date(base.getTime());
-        result.setHours(hours, minutes, 0, 0);
-        return result;
-    };
 
     const getTimeParams = () => {
         const now = currentTime;
@@ -132,13 +132,14 @@ export function BooksProvider({ children }) {
         }
     }
 
-    async function fetchTasksByDate(date) {
+    const fetchTasksByDate = useCallback(async (date) => {
         try {
+            setDailyTasks([]);
             const dateKey = toDateKey(date);
             if (!dateKey) {
-                setDailyTasks([]);
                 return;
             }
+            if (!user) return; 
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
@@ -151,7 +152,7 @@ export function BooksProvider({ children }) {
         } catch (error) {
             console.error(error.message)
         }
-    }
+    }, [user]);
 
     async function fetchBookByID(id) {}
     async function fetchPreviousTasks() {}
@@ -343,7 +344,7 @@ export function BooksProvider({ children }) {
             setBooks([]);
             setDailyTasks([]);
         }
-    }, [user]);
+    }, [user, fetchTasksByDate]);
 
     useEffect(() => {
         const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`;

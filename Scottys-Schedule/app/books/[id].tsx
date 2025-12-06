@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useLocalSearchParams, useRouter } from "expo-router"
+import { useLocalSearchParams, useRouter, Stack } from "expo-router"
 import { StyleSheet, Text, View, TextInput, Pressable } from 'react-native'
 import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker'
 import RepeatsDropdown from '../../components/repeatsDropdown'
@@ -29,10 +29,10 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
   const [showTimeStartsPicker, setShowTimeStartsPicker] = useState(false);
   const [showTimeEndsPicker, setShowTimeEndsPicker] = useState(false);
   const [taskRepeats, setTaskRepeats] = useState<string[]>(book?.repeats || []); // initialize with current data
+  const [isDeleting, setIsDeleting] = useState(false);
   
-  if (!book) return <Text>Book not found.</Text>
-  
-  
+  if (isDeleting) return null; 
+  if (!book) return <Text>Book not found.</Text> 
   
   const onDateChange = (event : DateTimePickerEvent, newDate?: Date) => {
     if (newDate) { book.date = newDate; }
@@ -58,8 +58,9 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
 
   const handleDelete = async () => {
     if (!book) return;
-    await deleteBook(id)
-    router.replace('/landing')
+    setIsDeleting(true);
+    await deleteBook(id);
+    router.back();
   }
 
   const handleSave = async () => {
@@ -104,7 +105,7 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
 
   return (
     <View style={styles.container}>
-      
+      <Stack.Screen options={{headerTitle: "Edit Task"}}/>
       <Text style={styles.subheader}> Task Name</Text>
       <TextInput
         placeholder={'Current Task Name'} 
