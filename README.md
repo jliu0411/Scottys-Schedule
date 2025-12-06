@@ -3,7 +3,7 @@
 <p align="center">Team Members: James Liu, Briana Garcia, Jeffrey Xia, and Noah Schultz</p>
 <p align="center">Scotty’s Schedule is an Android Mobile App whose goal is to combine fun with functionality. Our scheduling app helps people stay organized, be productive, and stay on track, all while UCR’s mascot Scotty the Bear cheers them on!</p>
 
-This project was built using [React Native](https://reactnative.dev/), [Expo](https://expo.dev/), [Expo Go](https://expo.dev/go), and [Android Studio](https://developer.android.com/studio).
+This project was built using [React Native](https://reactnative.dev/), [Expo](https://expo.dev/), [Expo Go](https://expo.dev/go), and [Android Studio](https://developer.android.com/studio). It was tested using [Jest](https://jestjs.io/).
 
 ## Figma
 [Figma Design File](https://www.figma.com/design/5gsAfKEz0IdyMz9BI8zp0O/CS-180---Scotty-s-Schedule?node-id=0-1&t=i3va5lnutYl6vtE6-1)
