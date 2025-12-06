@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, useRef } from 'react'
+import { createContext, useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import { AppState } from 'react-native'
 import { databases, client } from '../lib/appwrite'
 import { ID, Permission, Query, Role } from 'react-native-appwrite'
@@ -10,123 +10,113 @@ import * as Notifications from 'expo-notifications';
 const DATABASE_ID = "68fd56d40037f2743501"
 const COLLECTION_ID = "books"
 
+const sortTasks = (a, b) => {
+    const getMinutes = (timeString) => {
+        if (!timeString) return 0; 
+        const parts = timeString.split(':');
+        const h = Number(parts[0]) || 0; 
+        const m = Number(parts[1]) || 0;
+        return (h * 60) + m;
+    }
+    return getMinutes(a.timeStarts) - getMinutes(b.timeStarts);
+}
+
+const parseDateInput = (value) => {
+    if (!value) return null;
+    if (value instanceof Date) return new Date(value.getTime());
+    if (typeof value === 'string') {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+            const [year, month, day] = value.split('-').map(Number);
+            return new Date(year, month - 1, day, 0, 0, 0, 0);
+        }
+        const parsed = new Date(value);
+        if (!Number.isNaN(parsed.getTime())) return parsed;
+    }
+    return null;
+};
+
+const parseTime = (rawTime) => {
+    if (typeof rawTime !== 'string' || !rawTime.includes(':')) return { hours: 0, minutes: 0 };
+    const [hours, minutes] = rawTime.split(':');
+    return { hours: Number(hours) || 0, minutes: Number(minutes) || 0 };
+};
+
+const toLocalDate = (value) => {
+    const parsed = parseDateInput(value);
+    if (!parsed) return null;
+    if (typeof value === 'string' && value.includes('T')) {
+        return new Date(parsed.getTime() + parsed.getTimezoneOffset() * 60000);
+    }
+    return parsed;
+};
+
+const toDateKey = (value) => {
+    const parsed = parseDateInput(value);
+    if (!parsed) return null;
+    parsed.setHours(0, 0, 0, 0);
+    return parsed.toISOString();
+};
+
+const combineDateAndTime = (dateValue, timeValue) => {
+    const base = toLocalDate(dateValue);
+    if (!base) return null;
+    const { hours, minutes } = parseTime(timeValue ?? '00:00');
+    const result = new Date(base.getTime());
+    result.setHours(hours, minutes, 0, 0);
+    return result;
+};
+
 export const BooksContext = createContext()
 
 export function BooksProvider({ children }) {
     const [books, setBooks] = useState([]);
-    const [progress, setProgress] = useState(0);
-    const [previousTasks, setPreviousTasks] = useState([]);
-    const [currentTasks, setCurrentTasks] = useState([]);
-    const [upcomingTasks, setUpcomingTasks] = useState([]);
+    const [currentTime, setCurrentTime] = useState(new Date());
     const [dailyTasks, setDailyTasks] = useState([]);
+    
     const { user } = useUser();
     const unsubscribeRealtime = useRef(null);
     const responseListener = useRef();
 
-    const parseDateInput = (value) => {
-        if (!value) {
-            return null;
-        }
-
-        if (value instanceof Date) {
-            return new Date(value.getTime());
-        }
-
-        if (typeof value === 'string') {
-            if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-                const [year, month, day] = value.split('-').map(Number);
-                return new Date(year, month - 1, day, 0, 0, 0, 0);
-            }
-
-            const parsed = new Date(value);
-            if (!Number.isNaN(parsed.getTime())) {
-                return parsed;
-            }
-        }
-
-        return null;
-    };
-
-    const parseTime = (rawTime) => {
-        if (typeof rawTime !== 'string' || !rawTime.includes(':')) {
-            return { hours: 0, minutes: 0 };
-        }
-
-        const [hours, minutes] = rawTime.split(':');
-        return {
-            hours: Number(hours) || 0,
-            minutes: Number(minutes) || 0,
-        };
-    };
-
-    const toLocalDate = (value) => {
-        const parsed = parseDateInput(value);
-        if (!parsed) {
-            return null;
-        }
-
-        if (typeof value === 'string' && value.includes('T')) {
-            return new Date(parsed.getTime() + parsed.getTimezoneOffset() * 60000);
-        }
-
-        return parsed;
-    };
-
-    const toDateKey = (value) => {
-        const parsed = parseDateInput(value);
-        if (!parsed) {
-            return null;
-        }
-
-        parsed.setHours(0, 0, 0, 0);
-        return parsed.toISOString();
-    };
-
-    const combineDateAndTime = (dateValue, timeValue) => {
-        const base = toLocalDate(dateValue);
-        if (!base) {
-            return null;
-        }
-
-        const { hours, minutes } = parseTime(timeValue ?? '00:00');
-        const result = new Date(base.getTime());
-        result.setHours(hours, minutes, 0, 0);
-        return result;
-    };
-
-    const refreshAllData = async () => {
-        if (!user) {
-            console.log("Skipping refresh: No user logged in.");
-            return;
-        }
-
-        console.log("Refreshing all data...");
-        try {
-            await Promise.all([
-                fetchCurrentTasks(),
-                fetchPreviousTasks(),
-                fetchUpcomingTasks(),
-                fetchProgress()
-            ]);
-        } catch (e) {
-            console.error("Refresh failed", e);
-        }
-    };
-
-    const sortTasks = (a, b) => {
-        const dateA = combineDateAndTime(a?.date, a?.timeEnds ?? a?.timeStarts) ?? new Date(0)
-        const dateB = combineDateAndTime(b?.date, b?.timeEnds ?? b?.timeStarts) ?? new Date(0)
-
-        return dateA.getTime() - dateB.getTime()
-    }
+    const completedCount = dailyTasks ? dailyTasks.filter(t => t.isCompleted).length : 0;
+    const totalCount = dailyTasks ? dailyTasks.length : 0;
+    const progress = totalCount === 0 ? 0 : (completedCount / totalCount).toFixed(2);
 
     const getTimeParams = () => {
-        const now = new Date();
+        const now = currentTime;
         const normalizedDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
         const normalizedDateKey = normalizedDate.toISOString();
         const currentTimeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
         return { normalizedDate, normalizedDateKey, currentTimeString };
     }
+
+    const refreshAllData = async () => {
+        await fetchBooks();
+    };
+
+    const { previousTasks, currentTasks, upcomingTasks } = useMemo(() => {
+        const { currentTimeString } = getTimeParams();
+        const prev = [];
+        const curr = [];
+        const upc = [];
+
+        if (dailyTasks && dailyTasks.length > 0) {
+            const sortedDaily = [...dailyTasks].sort(sortTasks);
+            
+            sortedDaily.forEach(task => {
+                const start = task.timeStarts || "00:00";
+                const end = task.timeEnds || start;
+
+                if (end < currentTimeString) {
+                    prev.push(task);
+                } else if (start <= currentTimeString && end >= currentTimeString) {
+                    curr.push(task);
+                } else if (start > currentTimeString) {
+                    upc.push(task);
+                }
+            });
+        }
+        return { previousTasks: prev, currentTasks: curr, upcomingTasks: upc };
+    }, [dailyTasks, currentTime]);
 
     async function fetchBooks() {
         if (!user) return;
@@ -136,31 +126,20 @@ export function BooksProvider({ children }) {
                 COLLECTION_ID,
                 [Query.equal('userID', user.$id)]
             );
-
-            const sortedTasks = response.documents.sort(sortTasks);
-
-            setBooks(sortedTasks)
+            setBooks(response.documents.sort(sortTasks));
         } catch (error) {
             console.error("fetchBooks error:", error.message)
         }
     }
 
-    async function fetchBookByID(id) {
+    const fetchTasksByDate = useCallback(async (date) => {
         try {
-
-        } catch (error) {
-            console.error(error.message)
-        }
-    }
-
-    async function fetchTasksByDate(date) {
-        try {
+            setDailyTasks([]);
             const dateKey = toDateKey(date);
             if (!dateKey) {
-                setDailyTasks([]);
                 return;
             }
-
+            if (!user) return; 
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTION_ID,
@@ -169,154 +148,101 @@ export function BooksProvider({ children }) {
                     Query.equal('date', dateKey)
                 ]
             )
-            setDailyTasks(response?.documents ?? []);
+            setDailyTasks(response?.documents.sort(sortTasks) ?? []);
         } catch (error) {
             console.error(error.message)
         }
-    }
+    }, [user]);
 
-    async function fetchPreviousTasks() {
-        const { normalizedDateKey, currentTimeString } = getTimeParams();
-        try {
-            const response = await databases.listDocuments(
-                DATABASE_ID,
-                COLLECTION_ID,
-                [
-                    Query.equal('userID', user.$id),
-                    Query.equal('date', normalizedDateKey),
-                    Query.lessThan('timeEnds', currentTimeString)
-                ]
-            )
-            setPreviousTasks(response?.documents ?? []);
-        } catch (error) {
-            console.error(error.message)
-        }
-    }
-
-    async function fetchCurrentTasks() {
-        const { normalizedDateKey, currentTimeString } = getTimeParams();
-        try {
-            const response = await databases.listDocuments(
-                DATABASE_ID,
-                COLLECTION_ID,
-                [
-                    Query.equal('userID', user.$id),
-                    Query.equal('date', normalizedDateKey),
-                    Query.greaterThan('timeEnds', currentTimeString),
-                    Query.lessThanEqual('timeStarts', currentTimeString),
-                    Query.limit(1)
-                ]
-            )
-            setCurrentTasks(response?.documents ?? []);
-        } catch (error) {
-            console.error(error.message)
-        }
-    }
-
-    async function fetchUpcomingTasks() {
-        const { normalizedDateKey, currentTimeString } = getTimeParams();
-        try {
-            console.log('fetching upcoming tasks');
-            const response = await databases.listDocuments(
-                DATABASE_ID,
-                COLLECTION_ID,
-                [
-                    Query.equal('userID', user.$id),
-                    Query.equal('date', normalizedDateKey),
-                    Query.greaterThan('timeStarts', currentTimeString),
-                ]
-            )
-            setUpcomingTasks(response?.documents ?? []);
-        } catch (error) {
-            console.error(error.message)
-        }
-    }
+    async function fetchBookByID(id) {}
+    async function fetchPreviousTasks() {}
+    async function fetchCurrentTasks() {}
+    async function fetchUpcomingTasks() {}
+    async function fetchProgress() {}
 
     async function createBook(data) {
         try {
             const dateKey = toDateKey(data.date);
-
+            
             const notificationId = await scheduleTaskNotification(
-                data.name,
-                data.date,
+                data.name, 
+                data.date, 
                 data.timeStarts
             );
+
+            const payload = {
+                name: data.name,
+                description: data.description || "",
+                date: dateKey,
+                timeStarts: data.timeStarts || "00:00",
+                timeEnds: data.timeEnds || data.timeStarts || "00:00",
+                repeats: data.repeats || [], 
+                isCompleted: false,
+                userID: user.$id,
+                notificationId: notificationId || null,
+            };
 
             await databases.createDocument(
                 DATABASE_ID,
                 COLLECTION_ID,
                 ID.unique(),
-                {
-                    ...data,
-                    date: dateKey,
-                    userID: user.$id,
-                    notificationId: notificationId || null,
-                },
-
+                payload,
                 [
                     Permission.read(Role.user(user.$id)),
                     Permission.update(Role.user(user.$id)),
                     Permission.delete(Role.user(user.$id)),
                 ]
             );
-            refreshAllData();
+
+            await fetchTasksByDate(data.date);
+            await refreshAllData();
+
         } catch (error) {
-            console.error(error.message)
+            console.error("Create Book Error:", error.message);
+            throw error;
         }
     }
 
     async function deleteBook(id) {
-        try {
-            const task = books.find(b => b.$id === id);
+        const task = books.find(b => b.$id === id);
+        if (!task) return;
 
-            if (task && task.notificationId) {
+        try {
+            setDailyTasks(prev => prev.filter(item => item.$id !== id));
+            setBooks(prev => prev.filter(item => item.$id !== id));
+
+            if (task.notificationId) {
                 await cancelTaskNotification(task.notificationId);
             }
 
-            await databases.deleteDocument(
-                DATABASE_ID,
-                COLLECTION_ID,
-                id
-            )
-            await fetchPreviousTasks();
-            await fetchCurrentTasks();
-            await fetchUpcomingTasks();
-            await fetchProgress();
+            await databases.deleteDocument(DATABASE_ID, COLLECTION_ID, id);
+
         } catch (error) {
-            console.error(error.message)
+            if (error.code === 404) {
+                console.log("Task was already deleted on server (harmless race condition).");
+            } else {
+                console.error("Delete failed:", error.message);
+            }
         }
     }
 
-    async function changeIsCompleted(id, currentStatus) {
+    async function changeIsCompleted(id) {
         try {
-            const newStatus = !currentStatus;
+            const task = dailyTasks.find(t => t.$id === id);
+            if (!task) return;
 
-            const targetTask = books.find(b => b.$id === id);
-            if (!targetTask) {
-                return;
+            const newStatus = !task.isCompleted;
+
+            setDailyTasks(prev => prev.map(t => t.$id === id ? { ...t, isCompleted: newStatus } : t));
+            setBooks(prev => prev.map(b => b.$id === id ? { ...b, isCompleted: newStatus } : b));
+
+            let nextNotificationId = task.notificationId || null;
+            if (newStatus && nextNotificationId) {
+                await cancelTaskNotification(nextNotificationId);
+                nextNotificationId = null;
+            } else if (!newStatus) {
+                nextNotificationId = (await scheduleTaskNotification(task.name, task.date, task.timeStarts)) || null;
             }
-
-            let nextNotificationId = targetTask.notificationId ?? null;
-
-            if (newStatus) {
-                if (nextNotificationId) {
-                    await cancelTaskNotification(nextNotificationId);
-                    nextNotificationId = null;
-                }
-            } else {
-                nextNotificationId =
-                    (await scheduleTaskNotification(
-                        targetTask.name,
-                        targetTask.date,
-                        targetTask.timeStarts
-                    )) || null;
-            }
-
-            setBooks(prevBooks => prevBooks.map(book =>
-                book.$id === id
-                    ? { ...book, isCompleted: newStatus, notificationId: nextNotificationId }
-                    : book
-            ));
 
             await databases.updateDocument(
                 DATABASE_ID,
@@ -325,51 +251,14 @@ export function BooksProvider({ children }) {
                 { isCompleted: newStatus, notificationId: nextNotificationId }
             );
         } catch (error) {
-            console.error(error.message)
-        }
-    }
-
-    async function fetchProgress() {
-        const { normalizedDateKey } = getTimeParams();
-        try {
-            const completedTasks = await databases.listDocuments(
-                DATABASE_ID,
-                COLLECTION_ID,
-                [
-                    Query.equal('userID', user.$id),
-                    Query.equal('date', normalizedDateKey),
-                    Query.equal('isCompleted', true)
-                ]
-            );
-            const completed = completedTasks.total;
-
-            const allTasks = await databases.listDocuments(
-                DATABASE_ID,
-                COLLECTION_ID,
-                [
-                    Query.equal('userID', user.$id),
-                    Query.equal('date', normalizedDateKey)
-                ]
-            );
-            const total = allTasks.total;
-
-            if (total === 0 || completed === 0) {
-                setProgress(0)
-                return;
-            }
-
-            const progressCalc = (completed / total).toFixed(2);
-            setProgress(progressCalc);
-        } catch (error) {
-            console.error(error.message)
+            console.error("Change Status Error:", error.message);
         }
     }
 
     async function updateBook(id, data) {
         try {
             const existingBook = books.find(b => b.$id === id);
-            let newNotificationId = existingBook?.notificationId;
-
+            
             const mergedName = data.name ?? existingBook?.name ?? '';
             const mergedDateKey = toDateKey(data.date ?? existingBook?.date);
             const mergedDateInput = data.date ?? existingBook?.date;
@@ -378,6 +267,8 @@ export function BooksProvider({ children }) {
             const mergedDescription = data.description ?? existingBook?.description ?? '';
             const mergedRepeats = data.repeats ?? existingBook?.repeats ?? [];
             const mergedIsCompleted = data.isCompleted ?? existingBook?.isCompleted ?? false;
+            
+            let newNotificationId = existingBook?.notificationId;
 
             if (existingBook && existingBook.notificationId) {
                 await cancelTaskNotification(existingBook.notificationId);
@@ -386,30 +277,36 @@ export function BooksProvider({ children }) {
 
             if (!mergedIsCompleted && mergedDateKey && mergedTimeStarts) {
                 newNotificationId = await scheduleTaskNotification(
-                    mergedName,
-                    mergedDateInput,
+                    mergedName, 
+                    mergedDateInput, 
                     mergedTimeStarts
                 );
             }
+
+            const payload = {
+                name: mergedName,
+                description: mergedDescription,
+                date: mergedDateKey,
+                timeStarts: mergedTimeStarts,
+                timeEnds: mergedTimeEnds,
+                repeats: mergedRepeats,
+                isCompleted: mergedIsCompleted,
+                notificationId: newNotificationId || null,
+            };
 
             await databases.updateDocument(
                 DATABASE_ID,
                 COLLECTION_ID,
                 id,
-                {
-                    name: mergedName,
-                    description: mergedDescription,
-                    date: mergedDateKey,
-                    timeStarts: mergedTimeStarts,
-                    timeEnds: mergedTimeEnds,
-                    repeats: mergedRepeats,
-                    isCompleted: mergedIsCompleted,
-                    notificationId: newNotificationId || null,
-                }
-            )
+                payload
+            );
+
+            if (mergedDateInput) await fetchTasksByDate(mergedDateInput);
             refreshAllData();
+
         } catch (error) {
-            console.error(error.message)
+            console.error("Update Book Error:", error.message);
+            throw error;
         }
     }
 
@@ -422,7 +319,7 @@ export function BooksProvider({ children }) {
 
         responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
             console.log("Notification tapped!");
-            refreshAllData();
+            refreshAllData(); 
         });
 
         return () => {
@@ -433,102 +330,98 @@ export function BooksProvider({ children }) {
     }, [user]);
 
     useEffect(() => {
-        if (!user) return;
+        const timer = setInterval(() => {
+            setCurrentTime(new Date()); 
+        }, 10000); 
+        return () => clearInterval(timer);
+    }, []);
 
-        const interval = setInterval(() => {
-            refreshAllData();
-        }, 5000);
-
-        return () => clearInterval(interval);
-    }, [user]);
+    useEffect(() => {
+        if (user) {
+            fetchBooks();
+            fetchTasksByDate(new Date());
+        } else {
+            setBooks([]);
+            setDailyTasks([]);
+        }
+    }, [user, fetchTasksByDate]);
 
     useEffect(() => {
         const channel = `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`;
 
         const startRealtime = () => {
             if (unsubscribeRealtime.current) return;
-
             console.log("Starting Realtime...");
-            unsubscribeRealtime.current = client.subscribe(channel, async (response) => {
+            
+            unsubscribeRealtime.current = client.subscribe(channel, (response) => {
                 const { payload, events } = response;
+                const isUpdate = events.some(e => e.includes("update"));
+                const isCreate = events.some(e => e.includes("create"));
+                const isDelete = events.some(e => e.includes("delete"));
 
-                if (events[0].includes("create")) {
-                    setBooks(prev => [...prev, payload].sort(sortTasks));
+                if (isUpdate) {
+                    setDailyTasks(prev => {
+                        const currentTask = prev.find(t => t.$id === payload.$id);
+                        if (currentTask && 
+                            currentTask.isCompleted === payload.isCompleted && 
+                            currentTask.name === payload.name &&
+                            currentTask.date === payload.date &&
+                            currentTask.timeStarts === payload.timeStarts &&
+                            currentTask.timeEnds === payload.timeEnds
+                        ) return prev;
+
+                        return prev.map(task => task.$id === payload.$id ? payload : task).sort(sortTasks);
+                    });
+                    setBooks(prev => prev.map(book => book.$id === payload.$id ? payload : book).sort(sortTasks));
                 }
-                if (events[0].includes("delete")) {
-                    setBooks((prevBooks) => prevBooks.filter((book) => book.$id !== payload.$id));
-                }
-                if (events[0].includes("update")) {
-                    setBooks(prevBooks => {
-                        const updatedBooks = prevBooks.map(b => b.$id === payload.$id ? payload : b);
-                        return updatedBooks.sort(sortTasks);
+                
+                if (isCreate) {
+                    setBooks(prev => {
+                        if (prev.some(b => b.$id === payload.$id)) return prev;
+                        return [...prev, payload].sort(sortTasks);
+                    });
+                    setDailyTasks(prev => {
+                        if (prev.some(t => t.$id === payload.$id)) return prev;
+                        if (prev.length > 0 && prev[0].date === payload.date) {
+                             return [...prev, payload].sort(sortTasks);
+                        }
+                        return prev;
                     });
                 }
-                refreshAllData();
+
+                if (isDelete) {
+                    setDailyTasks(prev => prev.filter(t => t.$id !== payload.$id));
+                    setBooks(prev => prev.filter(b => b.$id !== payload.$id));
+                }
             });
         };
 
         const stopRealtime = () => {
             if (unsubscribeRealtime.current) {
-                console.log("Stopping Realtime...");
-                try {
-                    unsubscribeRealtime.current();
-                } catch (e) {
-                    console.log("Realtime cleanup error (harmless):", e.message);
-                }
+                unsubscribeRealtime.current();
                 unsubscribeRealtime.current = null;
             }
         };
 
         if (user) {
-            fetchBooks();
-            refreshAllData();
             startRealtime();
-
-            const subscription = AppState.addEventListener('change', (nextAppState) => {
-                if (nextAppState === 'active') {
-                    console.log("App active, refreshing data...");
-                    fetchBooks();
-                    refreshAllData();
-                    if (!unsubscribeRealtime.current) {
-                        startRealtime();
-                    }
-                }
-            });
-
-            return () => {
-                stopRealtime();
-                subscription.remove();
-            };
-        } else {
-            setBooks([]);
-            setPreviousTasks([]);
-            setCurrentTasks([]);
-            setUpcomingTasks([]);
-            setProgress(0);
-            stopRealtime();
+            return () => stopRealtime();
         }
     }, [user]);
 
     useEffect(() => {
         if (!books.length) return;
-
         const checkRepeats = async () => {
             const now = new Date();
             for (const task of books) {
-                if (!task?.repeats?.length) {
-                    continue;
-                }
-
+                if (!task?.repeats?.length) continue;
                 const taskEnd = combineDateAndTime(task.date, task.timeEnds ?? task.timeStarts);
-
                 if (taskEnd && taskEnd < now) {
                     const nextDate = getNextRepeatDate(now, task.repeats, task.timeEnds ?? task.timeStarts);
                     await updateBook(task.$id, { date: nextDate, isCompleted: false });
                 }
             }
         };
-
         checkRepeats();
     }, [books]);
 

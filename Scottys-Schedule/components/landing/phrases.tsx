@@ -3,10 +3,10 @@ export const phrases : string[] = [
     'Great work!',
     'Awesome! Keep it up!',
     'You did it!',
-    'You\'e on a roll!',
+    'You\'re on a roll!',
     'Nothing can stop you!',
     'Academic Weapon!!',
-    'You\'\re so locked in!',
+    'You\'re so locked in!',
     'You rock!!',
     'Totally tubular!!'
 ];

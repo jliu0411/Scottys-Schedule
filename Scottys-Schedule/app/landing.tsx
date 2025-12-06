@@ -1,4 +1,4 @@
-import { Stack, router } from 'expo-router';
+import { Stack, router, useFocusEffect } from 'expo-router';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useUser } from '../hooks/useUser';
@@ -9,14 +9,25 @@ import LandingTaskList from '../components/landing/landingTaskList'
 import LandingHeader from '../components/landing/landingHeader'
 import Scotty from '../components/landing/scotty';
 import Background from '../components/landing/background'
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { phrases } from '../components/landing/phrases';
+import { useBooks } from '../hooks/useBooks';
 
 const Landing = () => {
   const {logout, user, authChecked, setIsLoggingOut } = useUser();
+  const { fetchTasksByDate } = useBooks();
   
   const [phrase, setPhrase] = useState('');
   const [showPhrase, setShowPhrase] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+      
+      fetchTasksByDate(today);
+    }, [fetchTasksByDate])
+  );
 
   const handlePhrase = () => {
     const randomNum = Math.floor(Math.random() * phrases.length);

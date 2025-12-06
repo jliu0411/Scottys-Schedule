@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
-import { useLocalSearchParams, useRouter } from "expo-router"
-import { StyleSheet, Text, View, TextInput, Pressable } from 'react-native'
+import { useLocalSearchParams, useRouter, Stack } from "expo-router"
+import { StyleSheet, Text, View, TextInput, Pressable, Image } from 'react-native'
 import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker'
 import RepeatsDropdown from '../../components/repeatsDropdown'
 import { useBooks } from "../../hooks/useBooks"
 import { getNextRepeatDate } from '@/contexts/repeats'
+
+import LeftArrow from '../../assets/arrows/leftArrow.png';
 
 type taskData = {
     $id: string
@@ -20,7 +22,7 @@ type taskData = {
 
 const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isCompleted, repeats} : taskData) => {
   const { id } = useLocalSearchParams()
-  const realId = Array.isArray(id) ? id[0] : id; // safe
+  const realId = Array.isArray(id) ? id[0] : id;
   const { deleteBook, updateBook, books } = useBooks()
   const router = useRouter()
   const book = books?.find((b: taskData) => b.$id === realId);
@@ -28,11 +30,11 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimeStartsPicker, setShowTimeStartsPicker] = useState(false);
   const [showTimeEndsPicker, setShowTimeEndsPicker] = useState(false);
-  const [taskRepeats, setTaskRepeats] = useState<string[]>(book?.repeats || []); // initialize with current data
+  const [taskRepeats, setTaskRepeats] = useState<string[]>(book?.repeats || []);
+  const [isDeleting, setIsDeleting] = useState(false);
   
-  if (!book) return <Text>Book not found.</Text>
-  
-  
+  if (isDeleting) return null; 
+  if (!book) return <Text>Book not found.</Text> 
   
   const onDateChange = (event : DateTimePickerEvent, newDate?: Date) => {
     if (newDate) { book.date = newDate; }
@@ -58,8 +60,9 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
 
   const handleDelete = async () => {
     if (!book) return;
-    await deleteBook(id)
-    router.replace('/landing')
+    setIsDeleting(true);
+    await deleteBook(id);
+    router.back();
   }
 
   const handleSave = async () => {
@@ -86,7 +89,7 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
       isCompleted: book.isCompleted
     })
 
-    router.replace('/landing')
+    router.back();
   }
 
   const formatTime = (t?: string | Date) => {
@@ -103,82 +106,94 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
 
 
   return (
-    <View style={styles.container}>
-      
-      <Text style={styles.subheader}> Task Name</Text>
-      <TextInput
-        placeholder={'Current Task Name'} 
-        defaultValue={book.name} 
-        multiline
-        numberOfLines={2}
-        maxLength={50}
-        onChangeText={input => (book.name = input)} 
-        style={styles.input} >
-      </TextInput>
+    <View style={styles.screen}>
+        <Stack.Screen 
+            options={{
+                headerTitle: "Edit Task",
+                headerLeft: () => (
+                    <Pressable onPress={() => router.back()} style={{ marginRight: 10 }}>
+                        <Image source={LeftArrow} style={{ width: 50, height: 50, resizeMode: 'contain' }}/>
+                    </Pressable>
+                ),
+            }}
+        />
+        
+        <View style={styles.container}>
+        <Text style={styles.subheader}> Task Name</Text>
+        <TextInput
+            placeholder={'Current Task Name'} 
+            defaultValue={book.name} 
+            multiline
+            numberOfLines={2}
+            maxLength={50}
+            onChangeText={input => (book.name = input)} 
+            style={styles.input} >
+        </TextInput>
 
-      <Text style={styles.subheader}> Description</Text>
-      <TextInput 
-        placeholder={'Current Description'} 
-        defaultValue={book.description} 
-        multiline
-        numberOfLines={5}
-        maxLength={140}
-        onChangeText={input => (book.description = input)} 
-        style={styles.input}>
-      </TextInput>
+        <Text style={styles.subheader}> Description</Text>
+        <TextInput 
+            placeholder={'Current Description'} 
+            defaultValue={book.description} 
+            multiline
+            numberOfLines={5}
+            maxLength={140}
+            onChangeText={input => (book.description = input)} 
+            style={styles.input}>
+        </TextInput>
 
-      <Text style={styles.subheader}> Date</Text>
-      <Pressable onPress={() => setShowDatePicker(!showDatePicker)}>
-        <Text style={styles.input}>
-          {new Date(book.date).toLocaleDateString()}
-        </Text>
-      </Pressable>
-      {showDatePicker && (
-          <RNDateTimePicker 
-            value={book.date ? new Date(book.date) : new Date()} 
-            mode={'date'} 
-            minimumDate={new Date(2024, 11, 31)}
-            onChange={onDateChange} />)
-        }
+        <Text style={styles.subheader}> Date</Text>
+        <Pressable onPress={() => setShowDatePicker(!showDatePicker)}>
+            <Text style={styles.input}>
+            {new Date(book.date).toLocaleDateString()}
+            </Text>
+        </Pressable>
+        {showDatePicker && (
+            <RNDateTimePicker 
+                value={book.date ? new Date(book.date) : new Date()} 
+                mode={'date'} 
+                minimumDate={new Date(2024, 11, 31)}
+                onChange={onDateChange} />)
+            }
 
-      <Text style={styles.subheader}> Time Task Starts</Text>
-      <Pressable onPress={() => setShowTimeStartsPicker(!showTimeStartsPicker)}>
-        <Text style={styles.input}>
-          {formatTime(book.timeStarts)}
-        </Text>
-        {showTimeStartsPicker && 
-          (<RNDateTimePicker 
-            value={book.timeStarts ? new Date(`1970-01-01T${book.timeStarts}`) : new Date()} 
-            mode={'time'} 
-            onChange={onTimeStartsChange} />)
-        }
-      </Pressable>
-
-      <Text style={styles.subheader}>Time Task Ends</Text>
-        <Pressable onPress={() => setShowTimeEndsPicker(!showTimeEndsPicker)}>
-          <Text style={styles.input}>
-            {formatTime(book.timeEnds)}
-          </Text>
-          {showTimeEndsPicker && 
+        <Text style={styles.subheader}> Time Task Starts</Text>
+        <Pressable onPress={() => setShowTimeStartsPicker(!showTimeStartsPicker)}>
+            <Text style={styles.input}>
+            {formatTime(book.timeStarts)}
+            </Text>
+            {showTimeStartsPicker && 
             (<RNDateTimePicker 
-              value={book.timeEnds ? new Date(`1970-01-01T${book.timeEnds}`) : new Date()} 
-              mode={'time'} 
-              minimumDate={book.timeStarts ? new Date(`1970-01-01T${book.timeStarts}`) : undefined}
-              onChange={onTimeEndsChange} />)
-          }
+                value={book.timeStarts ? new Date(`1970-01-01T${book.timeStarts}`) : new Date()} 
+                mode={'time'} 
+                onChange={onTimeStartsChange} />)
+            }
         </Pressable>
 
-        <Text style={styles.subheader}> Repeats</Text>
-        <Text style={styles.selectedTextStyle}>{taskRepeats.length === 0 ? 'N/A' : book.repeats?.join(', ')}</Text>
-        <RepeatsDropdown repeats={taskRepeats} setRepeats={(days) => setTaskRepeats(days)}/>
+        <Text style={styles.subheader}>Time Task Ends</Text>
+            <Pressable onPress={() => setShowTimeEndsPicker(!showTimeEndsPicker)}>
+            <Text style={styles.input}>
+                {formatTime(book.timeEnds)}
+            </Text>
+            {showTimeEndsPicker && 
+                (<RNDateTimePicker 
+                value={book.timeEnds ? new Date(`1970-01-01T${book.timeEnds}`) : new Date()} 
+                mode={'time'} 
+                minimumDate={book.timeStarts ? new Date(`1970-01-01T${book.timeStarts}`) : undefined}
+                onChange={onTimeEndsChange} />)
+            }
+            </Pressable>
 
-        <Pressable onPress={handleSave} style={styles.createButton} >
-          <Text style={styles.createButtonText}>Save Changes</Text>
-        </Pressable>
+            <Text style={styles.subheader}> Repeats</Text>
+            <Text style={styles.selectedTextStyle}>{taskRepeats.length === 0 ? 'N/A' : book.repeats?.join(', ')}</Text>
+            <RepeatsDropdown repeats={taskRepeats} setRepeats={(days) => setTaskRepeats(days)}/>
 
-        <Pressable onPress={handleDelete} style={styles.deleteButton} >
-          <Text style={styles.createButtonText}>Delete</Text>
-        </Pressable>
+            <Pressable onPress={handleSave} style={styles.createButton} >
+            <Text style={styles.createButtonText}>Save Changes</Text>
+            </Pressable>
+
+            <Pressable onPress={handleDelete} style={styles.deleteButton} >
+            <Text style={styles.createButtonText}>Delete</Text>
+            </Pressable>
+        </View>
     </View>
   )
 }
@@ -186,6 +201,10 @@ const EditTaskForm = ({name, description, date, timeStarts, timeEnds, isComplete
 export default EditTaskForm
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#00537A',
+  },
   container: {
     backgroundColor: '#FFFF',
     marginHorizontal: 35,

@@ -41,7 +41,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Jersey10',
     fontSize: 24,
     color: '#595959',   
-    paddingBottom: 160,
     borderBottomColor: '#013C58',
     borderWidth: 5,
     paddingVertical: 8, 

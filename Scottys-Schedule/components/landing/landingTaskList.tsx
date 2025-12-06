@@ -11,20 +11,23 @@ type ListProps = {
   handlePhrase: () => void,
 }
 
-const LandingTaskList = ({handlePhrase} : ListProps) => { 
+const LandingTaskList = ({ handlePhrase }: ListProps) => { 
   const { currentTasks, upcomingTasks } = useBooks();
 
   return (
     <SafeAreaView edges={['right', 'bottom', 'left']} style={styles.container} >
       <View>
-        <Text style={[styles.header,{backgroundColor: '#F5A201'}]}>Current Task</Text>
+        <Text style={[styles.header, { backgroundColor: '#F5A201' }]}>Current Task</Text>
+        
         <Link href='../tasks' style={styles.arrowContainer}>
           <Image source={UpArrow}/>
         </Link>
       </View>
 
       <View>
-        {currentTasks.length === 0 ? <EmptyTaskCard type='Current' color={'#F5A201'}/> : 
+        {currentTasks.length === 0 ? (
+          <EmptyTaskCard type='Current' color={'#F5A201'}/> 
+        ) : ( 
           <FlatList 
             data={currentTasks}
             keyExtractor={(item) => item.$id}
@@ -38,33 +41,40 @@ const LandingTaskList = ({handlePhrase} : ListProps) => {
                   timeEnds={item.timeEnds} 
                   isCompleted={item.isCompleted} 
                   handlePhrase={handlePhrase}
-                  color={'#F5A201'}/>
+                  color={'#F5A201'}
+                />
               </Pressable>
             )}
           />
-        }
+        )}
       </View>
     
-      <Text style={[styles.header,{backgroundColor: '#013C58'}]}>Upcoming Tasks</Text>
-      {upcomingTasks.length === 0 ? <EmptyTaskCard type='Upcoming Landing' color={'#013C58'}/> :
-        <FlatList 
-        data={upcomingTasks}
-        keyExtractor={(item => item.$id)}
-        renderItem={({ item }) => (
-          <Pressable>
-            <TaskCard 
-              id={item.$id}
-              name={item.name} 
-              description={item.description} 
-              timeStarts={item.timeStarts}
-              timeEnds={item.timeEnds} 
-              isCompleted={item.isCompleted} 
-              handlePhrase={handlePhrase}
-              color={'#013C58'}/>
-          </Pressable>
-          )}
-        />
-      }
+      <Text style={[styles.header, { backgroundColor: '#013C58' }]}>Upcoming Tasks</Text>
+      
+      <View style={styles.upcomingListContainer}>
+        {upcomingTasks.length === 0 ? (
+          <EmptyTaskCard type='Upcoming Landing' color={'#013C58'}/> 
+        ) : (
+          <FlatList 
+            data={upcomingTasks}
+            keyExtractor={(item) => item.$id}
+            renderItem={({ item }) => (
+              <Pressable>
+                <TaskCard 
+                  id={item.$id}
+                  name={item.name} 
+                  description={item.description} 
+                  timeStarts={item.timeStarts}
+                  timeEnds={item.timeEnds} 
+                  isCompleted={item.isCompleted} 
+                  handlePhrase={handlePhrase}
+                  color={'#013C58'}
+                />
+              </Pressable>
+            )}
+          />
+        )}
+      </View>
     </SafeAreaView>
   )
 }
@@ -102,5 +112,9 @@ const styles = StyleSheet.create({
     width: 50,
     height: 65,
     bottom: -50
+  },
+  upcomingListContainer: {
+    flex: 1,
+    minHeight: 0,
   },
 })

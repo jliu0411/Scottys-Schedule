@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, Pressable, Image } from 'react-native'
-import { useState, useEffect} from 'react'
+import { useState, useEffect } from 'react'
 import { Stack } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import AddButton from '../components/addButton'
@@ -13,35 +13,25 @@ import { useBooks } from '../hooks/useBooks'
 
 const Tasks = () => {
   const { fetchTasksByDate } = useBooks();
-
   const today = new Date();
   const normalizedToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
-
   const [currentDate, setCurrentDate] = useState(normalizedToday);
   const [showPrevious, setShowPrevious] = useState(false);
-  const [showCategories, setShowCategories] = useState(true);
-  const [showToday, setShowToday] = useState(true);
-
-  const handleIncrement = async () => {
-    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1, 0, 0, 0, 0);
-    await fetchTasksByDate(newDate);
-    setCurrentDate(newDate);
-  }
-  const handleDecrement = async () => {
-    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 1, 0, 0, 0, 0);
-    await fetchTasksByDate(newDate);
-    setCurrentDate(newDate);
-  }
+  const isToday = currentDate.valueOf() === normalizedToday.valueOf();
 
   useEffect(() => {
-    if (currentDate.valueOf() === normalizedToday.valueOf()) {
-      setShowToday(true);
-      setShowCategories(true);
-    } else {
-      setShowToday(false);
-      setShowCategories(false);
-    }
-  }, [currentDate])
+    fetchTasksByDate(currentDate);
+  }, [currentDate, fetchTasksByDate]);
+
+  const handleIncrement = () => {
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1, 0, 0, 0, 0);
+    setCurrentDate(newDate);
+  }
+
+  const handleDecrement = () => {
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 1, 0, 0, 0, 0);
+    setCurrentDate(newDate);
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
@@ -51,11 +41,16 @@ const Tasks = () => {
         }}
       />
 
-      {showCategories && 
+      {isToday && 
         <View>
           <Pressable onPress={() => setShowPrevious(!showPrevious)} style={styles.headerSection}>
             <Text style={styles.header}>Previous Tasks</Text>
-            <Image source={LeftArrow} style={[styles.link, {transform: [{rotate: '-90deg'}], marginRight: 30}]} width={20} height={14}/>
+            <Image 
+                source={LeftArrow} 
+                style={[styles.link, {transform: [{rotate: showPrevious ? '90deg' : '-90deg'}], marginRight: 30}]} 
+                width={20} 
+                height={14}
+            />
           </Pressable>
       
           {showPrevious && <PreviousTaskList/>}
@@ -68,29 +63,30 @@ const Tasks = () => {
         </View>
       }
 
-      {!showCategories && 
-        <View>
-          {(currentDate.valueOf() < today.valueOf()) ?
-            <DailyTaskList currentDate={currentDate} today={today} type='Previous' color='#595959'/> 
-            :
-            <DailyTaskList currentDate={currentDate} today={today} type='Upcoming' color='#013C58'/> 
-          }
+      {!isToday && 
+        <View style={{ flex: 1, marginBottom: '45%' }}> 
+          {(currentDate.valueOf() < today.valueOf()) ? (
+            <>
+               <Text style={[styles.header, {backgroundColor: '#595959'}]}>Previous Tasks</Text>
+               <DailyTaskList currentDate={currentDate} today={today} type='Previous' color='#595959'/> 
+            </>
+          ) : (
+            <>
+               <Text style={[styles.header, {backgroundColor: '#013C58'}]}>Upcoming Tasks</Text>
+               <DailyTaskList currentDate={currentDate} today={today} type='Upcoming' color='#013C58'/> 
+            </>
+          )}
         </View>
       }
 
-      {/* <View style={styles.alarmContainer}>
-          <Text style={styles.nextAlarm}>Next Alarm:</Text>
-          <Text style={styles.alarmTime}>6:00 AM</Text>
-      </View> */}
-      
       <SafeAreaView style={styles.bottom} edges={[ 'left', 'right', 'bottom']} >
-        <Pressable onPress={() => handleDecrement()} style={styles.link}>
+        <Pressable onPress={handleDecrement} style={styles.link}>
           <Image source={LeftArrow} style={styles.arrow}/>
         </Pressable>
         
-        {showToday && <Text style={styles.today}>Today</Text>}
+        {isToday && <Text style={styles.today}>Today</Text>}
 
-        {!showToday && 
+        {!isToday && 
           <Pressable onPress={() => setCurrentDate(normalizedToday)} style={styles.jump}>
             <Text style={styles.jumpText}>Jump to Today</Text>
           </Pressable>
@@ -101,7 +97,7 @@ const Tasks = () => {
           <Text style={styles.dateText}>{currentDate.toLocaleDateString([], {month: 'long', day: 'numeric', year: 'numeric'})}</Text>
         </View>
         
-        <Pressable onPress={() => handleIncrement()} style={styles.link}>
+        <Pressable onPress={handleIncrement} style={styles.link}>
           <Image source={RightArrow} style={styles.arrow}/>
         </Pressable>
       </SafeAreaView>
@@ -115,17 +111,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#00537A'
-  },
-  subheader: {
-    fontFamily: 'Jersey10',
-    color: '#FFFF',
-    fontSize: 24,
-    padding: 4,
-    paddingLeft: 12,
-    width: '100%'
-  },
-  tasks: {
-    backgroundColor: '#00537A',
   },
   bottom: {
     backgroundColor: '#013C58',
@@ -143,21 +128,6 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 32
   },
-  // alarmContainer: {
-  //   backgroundColor: '#FFF',
-  //   alignItems: 'center',
-  //   paddingTop: 5,
-  //   marginHorizontal: 90,
-  //   marginVertical: 20
-  // },
-  // nextAlarm: {
-  //   fontFamily: 'Jersey10',
-  //   fontSize: 20
-  // },
-  // alarmTime: {
-  //   fontFamily: 'Jersey10',
-  //   fontSize: 64
-  // },
   link: {
     paddingHorizontal: 11
   },
@@ -202,5 +172,4 @@ const styles = StyleSheet.create({
     width: '40%', 
     alignSelf: 'center'
   },
-
 })
